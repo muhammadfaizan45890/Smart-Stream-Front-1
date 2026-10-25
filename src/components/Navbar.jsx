@@ -38,6 +38,7 @@ import {
   Landmark,
   Smartphone,
   Bitcoin,
+  Tag,
 } from "lucide-react";
 import {
   FaFacebookF,
@@ -48,6 +49,13 @@ import {
   FaXTwitter,
   FaWhatsapp,
 } from "react-icons/fa6";
+import {
+  SiGooglegemini,
+  SiYoutube,
+  SiCursor,
+  SiElevenlabs,
+  SiAnthropic,
+} from "react-icons/si";
 import {
   motion,
   AnimatePresence,
@@ -60,6 +68,11 @@ import {
 } from "framer-motion";
 
 /* ════════════════════════════════════════════════════════════
+   LOGO IMPORT
+   ════════════════════════════════════════════════════════════ */
+import logoImage from "../assets/logo2.jpeg"; // <-- UPDATE THIS PATH IF NEEDED
+
+/* ════════════════════════════════════════════════════════════
    CONFIGURATION & CONSTANTS
    ════════════════════════════════════════════════════════════ */
 const CONFIG = {
@@ -70,6 +83,7 @@ const CONFIG = {
   supportEmail: "smartstreamsoftware@gmail.com",
   termsUrl: "/terms",
   privacyUrl: "/privacy",
+  channelUrl: "https://whatsapp.com/channel/0029VbE66le8fewoR2Y8ZF2y",
 };
 
 const THEME_KEY = "ss-theme";
@@ -77,17 +91,23 @@ const CART_KEY = "ss-cart";
 const WISH_KEY = "ss-wishlist";
 const MAX_QTY = 10;
 
+/* Custom Midjourney SVG Icon to replace the missing react-icons export */
+const MidjourneyIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M22.36 19.06H1.64a.45.45 0 0 1-.39-.68l.83-1.42a.45.45 0 0 1 .78 0l.56.95h17.16l.56-.95a.45.45 0 0 1 .78 0l.83 1.42a.45.45 0 0 1-.39.68Z"/>
+    <path d="M18.15 11.28 12 2.06 5.85 11.28a.45.45 0 0 0 .37.7h11.56a.45.45 0 0 0 .37-.7Zm-6.15-6.4 3.8 5.68H8.2L12 4.88Z"/>
+  </svg>
+);
+
 const TOOLS = [
   {
     id: "gemini-pro",
     name: "Gemini Advanced (Pro)",
     category: "AI Chat",
-    price: 19.99,
-    originalPrice: 24.99,
     duration: "1 Month",
     rating: 4.9,
     reviews: 1240,
-    icon: Sparkles,
+    icon: SiGooglegemini,
     hue: "#3b82f6",
     badge: "HOT",
     desc: "Unlock Google's most capable AI model. Includes 2TB of Google One storage and integration with Gmail, Docs, and more.",
@@ -97,12 +117,10 @@ const TOOLS = [
     id: "youtube-premium",
     name: "YouTube Premium",
     category: "Entertainment",
-    price: 12.99,
-    originalPrice: 15.99,
     duration: "1 Month",
     rating: 4.8,
     reviews: 3890,
-    icon: Play,
+    icon: SiYoutube,
     hue: "#ef4444",
     badge: "POPULAR",
     desc: "Ad-free YouTube, YouTube Music Premium, offline downloads, and background play on all your devices.",
@@ -112,12 +130,10 @@ const TOOLS = [
     id: "cursor-pro",
     name: "Cursor AI Pro",
     category: "Coding",
-    price: 15.0,
-    originalPrice: 20.0,
     duration: "1 Month",
     rating: 5.0,
     reviews: 850,
-    icon: Monitor,
+    icon: SiCursor,
     hue: "#10b981",
     badge: "DEV FAV",
     desc: "The AI-first code editor. Built for pair programming with an AI that deeply understands your codebase.",
@@ -127,12 +143,10 @@ const TOOLS = [
     id: "midjourney",
     name: "Midjourney Basic",
     category: "Image Gen",
-    price: 10.0,
-    originalPrice: 12.0,
     duration: "1 Month",
     rating: 4.9,
     reviews: 2100,
-    icon: Layers,
+    icon: MidjourneyIcon,
     hue: "#d946ef",
     badge: "",
     desc: "Generate stunning, high-resolution images from simple text prompts using one of the best AI image models.",
@@ -142,12 +156,10 @@ const TOOLS = [
     id: "elevenlabs",
     name: "ElevenLabs Creator",
     category: "Audio & Voice",
-    price: 22.0,
-    originalPrice: 29.0,
     duration: "1 Month",
     rating: 4.8,
     reviews: 940,
-    icon: Headphones,
+    icon: SiElevenlabs,
     hue: "#f59e0b",
     badge: "NEW",
     desc: "A realistic AI text-to-speech engine. Clone your voice or use thousands of studio-quality voices.",
@@ -157,12 +169,10 @@ const TOOLS = [
     id: "claude-pro",
     name: "Claude Pro",
     category: "AI Chat",
-    price: 18.0,
-    originalPrice: 22.0,
     duration: "1 Month",
     rating: 4.9,
     reviews: 1670,
-    icon: Cpu,
+    icon: SiAnthropic,
     hue: "#f97316",
     badge: "",
     desc: "Anthropic's Claude. Exceptional at coding, reasoning, and analyzing massive documents.",
@@ -174,16 +184,13 @@ const CATEGORIES = ["All", "AI Chat", "Coding", "Image Gen", "Audio & Voice", "E
 
 const SORTS = [
   { id: "featured", label: "Featured" },
-  { id: "price-asc", label: "Price: Low to High" },
-  { id: "price-desc", label: "Price: High to Low" },
   { id: "rating", label: "Top Rated" },
-  { id: "discount", label: "Biggest Discount" },
 ];
 
 const STEPS = [
   { icon: MousePointerClick, title: "Pick your tool", desc: "Browse the store and add what you need to your cart." },
   { icon: Send, title: "Order on WhatsApp", desc: "One tap sends your order to our team with all details filled in." },
-  { icon: CreditCard, title: "Pay your way", desc: "Bank transfer, Easypaisa, JazzCash, or crypto." },
+  { icon: CreditCard, title: "Negotiate & Pay", desc: "Discuss price, then pay via Bank transfer, Easypaisa, JazzCash, or crypto." },
   { icon: PackageCheck, title: "Get activated", desc: "Receive your access details and setup help right in chat." },
 ];
 
@@ -196,9 +203,9 @@ const FEATURES = [
 
 const FAQS = [
   { q: "How does delivery work?", a: "After you confirm payment on WhatsApp, we send your activation details in the same chat. Most orders are completed within minutes." },
+  { q: "How is the price decided?", a: "We offer the best market rates. Add items to your cart, click checkout, and our team will give you a final quote on WhatsApp based on your selected duration and bundle." },
   { q: "Which payment methods do you accept?", a: "Local bank transfer, Easypaisa, JazzCash, and crypto. Our team shares the details once you place your order." },
   { q: "What if something stops working?", a: "Message us on WhatsApp any time during your subscription period and we'll fix it or replace it." },
-  { q: "Can I buy more than one tool?", a: "Yes. Add as many as you like to the cart and send one combined order." },
   { q: "Can I renew when my month ends?", a: "Absolutely. Message us before expiry and we'll renew with the same setup." },
 ];
 
@@ -216,7 +223,6 @@ const NAV_LINKS = [
   { id: "faq", href: "#faq", label: "FAQ" },
 ];
 
-const money = (n) => `${CONFIG.currency}${n.toFixed(2)}`;
 const waLink = (text) =>
   `https://wa.me/${CONFIG.whatsappNumber}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 const openWhatsApp = (text) => window.open(waLink(text), "_blank", "noopener,noreferrer");
@@ -373,13 +379,23 @@ const SmartLink = ({ to, children, ...props }) => {
   );
 };
 
-// Original Logo Restored
+/* ════════════════════════════════════════════════════════════
+   UPDATED LOGO COMPONENT USING ASSET IMAGE
+   ════════════════════════════════════════════════════════════ */
 const BrandLogo = ({ className = "" }) => (
-  <a href="#top" aria-label={`${CONFIG.brandName} home`} className={`flex items-center gap-2 rounded-lg ${className}`}>
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-black">
-      <Layers className="h-4 w-4" />
+  <a 
+    href="#top" 
+    aria-label={`${CONFIG.brandName} home`} 
+    className={`flex items-center gap-2.5 rounded-lg group ${className}`}
+  >
+    <img 
+      src={logoImage} 
+      alt={`${CONFIG.brandName} Logo`} 
+      className="h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-9" 
+    />
+    <span className="hidden text-[15px] font-extrabold tracking-tight sm:block">
+      {CONFIG.brandName}
     </span>
-    <span className="text-[15px] font-extrabold tracking-tight">{CONFIG.brandName}</span>
   </a>
 );
 
@@ -467,7 +483,6 @@ function ProductCard({ tool, idx, onOpen, onAdd, inCart, liked, onLike }) {
     ref.current.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
     ref.current.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
   };
-  const discount = Math.round((1 - tool.price / tool.originalPrice) * 100);
 
   return (
     <motion.article
@@ -521,11 +536,11 @@ function ProductCard({ tool, idx, onOpen, onAdd, inCart, liked, onLike }) {
         <div className="ss-divider mb-4" />
         <div className="mb-4 flex items-end justify-between gap-3">
           <div>
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="text-2xl font-extrabold tracking-tight">{money(tool.price)}</span>
-              <span className="ss-subtle text-[13px] line-through">{money(tool.originalPrice)}</span>
+            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-500">
+              <Tag className="h-3.5 w-3.5" />
+              Price on Request
             </div>
-            <span className="text-emerald-400 text-[11px] font-bold uppercase tracking-wider">Save {discount}%</span>
+            <p className="ss-subtle mt-1 text-[11px]">Negotiate via WhatsApp</p>
           </div>
           <div className="text-right">
             <Stars rating={tool.rating} />
@@ -714,7 +729,7 @@ const UpdatesForm = React.memo(function UpdatesForm() {
           {CONFIG.privacyUrl && (
             <>
               {" "}and accept the{" "}
-              <a href={CONFIG.privacyUrl} className="underline underline-offset-2">privacy policy</a>
+              <SmartLink to={CONFIG.privacyUrl} className="underline underline-offset-2">privacy policy</SmartLink>
             </>
           )}
           .
@@ -771,9 +786,8 @@ const SmartStreamFooter = ({ onPickCategory }) => {
       <div className="ss-wrap py-10 sm:py-14">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="space-y-5 sm:col-span-2 lg:col-span-4">
-            <SmartLink to="/" className="inline-flex flex-col rounded-lg">
-              <BrandLogo />
-            </SmartLink>
+            {/* Use BrandLogo directly to avoid nested <a> tags */}
+            <BrandLogo />
             <p className="ss-muted max-w-sm text-sm leading-relaxed">
               Premium access to popular AI tools at clear prices. Delivery via WhatsApp, 24/7 support, and warranty cover for your subscription period.
             </p>
@@ -805,7 +819,7 @@ const SmartStreamFooter = ({ onPickCategory }) => {
               <h3 className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em]">Legal</h3>
               <ul className="space-y-1">
                 {legal.map((l) => (
-                  <li key={l.label}><a href={l.href} className="ss-foot-link">{l.label}</a></li>
+                  <li key={l.label}><SmartLink to={l.href} className="ss-foot-link">{l.label}</SmartLink></li>
                 ))}
               </ul>
             </div>
@@ -837,6 +851,15 @@ const SmartStreamFooter = ({ onPickCategory }) => {
                 <div className="min-w-0">
                   <p className="ss-subtle text-[10px] font-semibold uppercase tracking-wider">Hours</p>
                   <p className="text-sm">24/7 Support</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="ss-icon-chip bg-[#25D366]/10 text-[#25D366]"><MessageCircle className="h-3.5 w-3.5" /></span>
+                <div className="min-w-0">
+                  <p className="ss-subtle text-[10px] font-semibold uppercase tracking-wider">Channel</p>
+                  <a href={CONFIG.channelUrl} target="_blank" rel="noopener noreferrer" className="ss-foot-link !px-0 break-words text-sm !text-[#25D366] hover:underline">
+                    Follow our Channel
+                  </a>
                 </div>
               </li>
             </ul>
@@ -985,15 +1008,13 @@ export default function SmartStreamStore() {
 
   const cartItems = useMemo(() => cart.map((i) => ({ ...TOOLS.find((t) => t.id === i.id), qty: i.qty })), [cart]);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
-  const cartSaved = cartItems.reduce((s, i) => s + (i.originalPrice - i.price) * i.qty, 0);
 
   const checkout = () => {
-    const lines = cartItems.map((i) => `• ${i.name} (${i.duration}) x${i.qty} — ${money(i.price * i.qty)}`).join("\n");
-    openWhatsApp(`Hello SmartStream! I'd like to place an order:\n\n${lines}\n\nTotal: ${money(cartTotal)}\n\nPlease share the payment details.`);
+    const lines = cartItems.map((i) => `• ${i.name} (${i.duration}) x${i.qty}`).join("\n");
+    openWhatsApp(`Hello SmartStream! I'd like to request a quote for:\n\n${lines}\n\nPlease share the best price and payment details.`);
   };
   const buyNow = (tool) =>
-    openWhatsApp(`Hello SmartStream! I want to purchase *${tool.name}* (${tool.duration}) for ${money(tool.price)}. Please provide the payment details.`);
+    openWhatsApp(`Hello SmartStream! I want to purchase *${tool.name}* (${tool.duration}). Please provide the price and payment details.`);
 
   const goCategory = useCallback((cat) => {
     setSelectedCategory(cat);
@@ -1010,12 +1031,8 @@ export default function SmartStreamStore() {
       const mw = !showSaved || wishlist.includes(t.id);
       return mc && ms && mw;
     });
-    const disc = (t) => 1 - t.price / t.originalPrice;
     switch (sortBy) {
-      case "price-asc": return [...list].sort((a, b) => a.price - b.price);
-      case "price-desc": return [...list].sort((a, b) => b.price - a.price);
       case "rating": return [...list].sort((a, b) => b.rating - a.rating);
-      case "discount": return [...list].sort((a, b) => disc(b) - disc(a));
       default: return list;
     }
   }, [selectedCategory, searchQuery, sortBy, showSaved, wishlist]);
@@ -1140,12 +1157,12 @@ export default function SmartStreamStore() {
                 ))}
                 <br />
                 <motion.span initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="ss-gradient-text inline-block">
-                  Smarter Prices.
+                  Best Price Guaranteed.
                 </motion.span>
               </h1>
 
               <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.45 }} className="ss-muted mt-4 max-w-xl text-sm leading-relaxed sm:text-base">
-                Get access to Gemini Pro, YouTube Premium, Cursor AI, and more. Clear pricing, quick setup, and support whenever you need it.
+                Get access to Gemini Pro, YouTube Premium, Cursor AI, and more. Contact us on WhatsApp to negotiate the best price and get activated instantly.
               </motion.p>
 
               <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.45 }} className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
@@ -1164,7 +1181,6 @@ export default function SmartStreamStore() {
                       <t.icon className="h-2.5 w-2.5" aria-hidden="true" />
                     </span>
                     <span className="text-xs font-semibold">{t.name.split(" ")[0]}</span>
-                    <span className="ss-subtle text-xs">{money(t.price)}</span>
                   </li>
                 ))}
               </motion.ul>
@@ -1365,7 +1381,7 @@ export default function SmartStreamStore() {
               <div className="ss-cta relative mx-auto max-w-4xl overflow-hidden rounded-3xl p-7 text-center sm:p-14">
                 <motion.div animate={{ opacity: [0.12, 0.22, 0.12] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="ss-cta-glow absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" aria-hidden="true" />
                 <h2 className="ss-h2 relative">Ready to level up?</h2>
-                <p className="relative mx-auto mt-3 max-w-md text-sm opacity-75 sm:text-base">Message us on WhatsApp and we'll get you set up today.</p>
+                <p className="relative mx-auto mt-3 max-w-md text-sm opacity-75 sm:text-base">Message us on WhatsApp to negotiate your price and get set up today.</p>
                 <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-cta relative mt-7 !min-h-11 !px-6">
                   <MessageCircle className="h-4 w-4" /> Start on WhatsApp
                 </a>
@@ -1391,11 +1407,16 @@ export default function SmartStreamStore() {
                   </motion.div>
                   <h2 id="tool-title" className="text-2xl font-extrabold tracking-tight">{selectedTool.name}</h2>
                   <p className="ss-subtle mt-1.5 text-[11px] font-bold uppercase tracking-[0.14em]">{selectedTool.category} · {selectedTool.duration}</p>
-                  <div className="mt-4 flex items-center justify-center gap-2.5">
-                    <span className="text-3xl font-extrabold tracking-tight">{money(selectedTool.price)}</span>
-                    <span className="ss-subtle text-base line-through">{money(selectedTool.originalPrice)}</span>
+                  
+                  <div className="mt-5 flex flex-col items-center justify-center gap-1">
+                    <div className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest text-amber-500">
+                      <Tag className="h-4 w-4" />
+                      Price on Request
+                    </div>
+                    <p className="ss-subtle text-xs">Contact us for the best rate</p>
                   </div>
-                  <div className="ss-muted mt-2 flex items-center justify-center gap-2 text-[13px]">
+
+                  <div className="ss-muted mt-3 flex items-center justify-center gap-2 text-[13px]">
                     <Stars rating={selectedTool.rating} /> · {selectedTool.reviews.toLocaleString()} reviews
                   </div>
                 </div>
@@ -1418,10 +1439,10 @@ export default function SmartStreamStore() {
                       <ShoppingCart className="h-4 w-4" /> Add to Cart
                     </button>
                     <button type="button" onClick={() => buyNow(selectedTool)} className="ss-btn ss-btn-wa !min-h-11 flex-1">
-                      <MessageCircle className="h-4 w-4" /> Buy via WhatsApp
+                      <MessageCircle className="h-4 w-4" /> Ask on WhatsApp
                     </button>
                   </div>
-                  <p className="ss-subtle mt-3 text-center text-xs">You'll be redirected to WhatsApp to complete your order.</p>
+                  <p className="ss-subtle mt-3 text-center text-xs">You'll be redirected to WhatsApp to negotiate and complete your order.</p>
                 </div>
               </motion.div>
             </div>
@@ -1483,7 +1504,7 @@ export default function SmartStreamStore() {
                                   <span className="w-6 text-center text-[13px] font-bold" aria-live="polite">{item.qty}</span>
                                   <button type="button" onClick={() => changeQty(item.id, 1)} disabled={item.qty >= MAX_QTY} aria-label="Increase quantity" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--hover)] disabled:opacity-40"><Plus className="h-3.5 w-3.5" /></button>
                                 </div>
-                                <span className="text-base font-extrabold tracking-tight">{money(item.price * item.qty)}</span>
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-500">Price on Request</span>
                               </div>
                             </div>
                           </motion.li>
@@ -1495,20 +1516,14 @@ export default function SmartStreamStore() {
 
                 {cartItems.length > 0 && (
                   <div className="ss-divider-t ss-safe-bottom p-4 sm:p-6">
-                    <div className="ss-muted mb-1.5 flex justify-between text-[13px]">
-                      <span>You save</span>
-                      <span className="ss-success font-bold">{money(cartSaved)}</span>
-                    </div>
-                    <div className="mb-5 flex items-center justify-between">
-                      <span className="text-base font-bold">Total</span>
-                      <motion.span key={cartTotal} initial={{ scale: 1.12 }} animate={{ scale: 1 }} className="text-2xl font-extrabold tracking-tight">
-                        {money(cartTotal)}
-                      </motion.span>
+                    <div className="mb-4 rounded-xl bg-[var(--surface-2)] p-3 text-center">
+                      <p className="text-sm font-bold text-white">Total: Negotiable</p>
+                      <p className="ss-subtle mt-1 text-xs">Our team will offer the best price in chat.</p>
                     </div>
                     <button type="button" onClick={checkout} className="ss-btn ss-btn-wa !min-h-12 w-full">
-                      <MessageCircle className="h-4 w-4" /> Checkout via WhatsApp
+                      <MessageCircle className="h-4 w-4" /> Request Quote on WhatsApp
                     </button>
-                    <p className="ss-subtle mt-3 text-center text-xs">Your order is sent as a pre-filled WhatsApp message.</p>
+                    <p className="ss-subtle mt-3 text-center text-xs">Your order list is sent as a pre-filled WhatsApp message.</p>
                   </div>
                 )}
               </motion.aside>
