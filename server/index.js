@@ -11,15 +11,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* ════════════════════════════════════════════════════════════
-   PORT CONFIGURATION
-   ════════════════════════════════════════════════════════════ */
-// Port is hardcoded to 4000 by default.
-// Override by setting the PORT env var (e.g. `PORT=4001 node index.js`).
-const DEFAULT_PORT = 4000;
-const PORT = Number(process.env.PORT) || DEFAULT_PORT;
-const HOST = process.env.HOST || "0.0.0.0"; // listen on all interfaces
-
-/* ════════════════════════════════════════════════════════════
    PATHS
    ════════════════════════════════════════════════════════════ */
 const TOOLS_FILE = path.join(__dirname, "..", "tools.json");
@@ -33,20 +24,14 @@ await fs.mkdir(UPLOADS_DIR, { recursive: true });
    ════════════════════════════════════════════════════════════ */
 const app = express();
 
-const ALLOWED_ORIGINS = (
-  process.env.ALLOWED_ORIGINS ||
-  `http://localhost:5173,http://localhost:3000,http://localhost:${DEFAULT_PORT}`
-).split(",");
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:3000").split(",");
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests without an origin (curl, server-to-server)
+    // Allow requests without an origin (curl, server-to-server) and any localhost port in dev
     if (!origin) return cb(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    // Allow any localhost port in development
     if (/^http:\/\/localhost:\d+$/.test(origin)) return cb(null, true);
-    // Allow any 127.0.0.1 port
-    if (/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) return cb(null, true);
     cb(new Error(`CORS: ${origin} not allowed`));
   },
   credentials: true,
@@ -159,17 +144,18 @@ async function readTools() {
     return parsed;
   } catch (err) {
     if (err.code === "ENOENT") {
+      // First run — seed with defaults
       await atomicWrite(DEFAULT_TOOLS);
       return DEFAULT_TOOLS;
     }
-    throw err;
+    throw err; // corruption / permission error → surface it
   }
 }
 
 async function atomicWrite(tools) {
   const tmp = `${TOOLS_FILE}.${Date.now()}.tmp`;
   await fs.writeFile(tmp, JSON.stringify(tools, null, 2), "utf-8");
-  await fs.rename(tmp, TOOLS_FILE);
+  await fs.rename(tmp, TOOLS_FILE); // atomic on same filesystem
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -181,6 +167,7 @@ const DURATIONS = new Set(["1 Month", "3 Months", "6 Months", "1 Year"]);
 function validateTool(input, { partial = false } = {}) {
   const errors = [];
   const out = {};
+
   const need = (field) => !partial || input[field] !== undefined;
 
   if (need("name")) {
@@ -224,6 +211,7 @@ function validateTool(input, { partial = false } = {}) {
   }
   if (input.image !== undefined) {
     const img = String(input.image || "").trim();
+    // Accept /uploads/…, http(s)://…, or data:image/… ; reject anything else
     const ok = !img || img.startsWith("/uploads/") || /^https?:\/\//i.test(img) || img.startsWith("data:image/");
     if (!ok) errors.push("image must be a /uploads/ path or absolute URL");
     else out.image = img.slice(0, 500);
@@ -239,6 +227,7 @@ async function deleteUploadedImage(imagePath) {
   if (!imagePath || !imagePath.startsWith("/uploads/")) return;
   const filename = path.basename(imagePath);
   const full = path.join(UPLOADS_DIR, filename);
+  // Guard against path traversal
   if (!full.startsWith(UPLOADS_DIR)) return;
   await fs.unlink(full).catch(() => {});
 }
@@ -249,13 +238,7 @@ async function deleteUploadedImage(imagePath) {
 
 // Health check
 app.get("/api/health", (_req, res) => {
-  res.json({
-    success: true,
-    status: "ok",
-    port: PORT,
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-  });
+  res.json({ success: true, status: "ok", uptime: process.uptime() });
 });
 
 // GET all tools
@@ -291,6 +274,7 @@ app.post("/api/tools", async (req, res) => {
 
       await atomicWrite(tools);
 
+      // If the image changed, clean up the old file
       const newImage = idx >= 0 ? tools[idx].image : value.image;
       if (previousImage && previousImage !== newImage) {
         await deleteUploadedImage(previousImage);
@@ -330,7 +314,7 @@ app.delete("/api/tools/:id", async (req, res) => {
 });
 
 // Upload an image → returns { success, url: "/uploads/tool-<uuid>.png" }
-app.post("/api/upload", (req, res) => {
+app.post("/api/upload", (req, res, next) => {
   upload.single("image")(req, res, (err) => {
     if (err) {
       const status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
@@ -362,53 +346,14 @@ app.use((err, _req, res, _next) => {
 });
 
 /* ════════════════════════════════════════════════════════════
-   START SERVER ON PORT 4000
+   START
    ════════════════════════════════════════════════════════════ */
-const server = app.listen(PORT, HOST, () => {
-  console.log("\n╔════════════════════════════════════════════════════════╗");
-  console.log("║          ✅ SmartStream Tools API running             ║");
-  console.log("╚════════════════════════════════════════════════════════╝");
-  console.log(`   → Local:       http://localhost:${PORT}`);
-  console.log(`   → Network:     http://${HOST}:${PORT}`);
-  console.log(`   → Health:      http://localhost:${PORT}/api/health`);
-  console.log(`   → Tools:       http://localhost:${PORT}/api/tools`);
-  console.log(`   → Uploads:     http://localhost:${PORT}/uploads/<file>`);
-  console.log("");
-  console.log(`   📁 Data file:   ${TOOLS_FILE}`);
-  console.log(`   📁 Uploads dir: ${UPLOADS_DIR}`);
-  console.log(`   🌐 CORS allows: ${ALLOWED_ORIGINS.join(", ")}`);
-  console.log(`   🔌 Port env:    ${process.env.PORT ? `set to ${process.env.PORT}` : `not set → using default ${DEFAULT_PORT}`}`);
-  console.log("");
-});
-
-/* ════════════════════════════════════════════════════════════
-   GRACEFUL SHUTDOWN
-   ════════════════════════════════════════════════════════════ */
-const shutdown = (signal) => {
-  console.log(`\n⚠️  Received ${signal}. Shutting down gracefully…`);
-  server.close(() => {
-    console.log("✅ Server closed. Goodbye.\n");
-    process.exit(0);
-  });
-  // Force exit after 5 seconds if connections hang
-  setTimeout(() => {
-    console.error("⏱  Forced shutdown after timeout.");
-    process.exit(1);
-  }, 5000);
-};
-
-process.on("SIGINT", () => shutdown("SIGINT"));
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-
-// Handle port-in-use error clearly
-server.on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
-    console.error(`\n❌ Port ${PORT} is already in use.`);
-    console.error(`   → Kill the process using it, or set PORT=4001 node index.js`);
-    console.error(`   → On Windows: netstat -ano | findstr :${PORT}`);
-    console.error(`   → On macOS/Linux: lsof -i :${PORT}\n`);
-    process.exit(1);
-  }
-  console.error("❌ Server error:", err);
-  process.exit(1);
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log("\n✅ SmartStream Tools API running");
+  console.log(`   → http://localhost:${PORT}`);
+  console.log(`   Data file:     ${TOOLS_FILE}`);
+  console.log(`   Uploads dir:   ${UPLOADS_DIR}`);
+  console.log(`   Allowed CORS:  ${ALLOWED_ORIGINS.join(", ")}`);
+  console.log(`   Health check:  http://localhost:${PORT}/api/health\n`);
 });
