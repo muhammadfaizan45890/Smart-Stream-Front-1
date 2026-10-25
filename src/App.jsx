@@ -11,6 +11,7 @@ import {
    ──────────────────────────────────────────────────────── */
 import Home from './pages/Home';
 import Privacy from './pages/Privacy';
+import Admin from './pages/Admin'; // <-- Added Admin Import
 import NotFound from './pages/NotFound';
 
 /* ────────────────────────────────────────────────────────
@@ -40,10 +41,13 @@ const RootLayout = () => {
 
   // ✅ Hide Navbar on Privacy & Terms pages
   const isLegalPage = path === '/privacy' || path === '/terms';
+  
+  // ✅ Hide Navbar on Admin page (Admin has its own header)
+  const isAdminPage = path.startsWith('/admin');
 
   return (
     <>
-      {!isLegalPage && <Navbar />}
+      {!isLegalPage && !isAdminPage && <Navbar />}
       <ScrollToTop />
       <Outlet />
     </>
@@ -59,6 +63,9 @@ const router = createBrowserRouter([
     children: [
       /* ── Public routes ── */
       { path: '/', element: <Home /> },
+      
+      /* ── Admin routes ── */
+      { path: '/admin', element: <Admin /> },
       
       /* ── Legal pages ── */
       { path: '/privacy', element: <Privacy /> },
