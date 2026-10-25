@@ -70,7 +70,7 @@ import {
 /* ════════════════════════════════════════════════════════════
    LOGO IMPORT
    ════════════════════════════════════════════════════════════ */
-import logoImage from "../assets/logo2.jpeg"; // <-- UPDATE THIS PATH IF NEEDED
+import logoImage from "../assets/logo2.jpeg"; 
 
 /* ════════════════════════════════════════════════════════════
    CONFIGURATION & CONSTANTS
@@ -89,9 +89,10 @@ const CONFIG = {
 const THEME_KEY = "ss-theme";
 const CART_KEY = "ss-cart";
 const WISH_KEY = "ss-wishlist";
+const POPUP_KEY = "ss-channel-popup-dismissed"; // Key for the popup
 const MAX_QTY = 10;
 
-/* Custom Midjourney SVG Icon to replace the missing react-icons export */
+/* Custom Midjourney SVG Icon */
 const MidjourneyIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
     <path d="M22.36 19.06H1.64a.45.45 0 0 1-.39-.68l.83-1.42a.45.45 0 0 1 .78 0l.56.95h17.16l.56-.95a.45.45 0 0 1 .78 0l.83 1.42a.45.45 0 0 1-.39.68Z"/>
@@ -379,9 +380,6 @@ const SmartLink = ({ to, children, ...props }) => {
   );
 };
 
-/* ════════════════════════════════════════════════════════════
-   UPDATED LOGO COMPONENT USING ASSET IMAGE
-   ════════════════════════════════════════════════════════════ */
 const BrandLogo = ({ className = "" }) => (
   <a 
     href="#top" 
@@ -786,7 +784,6 @@ const SmartStreamFooter = ({ onPickCategory }) => {
       <div className="ss-wrap py-10 sm:py-14">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="space-y-5 sm:col-span-2 lg:col-span-4">
-            {/* Use BrandLogo directly to avoid nested <a> tags */}
             <BrandLogo />
             <p className="ss-muted max-w-sm text-sm leading-relaxed">
               Premium access to popular AI tools at clear prices. Delivery via WhatsApp, 24/7 support, and warranty cover for your subscription period.
@@ -928,6 +925,9 @@ export default function SmartStreamStore() {
   const [wishlist, setWishlist] = useState(() => loadJSON(WISH_KEY, []).filter((id) => TOOLS.some((t) => t.id === id)));
   const [openFaq, setOpenFaq] = useState(0);
   const [toast, setToast] = useState(null);
+  
+  // State for the Channel Popup
+  const [showChannelPopup, setShowChannelPopup] = useState(false);
 
   const searchRef = useRef(null);
   const menuRef = useFocusTrap(menuOpen);
@@ -938,14 +938,30 @@ export default function SmartStreamStore() {
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 25, restDelta: 0.001 });
 
-  useLockBody(!!selectedTool || cartOpen || menuOpen);
+  useLockBody(!!selectedTool || cartOpen || menuOpen || showChannelPopup);
   const closeAll = useCallback(() => {
     setSelectedTool(null);
     setCartOpen(false);
     setMenuOpen(false);
     setSortOpen(false);
+    setShowChannelPopup(false);
   }, []);
-  useEscape(closeAll, !!selectedTool || cartOpen || menuOpen || sortOpen);
+  useEscape(closeAll, !!selectedTool || cartOpen || menuOpen || sortOpen || showChannelPopup);
+
+  // Check if the popup should be shown on mount
+  useEffect(() => {
+    const dismissed = localStorage.getItem(POPUP_KEY);
+    if (!dismissed) {
+      // Slight delay so it feels natural
+      const timer = setTimeout(() => setShowChannelPopup(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const dismissChannelPopup = () => {
+    setShowChannelPopup(false);
+    localStorage.setItem(POPUP_KEY, "true");
+  };
 
   useEffect(() => {
     document.title = "SmartStream — Premium AI Tools at Smarter Prices";
@@ -1393,6 +1409,7 @@ export default function SmartStreamStore() {
         <SmartStreamFooter onPickCategory={goCategory} />
         <BackToTop />
 
+        {/* ─── PRODUCT MODAL ─── */}
         <AnimatePresence>
           {selectedTool && (
             <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
@@ -1449,6 +1466,7 @@ export default function SmartStreamStore() {
           )}
         </AnimatePresence>
 
+        {/* ─── CART DRAWER ─── */}
         <AnimatePresence>
           {cartOpen && (
             <>
@@ -1531,6 +1549,7 @@ export default function SmartStreamStore() {
           )}
         </AnimatePresence>
 
+        {/* ─── TOAST ─── */}
         <div aria-live="polite" role="status">
           <AnimatePresence>
             {toast && (
@@ -1541,9 +1560,80 @@ export default function SmartStreamStore() {
           </AnimatePresence>
         </div>
 
+        {/* ─── FLOATING WHATSAPP ─── */}
         <motion.a href={waLink()} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }} whileTap={{ scale: 0.92 }} className="ss-fab ss-fab-wa fixed z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_rgba(37,211,102,0.4)] transition-transform hover:scale-105 sm:h-14 sm:w-14">
           <FaWhatsapp className="h-6 w-6" aria-hidden="true" />
         </motion.a>
+
+        {/* ─── WHATSAPP CHANNEL POPUP ─── */}
+        <AnimatePresence>
+          {showChannelPopup && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={dismissChannelPopup}
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                aria-hidden="true"
+              />
+              
+              {/* Modal Box */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 text-center shadow-2xl sm:max-w-md sm:p-8"
+              >
+                {/* Decorative Background Glow */}
+                <div className="absolute left-1/2 top-0 h-32 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#25D366]/20 blur-3xl pointer-events-none" />
+
+                {/* Close Button */}
+                <button 
+                  onClick={dismissChannelPopup} 
+                  aria-label="Close" 
+                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+
+                {/* Channel Icon */}
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366]/10 text-[#25D366] shadow-[0_0_30px_rgba(37,211,102,0.15)]">
+                  <FaWhatsapp className="h-8 w-8" />
+                </div>
+
+                {/* Text Content */}
+                <h3 className="mb-2 text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+                  Join Our Channel
+                </h3>
+                <p className="mb-6 text-sm leading-relaxed text-neutral-400 sm:text-base">
+                  Follow the <strong className="text-white">SmartStream</strong> WhatsApp channel for exclusive drops, private discounts, and AI setup guides.
+                </p>
+
+                {/* CTA Button */}
+                <a 
+                  href={CONFIG.channelUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  onClick={dismissChannelPopup}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3.5 text-sm font-bold text-black shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-transform hover:scale-[1.02] active:scale-95"
+                >
+                  <MessageCircle className="h-5 w-5" /> Follow Channel
+                </a>
+
+                {/* Skip Button */}
+                <button 
+                  onClick={dismissChannelPopup}
+                  className="mt-4 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-300"
+                >
+                  No thanks, continue browsing
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
