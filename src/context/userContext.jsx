@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import API from "@/utils/api";
-import { FiFeather } from "react-icons/fi"; // 👈 added for the feather icon
 
 export const UserContext = createContext(null);
 
@@ -46,19 +45,11 @@ export const UserProvider = ({ children }) => {
     loadUser();
   }, [loadUser]);
 
-  // ─── Custom loader: feather + spinning ring ──────────
+  // ─── Clean spinning ring loader ──────────────────────
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-gray-900 z-50">
-        <div className="relative flex items-center justify-center">
-          {/* Spinning ring */}
-          <div className="w-16 h-16 rounded-full border-4 border-gray-200 dark:border-gray-700 border-t-gray-900 animate-spin" />
-          {/* Feather in the centre */}
-          <FiFeather
-            className="absolute text-gray-900 w-8 h-8"
-            style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-          />
-        </div>
+        <div className="w-16 h-16 rounded-full border-4 border-gray-200 dark:border-gray-700 border-t-gray-900 dark:border-t-white animate-spin" />
       </div>
     );
   }
