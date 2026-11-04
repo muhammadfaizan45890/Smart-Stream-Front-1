@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  useDeferredValue,
+} from "react";
 import { Link, useInRouterContext } from "react-router-dom";
 import {
   Search,
@@ -70,14 +78,14 @@ import {
 /* ════════════════════════════════════════════════════════════
    LOGO IMPORT
    ════════════════════════════════════════════════════════════ */
-import logoImage from "../assets/logo2.jpeg"; 
+import logoImage from "../assets/logo2.jpeg";
 
 /* ════════════════════════════════════════════════════════════
    CONFIGURATION & CONSTANTS
    ════════════════════════════════════════════════════════════ */
 const CONFIG = {
   brandName: "SMARTSTREAM",
-  whatsappNumber: "923716837122", 
+  whatsappNumber: "923716837122",
   whatsappDisplay: "+92 371 6837122",
   currency: "$",
   supportEmail: "smartstreamsoftware@gmail.com",
@@ -368,6 +376,63 @@ function useScrollSpy(ids) {
   return active;
 }
 
+/* ── NEW: prefers-reduced-motion as a reactive hook ── */
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false
+  );
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = (e) => setReduced(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
+
+/* ── NEW: pointer-driven 3D tilt + glare for cards ──
+   Sets --rx/--ry/--mx/--my custom properties on the element.
+   Skips touch devices and reduced-motion users. Uses rAF to
+   avoid layout thrash on rapid pointermove events. */
+function useTilt(ref, enabled) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !enabled) return;
+    if (typeof window === "undefined" || window.matchMedia("(hover: none)").matches) return;
+    let raf = 0;
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0) return;
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        el.style.setProperty("--rx", `${((0.5 - py) * 7).toFixed(2)}deg`);
+        el.style.setProperty("--ry", `${((px - 0.5) * 9).toFixed(2)}deg`);
+        el.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
+        el.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
+        el.classList.add("is-tilting");
+      });
+    };
+    const onLeave = () => {
+      cancelAnimationFrame(raf);
+      el.classList.remove("is-tilting");
+      el.style.setProperty("--rx", "0deg");
+      el.style.setProperty("--ry", "0deg");
+    };
+    el.addEventListener("pointermove", onMove, { passive: true });
+    el.addEventListener("pointerleave", onLeave, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", onLeave);
+    };
+  }, [ref, enabled]);
+}
+
 /* ════════════════════════════════════════════════════════════
    SMALL COMPONENTS
    ════════════════════════════════════════════════════════════ */
@@ -380,22 +445,31 @@ const SmartLink = ({ to, children, ...props }) => {
   );
 };
 
-const BrandLogo = ({ className = "" }) => (
-  <a 
-    href="#top" 
-    aria-label={`${CONFIG.brandName} home`} 
-    className={`flex items-center gap-2.5 rounded-lg group ${className}`}
-  >
-    <img 
-      src={logoImage} 
-      alt={`${CONFIG.brandName} Logo`} 
-      className="h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-9" 
-    />
-    <span className="hidden text-[15px] font-extrabold tracking-tight sm:block">
-      {CONFIG.brandName}
-    </span>
-  </a>
-);
+/* Brand logo with a shimmer placeholder while the raster logo loads,
+   so first paint never shows a broken/empty box on slow networks. */
+const BrandLogo = React.memo(function BrandLogo({ className = "" }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <a
+      href="#top"
+      aria-label={`${CONFIG.brandName} home`}
+      className={`flex items-center gap-2.5 rounded-lg group ${className}`}
+    >
+      <span className={`ss-logo-frame ${loaded ? "is-loaded" : ""}`}>
+        {!loaded && <span className="ss-shimmer" aria-hidden="true" />}
+        <img
+          src={logoImage}
+          alt={`${CONFIG.brandName} Logo`}
+          onLoad={() => setLoaded(true)}
+          className="h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-9"
+        />
+      </span>
+      <span className="hidden text-[15px] font-extrabold tracking-tight sm:block">
+        {CONFIG.brandName}
+      </span>
+    </a>
+  );
+});
 
 function ThemeToggle({ theme, onToggle }) {
   const isDark = theme === "dark";
@@ -441,27 +515,31 @@ function Counter({ to, decimals = 0, suffix = "" }) {
   );
 }
 
-const Reveal = ({ children, delay = 0, className = "" }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 18 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-50px" }}
-    transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
+const Reveal = React.memo(function Reveal({ children, delay = 0, className = "" }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+});
 
-const SectionHead = ({ eyebrow, title, sub, center = false }) => (
-  <Reveal className={`mb-8 max-w-2xl sm:mb-12 ${center ? "mx-auto text-center" : ""}`}>
-    <p className="ss-subtle mb-2 text-[11px] font-bold uppercase tracking-[0.14em]">{eyebrow}</p>
-    <h2 className="ss-h2">{title}</h2>
-    {sub && <p className="ss-muted mt-3 text-sm leading-relaxed sm:text-[15px]">{sub}</p>}
-  </Reveal>
-);
+const SectionHead = React.memo(function SectionHead({ eyebrow, title, sub, center = false }) {
+  return (
+    <Reveal className={`mb-8 max-w-2xl sm:mb-12 ${center ? "mx-auto text-center" : ""}`}>
+      <p className="ss-subtle mb-2 text-[11px] font-bold uppercase tracking-[0.14em]">{eyebrow}</p>
+      <h2 className="ss-h2">{title}</h2>
+      {sub && <p className="ss-muted mt-3 text-sm leading-relaxed sm:text-[15px]">{sub}</p>}
+    </Reveal>
+  );
+});
 
-function Stars({ rating }) {
+const Stars = React.memo(function Stars({ rating }) {
   return (
     <span className="inline-flex items-center gap-1 text-[13px] font-semibold">
       <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
@@ -469,18 +547,146 @@ function Stars({ rating }) {
       {rating.toFixed(1)}
     </span>
   );
-}
+});
 
 /* ════════════════════════════════════════════════════════════
-   PRODUCT CARD
+   PARTICLE FIELD — HD canvas hero background
+   ────────────────────────────────────────────────────────────
+   DevicePixelRatio-aware canvas rendering an animated dot-grid
+   + particle network. Respects prefers-reduced-motion (renders one
+   static frame), pauses when the tab is hidden, and fully cleans
+   up listeners/animation frames on unmount or theme change.
+   Pure vector rendering: razor sharp on Retina / 4K displays.
    ════════════════════════════════════════════════════════════ */
-function ProductCard({ tool, idx, onOpen, onAdd, inCart, liked, onLike }) {
-  const ref = useRef(null);
-  const onMove = (e) => {
-    const r = ref.current.getBoundingClientRect();
-    ref.current.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
-    ref.current.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
-  };
+const ParticleField = React.memo(function ParticleField({ theme, className = "" }) {
+  const canvasRef = useRef(null);
+  const reduceMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let raf = 0;
+    let w = 0;
+    let h = 0;
+    let parts = [];
+    const DPR = Math.min(window.devicePixelRatio || 1, 2); // cap DPR for perf
+    const isDark = theme !== "light";
+
+    // Theme-aware palette, cached per init (no per-frame style reads)
+    const palette = isDark
+      ? { dot: "rgba(148,163,184,0.55)", link: [148, 163, 184], grid: "rgba(148,163,184,0.07)" }
+      : { dot: "rgba(15,23,42,0.35)", link: [15, 23, 42], grid: "rgba(15,23,42,0.06)" };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      w = Math.max(1, rect.width);
+      h = Math.max(1, rect.height);
+      canvas.width = Math.round(w * DPR);
+      canvas.height = Math.round(h * DPR);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      seed();
+    };
+
+    const seed = () => {
+      const count = Math.max(24, Math.min(110, Math.floor((w * h) / 20000)));
+      parts = Array.from({ length: count }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        r: Math.random() * 1.7 + 0.5,
+      }));
+    };
+
+    const drawGrid = () => {
+      const gap = 54;
+      ctx.strokeStyle = palette.grid;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0.5; x <= w; x += gap) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = 0.5; y <= h; y += gap) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+    };
+
+    const step = () => {
+      ctx.clearRect(0, 0, w, h);
+      drawGrid();
+      const maxD = 130;
+      const maxD2 = maxD * maxD;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < parts.length; i++) {
+        const a = parts[i];
+        for (let j = i + 1; j < parts.length; j++) {
+          const b = parts[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < maxD2) {
+            const alpha = ((1 - Math.sqrt(d2) / maxD) * 0.20).toFixed(3);
+            ctx.strokeStyle = `rgba(${palette.link[0]},${palette.link[1]},${palette.link[2]},${alpha})`;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.fillStyle = palette.dot;
+      for (const p of parts) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        if (!reduceMotion) {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < -12) p.x = w + 12; else if (p.x > w + 12) p.x = -12;
+          if (p.y < -12) p.y = h + 12; else if (p.y > h + 12) p.y = -12;
+        }
+      }
+      if (!reduceMotion) raf = requestAnimationFrame(step);
+    };
+
+    resize();
+    step(); // draws at least one frame (static when reduced motion)
+
+    let resizeTimer = 0;
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(resize, 150); // debounce: no layout thrash
+    };
+    const onVis = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+      } else if (!reduceMotion) {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(step);
+      }
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [theme, reduceMotion]);
+
+  return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
+});
+
+/* ════════════════════════════════════════════════════════════
+   PRODUCT CARD — now memoized + 3D tilt/glare
+   The outer motion.article keeps layout animations; the inner
+   div owns the pointer-driven tilt so framer's transform never
+   fights the CSS custom-property transform.
+   ════════════════════════════════════════════════════════════ */
+const ProductCard = React.memo(function ProductCard({ tool, idx, onOpen, onAdd, inCart, liked, onLike, tiltEnabled }) {
+  const tiltRef = useRef(null);
+  useTilt(tiltRef, tiltEnabled);
 
   return (
     <motion.article
@@ -489,84 +695,87 @@ function ProductCard({ tool, idx, onOpen, onAdd, inCart, liked, onLike }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.35, delay: Math.min(idx * 0.05, 0.25), ease: [0.22, 1, 0.36, 1] }}
-      ref={ref}
-      onMouseMove={onMove}
-      className="ss-card ss-card-hover ss-spot group relative flex flex-col overflow-hidden p-5 sm:p-6"
+      className="ss-card-wrap"
     >
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={tint(tool.hue)}>
-            <tool.icon className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <p className="ss-subtle text-[10px] font-bold uppercase tracking-[0.14em]">{tool.category}</p>
-            <h3 className="truncate text-base font-bold tracking-tight">{tool.name}</h3>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          {tool.badge && <span className="ss-chip hidden min-[400px]:inline-block">{tool.badge}</span>}
-          <button
-            type="button"
-            onClick={() => onLike(tool.id)}
-            aria-label={liked ? `Remove ${tool.name} from saved` : `Save ${tool.name}`}
-            aria-pressed={liked}
-            className="ss-icon-btn !h-9 !w-9"
-          >
-            <Heart className={`h-4 w-4 transition-colors ${liked ? "fill-red-500 text-red-500" : ""}`} />
-          </button>
-        </div>
-      </div>
-
-      <p className="ss-muted relative mt-4 line-clamp-2 text-[13px] leading-relaxed">{tool.desc}</p>
-
-      <ul className="relative mt-4 space-y-2">
-        {tool.features.slice(0, 3).map((feat) => (
-          <li key={feat} className="flex items-center gap-2.5 text-[13px] font-medium">
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white text-black">
-              <Check className="h-2.5 w-2.5" aria-hidden="true" />
+      <div
+        ref={tiltRef}
+        className="ss-card ss-tilt ss-glare ss-spot group relative flex h-full flex-col overflow-hidden p-5 sm:p-6"
+      >
+        <div className="relative flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={tint(tool.hue)}>
+              <tool.icon className="h-5 w-5" aria-hidden="true" />
             </span>
-            {feat}
-          </li>
-        ))}
-      </ul>
-
-      <div className="relative mt-auto pt-5">
-        <div className="ss-divider mb-4" />
-        <div className="mb-4 flex items-end justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-500">
-              <Tag className="h-3.5 w-3.5" />
-              Price on Request
+            <div className="min-w-0">
+              <p className="ss-subtle text-[10px] font-bold uppercase tracking-[0.14em]">{tool.category}</p>
+              <h3 className="truncate text-base font-bold tracking-tight">{tool.name}</h3>
             </div>
-            <p className="ss-subtle mt-1 text-[11px]">Negotiate via WhatsApp</p>
           </div>
-          <div className="text-right">
-            <Stars rating={tool.rating} />
-            <p className="ss-subtle text-[11px]">{tool.reviews.toLocaleString()} reviews</p>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {tool.badge && <span className="ss-chip hidden min-[400px]:inline-block">{tool.badge}</span>}
+            <button
+              type="button"
+              onClick={() => onLike(tool.id)}
+              aria-label={liked ? `Remove ${tool.name} from saved` : `Save ${tool.name}`}
+              aria-pressed={liked}
+              className="ss-icon-btn !h-9 !w-9"
+            >
+              <Heart className={`h-4 w-4 transition-colors ${liked ? "fill-red-500 text-red-500" : ""}`} />
+            </button>
           </div>
         </div>
-        <div className="flex gap-2.5">
-          <button type="button" onClick={() => onOpen(tool)} className="ss-btn ss-btn-outline flex-1">
-            Details
-          </button>
-          <button type="button" onClick={() => onAdd(tool)} className="ss-btn ss-btn-primary flex-[1.4]">
-            <AnimatePresence mode="wait" initial={false}>
-              {inCart ? (
-                <motion.span key="in" initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center gap-2">
-                  <Check className="h-4 w-4" /> Added
-                </motion.span>
-              ) : (
-                <motion.span key="add" initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4" /> Add
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </button>
+
+        <p className="ss-muted relative mt-4 line-clamp-2 text-[13px] leading-relaxed">{tool.desc}</p>
+
+        <ul className="relative mt-4 space-y-2">
+          {tool.features.slice(0, 3).map((feat) => (
+            <li key={feat} className="flex items-center gap-2.5 text-[13px] font-medium">
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white text-black">
+                <Check className="h-2.5 w-2.5" aria-hidden="true" />
+              </span>
+              {feat}
+            </li>
+          ))}
+        </ul>
+
+        <div className="relative mt-auto pt-5">
+          <div className="ss-divider mb-4" />
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-500">
+                <Tag className="h-3.5 w-3.5" />
+                Price on Request
+              </div>
+              <p className="ss-subtle mt-1 text-[11px]">Negotiate via WhatsApp</p>
+            </div>
+            <div className="text-right">
+              <Stars rating={tool.rating} />
+              <p className="ss-subtle text-[11px]">{tool.reviews.toLocaleString()} reviews</p>
+            </div>
+          </div>
+          <div className="flex gap-2.5">
+            <button type="button" onClick={() => onOpen(tool)} className="ss-btn ss-btn-outline flex-1">
+              Details
+            </button>
+            <button type="button" onClick={() => onAdd(tool)} className="ss-btn ss-btn-primary flex-[1.4]">
+              <AnimatePresence mode="wait" initial={false}>
+                {inCart ? (
+                  <motion.span key="in" initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center gap-2">
+                    <Check className="h-4 w-4" /> Added
+                  </motion.span>
+                ) : (
+                  <motion.span key="add" initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" /> Add
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
         </div>
       </div>
     </motion.article>
   );
-}
+});
 
 function SocialLinks({ className = "" }) {
   return (
@@ -756,7 +965,7 @@ const UpdatesForm = React.memo(function UpdatesForm() {
   );
 });
 
-const SmartStreamFooter = ({ onPickCategory }) => {
+const SmartStreamFooter = React.memo(function SmartStreamFooter({ onPickCategory }) {
   const year = useMemo(() => new Date().getFullYear(), []);
   const legal = [
     { label: "Privacy", href: CONFIG.privacyUrl },
@@ -901,15 +1110,17 @@ const SmartStreamFooter = ({ onPickCategory }) => {
       </div>
     </footer>
   );
-};
+});
 
 /* ════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ════════════════════════════════════════════════════════════ */
 export default function SmartStreamStore() {
   const [theme, toggleTheme] = useTheme();
+  const reduceMotion = usePrefersReducedMotion();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredQuery = useDeferredValue(searchQuery); // keep typing silky while filtering defers
   const [sortBy, setSortBy] = useState("featured");
   const [sortOpen, setSortOpen] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -925,7 +1136,7 @@ export default function SmartStreamStore() {
   const [wishlist, setWishlist] = useState(() => loadJSON(WISH_KEY, []).filter((id) => TOOLS.some((t) => t.id === id)));
   const [openFaq, setOpenFaq] = useState(0);
   const [toast, setToast] = useState(null);
-  
+
   // State for the Channel Popup
   const [showChannelPopup, setShowChannelPopup] = useState(false);
 
@@ -1040,7 +1251,7 @@ export default function SmartStreamStore() {
   }, []);
 
   const filteredTools = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     const list = TOOLS.filter((t) => {
       const mc = selectedCategory === "All" || t.category === selectedCategory;
       const ms = !q || t.name.toLowerCase().includes(q) || t.category.toLowerCase().includes(q);
@@ -1051,7 +1262,7 @@ export default function SmartStreamStore() {
       case "rating": return [...list].sort((a, b) => b.rating - a.rating);
       default: return list;
     }
-  }, [selectedCategory, searchQuery, sortBy, showSaved, wishlist]);
+  }, [selectedCategory, deferredQuery, sortBy, showSaved, wishlist]);
 
   const avgRating = useMemo(() => TOOLS.reduce((s, t) => s + t.rating, 0) / TOOLS.length, []);
 
@@ -1064,13 +1275,13 @@ export default function SmartStreamStore() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div id="top" className="ss-root min-h-screen overflow-x-hidden">
+      <div id="top" className="ss-root min-h-screen overflow-x-clip">
         <a href="#tools" className="ss-skip">Skip to store</a>
 
         <motion.div style={{ scaleX: progress, background: "var(--accent)" }} className="fixed left-0 top-0 z-[60] h-[2px] w-full origin-left" aria-hidden="true" />
 
-        <header className={`ss-header fixed top-0 z-40 w-full transition-colors duration-300 ${isScrolled ? "ss-header-on" : ""}`}>
-          <div className="ss-wrap flex h-14 items-center justify-between gap-2">
+        <header className={`ss-header fixed top-0 z-40 w-full transition-colors duration-300 ${isScrolled ? "ss-header-on ss-glass" : ""}`}>
+          <div className="ss-wrap flex h-14 items-center justify-between gap-2 sm:h-16">
             <BrandLogo />
 
             <nav aria-label="Primary" className="hidden items-center gap-0.5 md:flex">
@@ -1124,7 +1335,7 @@ export default function SmartStreamStore() {
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "spring", stiffness: 320, damping: 34 }}
-                className="ss-panel ss-drawer fixed right-0 top-0 z-50 flex h-full w-[86%] max-w-xs flex-col p-5 md:hidden"
+                className="ss-panel ss-drawer ss-glass fixed right-0 top-0 z-50 flex h-full w-[86%] max-w-xs flex-col p-5 md:hidden"
               >
                 <div className="mb-6 flex items-center justify-between">
                   <BrandLogo />
@@ -1152,12 +1363,18 @@ export default function SmartStreamStore() {
 
         <main>
           <section className="relative isolate overflow-hidden px-4 pb-12 pt-24 sm:px-6 sm:pb-16 sm:pt-32 lg:px-8 2xl:pt-40">
-            <div className="ss-grid-bg absolute inset-0 -z-10" aria-hidden="true" />
+            {/* HD canvas hero: particle network + dot grid, DPR-aware, theme-aware */}
+            <div className="absolute inset-0 -z-10" aria-hidden="true">
+              <ParticleField theme={theme} className="ss-particles absolute inset-0 h-full w-full" />
+              <div className="ss-noise absolute inset-0" />
+              <div className="ss-hero-fade absolute inset-0" />
+            </div>
             <div className="ss-blob ss-blob-a -z-10" aria-hidden="true" />
             <div className="ss-blob ss-blob-b -z-10" aria-hidden="true" />
+            <div className="ss-blob ss-blob-c -z-10" aria-hidden="true" />
 
-            <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="ss-pill mb-5">
+            <div className="mx-auto flex max-w-4xl flex-col items-center text-center 3xl:max-w-6xl">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="ss-pill ss-glass mb-5">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-70" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -1177,7 +1394,7 @@ export default function SmartStreamStore() {
                 </motion.span>
               </h1>
 
-              <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.45 }} className="ss-muted mt-4 max-w-xl text-sm leading-relaxed sm:text-base">
+              <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.45 }} className="ss-muted mt-4 max-w-xl text-sm leading-relaxed sm:text-base 3xl:max-w-2xl 3xl:text-lg">
                 Get access to Gemini Pro, YouTube Premium, Cursor AI, and more. Contact us on WhatsApp to negotiate the best price and get activated instantly.
               </motion.p>
 
@@ -1185,14 +1402,14 @@ export default function SmartStreamStore() {
                 <a href="#tools" className="ss-btn ss-btn-primary group !min-h-11 w-full !px-6 sm:w-auto">
                   Browse Store <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </a>
-                <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-outline !min-h-11 w-full !px-6 sm:w-auto">
+                <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-outline ss-glass !min-h-11 w-full !px-6 sm:w-auto">
                   <MessageCircle className="h-4 w-4" /> Chat with Us
                 </a>
               </motion.div>
 
-              <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75, duration: 0.5 }} className="mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-2" aria-label="Available tools">
+              <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75, duration: 0.5 }} className="mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-2 3xl:max-w-4xl" aria-label="Available tools">
                 {TOOLS.map((t) => (
-                  <li key={t.id} className="ss-pill !py-1 !normal-case !tracking-normal">
+                  <li key={t.id} className="ss-pill ss-glass !py-1 !normal-case !tracking-normal">
                     <span className="flex h-4 w-4 items-center justify-center rounded" style={tint(t.hue)}>
                       <t.icon className="h-2.5 w-2.5" aria-hidden="true" />
                     </span>
@@ -1201,11 +1418,11 @@ export default function SmartStreamStore() {
                 ))}
               </motion.ul>
 
-              <dl className="ss-divider-y mt-10 grid w-full max-w-2xl grid-cols-2 gap-5 py-6 sm:grid-cols-4">
+              <dl className="ss-divider-y mt-10 grid w-full max-w-2xl grid-cols-2 gap-5 py-6 sm:grid-cols-4 3xl:max-w-4xl">
                 {stats.map((s) => (
                   <div key={s.l} className="flex flex-col-reverse">
                     <dt className="ss-subtle mt-0.5 text-[10px] font-bold uppercase tracking-[0.12em] sm:text-[11px]">{s.l}</dt>
-                    <dd className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                    <dd className="text-2xl font-extrabold tracking-tight sm:text-3xl 3xl:text-4xl">
                       <Counter to={s.n} decimals={s.d} suffix={s.s} />
                     </dd>
                   </div>
@@ -1277,7 +1494,7 @@ export default function SmartStreamStore() {
                       {sortOpen && (
                         <>
                           <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                          <motion.ul id="sort-list" aria-label="Sort by" initial={{ opacity: 0, y: -6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }} transition={{ duration: 0.15 }} className="ss-panel absolute right-0 z-30 mt-2 w-full min-w-52 overflow-hidden rounded-xl p-1 sm:w-auto" style={{ boxShadow: "var(--shadow-lg)" }}>
+                          <motion.ul id="sort-list" aria-label="Sort by" initial={{ opacity: 0, y: -6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }} transition={{ duration: 0.15 }} className="ss-panel ss-glass absolute right-0 z-30 mt-2 w-full min-w-52 overflow-hidden rounded-xl p-1 sm:w-auto" style={{ boxShadow: "var(--shadow-lg)" }}>
                             {SORTS.map((s) => (
                               <li key={s.id}>
                                 <button type="button" aria-current={sortBy === s.id ? "true" : undefined} onClick={() => { setSortBy(s.id); setSortOpen(false); }} className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 text-left text-[13px] font-medium hover:bg-[var(--hover)]">
@@ -1297,10 +1514,11 @@ export default function SmartStreamStore() {
 
             <p className="sr-only" role="status" aria-live="polite">{filteredTools.length} tools shown</p>
 
-            <motion.div layout className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 2xl:gap-6">
+            {/* Responsive HD grid: 1 → 2 → 3 → 4 columns at 3xl (1920px+) */}
+            <motion.div layout className="ss-tools-grid">
               <AnimatePresence mode="popLayout">
                 {filteredTools.map((tool, idx) => (
-                  <ProductCard key={tool.id} tool={tool} idx={idx} onOpen={setSelectedTool} onAdd={addToCart} inCart={cart.some((c) => c.id === tool.id)} liked={wishlist.includes(tool.id)} onLike={toggleWish} />
+                  <ProductCard key={tool.id} tool={tool} idx={idx} onOpen={setSelectedTool} onAdd={addToCart} inCart={cart.some((c) => c.id === tool.id)} liked={wishlist.includes(tool.id)} onLike={toggleWish} tiltEnabled={!reduceMotion} />
                 ))}
               </AnimatePresence>
             </motion.div>
@@ -1322,17 +1540,17 @@ export default function SmartStreamStore() {
           <section id="how" className="ss-band scroll-mt-16 py-14 sm:py-20">
             <div className="ss-wrap">
               <SectionHead center eyebrow="Simple process" title="From cart to activated in 4 steps." />
-              <ol className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+              <ol className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 3xl:gap-8">
                 {STEPS.map((s, i) => (
                   <li key={s.title}>
                     <Reveal delay={i * 0.08} className="h-full">
-                      <div className="ss-card ss-card-hover h-full p-6 text-center">
-                        <div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--accent)", color: "var(--accent-fg)" }}>
+                      <div className="ss-card ss-card-hover h-full p-6 text-center 3xl:p-8">
+                        <div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl 3xl:h-14 3xl:w-14" style={{ background: "var(--accent)", color: "var(--accent-fg)" }}>
                           <s.icon className="h-5 w-5" aria-hidden="true" />
                           <span className="ss-step-num absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold">{i + 1}</span>
                         </div>
-                        <h3 className="mb-1.5 text-base font-bold tracking-tight">{s.title}</h3>
-                        <p className="ss-muted text-[13px] leading-relaxed">{s.desc}</p>
+                        <h3 className="mb-1.5 text-base font-bold tracking-tight 3xl:text-lg">{s.title}</h3>
+                        <p className="ss-muted text-[13px] leading-relaxed 3xl:text-sm">{s.desc}</p>
                       </div>
                     </Reveal>
                   </li>
@@ -1344,15 +1562,15 @@ export default function SmartStreamStore() {
           <section id="features" className="scroll-mt-16 py-14 sm:py-20">
             <div className="ss-wrap">
               <SectionHead center eyebrow="Why SmartStream" title="Why buy from us?" sub="A smooth experience for premium software, from order to setup." />
-              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 3xl:gap-8">
                 {FEATURES.map((f, i) => (
                   <Reveal key={f.title} delay={i * 0.07} className="h-full">
-                    <div className="ss-card ss-card-hover h-full p-6">
-                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+                    <div className="ss-card ss-card-hover h-full p-6 3xl:p-8">
+                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl 3xl:h-12 3xl:w-12" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
                         <f.icon className="h-5 w-5" aria-hidden="true" />
                       </div>
-                      <h3 className="mb-1.5 text-base font-bold tracking-tight">{f.title}</h3>
-                      <p className="ss-muted text-[13px] leading-relaxed">{f.desc}</p>
+                      <h3 className="mb-1.5 text-base font-bold tracking-tight 3xl:text-lg">{f.title}</h3>
+                      <p className="ss-muted text-[13px] leading-relaxed 3xl:text-sm">{f.desc}</p>
                     </div>
                   </Reveal>
                 ))}
@@ -1361,7 +1579,7 @@ export default function SmartStreamStore() {
           </section>
 
           <section id="faq" className="ss-band scroll-mt-16 py-14 sm:py-20">
-            <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+            <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 3xl:max-w-5xl">
               <SectionHead center eyebrow="FAQ" title="Got questions?" />
               <div className="space-y-2.5">
                 {FAQS.map((f, i) => {
@@ -1394,8 +1612,9 @@ export default function SmartStreamStore() {
 
           <section className="px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
             <Reveal>
-              <div className="ss-cta relative mx-auto max-w-4xl overflow-hidden rounded-3xl p-7 text-center sm:p-14">
+              <div className="ss-cta ss-noise-wrap relative mx-auto max-w-4xl overflow-hidden rounded-3xl p-7 text-center sm:p-14 3xl:max-w-6xl">
                 <motion.div animate={{ opacity: [0.12, 0.22, 0.12] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="ss-cta-glow absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" aria-hidden="true" />
+                <div className="ss-noise absolute inset-0" aria-hidden="true" />
                 <h2 className="ss-h2 relative">Ready to level up?</h2>
                 <p className="relative mx-auto mt-3 max-w-md text-sm opacity-75 sm:text-base">Message us on WhatsApp to negotiate your price and get set up today.</p>
                 <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-cta relative mt-7 !min-h-11 !px-6">
@@ -1414,7 +1633,7 @@ export default function SmartStreamStore() {
           {selectedTool && (
             <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedTool(null)} className="ss-scrim absolute inset-0" />
-              <motion.div ref={toolRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tool-title" initial={{ opacity: 0, y: 60, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 60, scale: 0.98 }} transition={{ type: "spring", stiffness: 320, damping: 32 }} className="ss-panel ss-modal relative w-full max-w-md overflow-y-auto rounded-t-3xl sm:rounded-3xl">
+              <motion.div ref={toolRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tool-title" initial={{ opacity: 0, y: 60, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 60, scale: 0.98 }} transition={{ type: "spring", stiffness: 320, damping: 32 }} className="ss-panel ss-modal ss-glass relative w-full max-w-md overflow-y-auto rounded-t-3xl sm:rounded-3xl">
                 <div className="ss-divider-b relative p-6 text-center sm:p-8">
                   <button type="button" onClick={() => setSelectedTool(null)} aria-label="Close" className="ss-icon-btn absolute right-4 top-4">
                     <X className="h-4 w-4" />
@@ -1424,7 +1643,7 @@ export default function SmartStreamStore() {
                   </motion.div>
                   <h2 id="tool-title" className="text-2xl font-extrabold tracking-tight">{selectedTool.name}</h2>
                   <p className="ss-subtle mt-1.5 text-[11px] font-bold uppercase tracking-[0.14em]">{selectedTool.category} · {selectedTool.duration}</p>
-                  
+
                   <div className="mt-5 flex flex-col items-center justify-center gap-1">
                     <div className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest text-amber-500">
                       <Tag className="h-4 w-4" />
@@ -1471,7 +1690,7 @@ export default function SmartStreamStore() {
           {cartOpen && (
             <>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setCartOpen(false)} className="ss-scrim fixed inset-0 z-50" />
-              <motion.aside ref={cartRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Shopping cart" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 320, damping: 34 }} className="ss-panel ss-drawer fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col">
+              <motion.aside ref={cartRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Shopping cart" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 320, damping: 34 }} className="ss-panel ss-drawer ss-glass fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col">
                 <div className="ss-divider-b flex items-center justify-between p-4 sm:p-6">
                   <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
                     Your Cart <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-white text-black">{cartCount}</span>
@@ -1570,30 +1789,30 @@ export default function SmartStreamStore() {
           {showChannelPopup && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
               {/* Backdrop */}
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 onClick={dismissChannelPopup}
                 className="absolute inset-0 bg-black/70 backdrop-blur-sm"
                 aria-hidden="true"
               />
-              
+
               {/* Modal Box */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 text-center shadow-2xl sm:max-w-md sm:p-8"
+                className="ss-glass relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 text-center shadow-2xl sm:max-w-md sm:p-8"
               >
                 {/* Decorative Background Glow */}
                 <div className="absolute left-1/2 top-0 h-32 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#25D366]/20 blur-3xl pointer-events-none" />
 
                 {/* Close Button */}
-                <button 
-                  onClick={dismissChannelPopup} 
-                  aria-label="Close" 
+                <button
+                  onClick={dismissChannelPopup}
+                  aria-label="Close"
                   className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   <X className="h-4 w-4" />
@@ -1613,10 +1832,10 @@ export default function SmartStreamStore() {
                 </p>
 
                 {/* CTA Button */}
-                <a 
-                  href={CONFIG.channelUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={CONFIG.channelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={dismissChannelPopup}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3.5 text-sm font-bold text-black shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-transform hover:scale-[1.02] active:scale-95"
                 >
@@ -1624,7 +1843,7 @@ export default function SmartStreamStore() {
                 </a>
 
                 {/* Skip Button */}
-                <button 
+                <button
                   onClick={dismissChannelPopup}
                   className="mt-4 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-300"
                 >
@@ -1655,10 +1874,13 @@ export default function SmartStreamStore() {
             --shadow: 0 1px 2px rgba(10,10,11,0.04), 0 8px 24px rgba(10,10,11,0.04);
             --shadow-hover: 0 2px 4px rgba(10,10,11,0.04), 0 16px 40px rgba(10,10,11,0.09);
             --shadow-lg: 0 16px 48px rgba(10,10,11,0.14);
+            --shadow-tilt: 0 24px 60px -12px rgba(10,10,11,0.22), 0 8px 24px rgba(10,10,11,0.08);
             --scrim: rgba(10,10,11,0.45);
             --grid-line: rgba(10,10,11,0.06);
             --blob-a: rgba(167,139,250,0.30);
             --blob-b: rgba(251,146,60,0.26);
+            --blob-c: rgba(56,189,248,0.22);
+            --glass-bg: color-mix(in srgb, var(--surface) 74%, transparent);
           }
           :root[data-theme="dark"] {
             --bg: #000000;
@@ -1677,13 +1899,17 @@ export default function SmartStreamStore() {
             --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 24px -4px rgba(0,0,0,0.3);
             --shadow-hover: 0 4px 12px rgba(0,0,0,0.3), 0 24px 48px -8px rgba(0,0,0,0.5);
             --shadow-lg: 0 24px 64px rgba(0,0,0,0.6);
+            --shadow-tilt: 0 32px 80px -12px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06), 0 0 44px -8px rgba(139,92,246,0.25);
             --scrim: rgba(0,0,0,0.7);
             --grid-line: rgba(255,255,255,0.04);
-            --blob-a: rgba(139,92,246,0.1);
-            --blob-b: rgba(249,115,22,0.08);
+            --blob-a: rgba(139,92,246,0.12);
+            --blob-b: rgba(249,115,22,0.09);
+            --blob-c: rgba(56,189,248,0.10);
+            --glass-bg: color-mix(in srgb, var(--surface) 68%, transparent);
           }
 
           html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+          html, body { overflow-x: clip; }
           .ss-theme-transition, .ss-theme-transition *, .ss-theme-transition *::before, .ss-theme-transition *::after {
             transition: background-color .25s ease, color .25s ease, border-color .25s ease, fill .25s ease !important;
           }
@@ -1698,18 +1924,58 @@ export default function SmartStreamStore() {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
+            overflow-x: clip;
           }
-          @media (min-width: 1920px) { .ss-root { font-size: 16px; } }
           .ss-root ::selection { background: var(--accent); color: var(--accent-fg); }
-          .ss-root :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 8px; }
+          .ss-root :focus-visible {
+            outline: 3px solid var(--ring);
+            outline-offset: 3px;
+            border-radius: 10px;
+          }
           .ss-root img, .ss-root svg { max-width: 100%; }
 
+          /* Refined scrollbar */
+          .ss-root ::-webkit-scrollbar { width: 10px; height: 10px; }
+          .ss-root ::-webkit-scrollbar-track { background: transparent; }
+          .ss-root ::-webkit-scrollbar-thumb {
+            background: color-mix(in srgb, var(--fg) 22%, transparent);
+            border-radius: 8px;
+            border: 2px solid var(--bg);
+          }
+          .ss-root ::-webkit-scrollbar-thumb:hover {
+            background: color-mix(in srgb, var(--fg) 38%, transparent);
+          }
+
+          /* ── Fluid container: scales to 4K ── */
           .ss-wrap { width: 100%; max-width: 80rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2rem); }
           @media (min-width: 1536px) { .ss-wrap { max-width: 88rem; } }
-          @media (min-width: 2200px) { .ss-wrap { max-width: 96rem; } }
+          @media (min-width: 1920px) {
+            .ss-root { font-size: 16.5px; }
+            .ss-wrap { max-width: 112rem; padding-inline: clamp(2rem, 4vw, 4rem); }
+          }
+          @media (min-width: 2560px) {
+            .ss-root { font-size: 18px; }
+            .ss-wrap { max-width: 140rem; padding-inline: clamp(3rem, 5vw, 6rem); }
+          }
 
-          .ss-h1 { font-size: clamp(2.125rem, 1rem + 4.6vw, 4.5rem); line-height: 1.05; font-weight: 900; letter-spacing: -0.04em; text-wrap: balance; }
-          .ss-h2 { font-size: clamp(1.625rem, 1.1rem + 2vw, 2.5rem); line-height: 1.1; font-weight: 900; letter-spacing: -0.03em; text-wrap: balance; }
+          /* ── Fluid type ── */
+          .ss-h1 {
+            font-size: clamp(2.25rem, 1.15rem + 5.2vw, 4.75rem);
+            line-height: 1.04;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            text-wrap: balance;
+          }
+          @media (min-width: 2560px) {
+            .ss-h1 { font-size: clamp(3.5rem, 2rem + 4vw, 6.5rem); }
+          }
+          .ss-h2 {
+            font-size: clamp(1.625rem, 1.05rem + 2.4vw, 2.75rem);
+            line-height: 1.08;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            text-wrap: balance;
+          }
 
           .ss-muted { color: var(--muted); }
           .ss-subtle { color: var(--subtle); }
@@ -1724,17 +1990,48 @@ export default function SmartStreamStore() {
           .ss-noscroll::-webkit-scrollbar { display: none; }
           .ss-check { accent-color: var(--accent); }
 
+          /* ── Glassmorphism utility ── */
+          .ss-glass {
+            background: var(--glass-bg);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            backdrop-filter: blur(18px) saturate(160%);
+          }
+
+          /* ── SVG film-grain noise (vector, resolution independent) ── */
+          .ss-noise {
+            pointer-events: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+            background-size: 180px 180px;
+            opacity: 0.05;
+            mix-blend-mode: overlay;
+          }
+          .ss-noise-wrap { isolation: isolate; }
+
+          /* ── Hero canvas + fade ── */
+          .ss-particles { display: block; }
+          .ss-hero-fade {
+            background:
+              radial-gradient(ellipse 75% 65% at 50% 38%, transparent 35%, var(--bg) 100%),
+              linear-gradient(to bottom, transparent 55%, var(--bg) 100%);
+          }
+
           .ss-skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 10px 16px; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: 14px; transition: top .15s; }
           .ss-skip:focus { top: 10px; }
 
           .ss-header { border-bottom: 1px solid transparent; padding-top: env(safe-area-inset-top); }
-          .ss-header-on { background: color-mix(in srgb, var(--bg) 85%, transparent); border-bottom-color: var(--border); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); }
+          .ss-header-on { border-bottom-color: var(--border); box-shadow: var(--shadow); }
           .ss-navlink { position: relative; padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted); transition: color .2s, background-color .2s; }
           .ss-navlink:hover { color: var(--fg); background: var(--hover); }
           .ss-navlink-active { color: var(--fg); background: var(--hover); }
 
-          .ss-card { background: var(--surface); border: 1px solid var(--border); border-radius: 1.5rem; box-shadow: var(--shadow); }
+          .ss-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+          }
           .ss-card-hover { transition: transform .3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color .3s; }
+          .ss-card-wrap { height: 100%; min-width: 0; }
           .ss-panel { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg); color: var(--fg); }
           .ss-scrim { background: var(--scrim); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
           .ss-toast { background: var(--accent); color: var(--accent-fg); box-shadow: var(--shadow-lg); }
@@ -1744,10 +2041,66 @@ export default function SmartStreamStore() {
           .ss-drawer { height: 100vh; height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
           .ss-safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
+          /* ── 3D tilt + cursor glare (driven by --rx/--ry/--mx/--my) ── */
+          .ss-tilt {
+            transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+            transition: transform .55s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .35s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+          }
+          .ss-tilt.is-tilting {
+            transition: transform .08s linear, box-shadow .35s ease, border-color .35s ease;
+            box-shadow: var(--shadow-tilt);
+            border-color: var(--border-strong);
+          }
+          .ss-glare { position: relative; }
+          .ss-glare::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .35s ease;
+            background: radial-gradient(560px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.13), transparent 62%);
+          }
+          .ss-tilt.is-tilting.ss-glare::after { opacity: 1; }
+
           @media (hover: hover) and (pointer: fine) {
             .ss-card-hover:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--border-strong); }
-            .ss-spot::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s; background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), var(--hover), transparent 70%); }
+            .ss-spot::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s; background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), var(--hover), transparent 70%); }
             .ss-spot:hover::before { opacity: 1; }
+          }
+
+          /* ── HD product grid: 1 → 2 → 3 → 4 columns, CSS containment ── */
+          .ss-tools-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            contain: layout style;
+          }
+          @media (min-width: 640px) {
+            .ss-tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          }
+          @media (min-width: 1024px) {
+            .ss-tools-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          }
+          @media (min-width: 1920px) {
+            .ss-tools-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(1.5rem, 1.6vw, 2.25rem); }
+          }
+
+          /* ── Logo shimmer placeholder ── */
+          .ss-logo-frame { position: relative; display: inline-flex; align-items: center; min-width: 2.25rem; min-height: 2rem; }
+          .ss-logo-frame img { position: relative; z-index: 1; }
+          .ss-logo-frame:not(.is-loaded) img { opacity: 0; }
+          .ss-shimmer {
+            position: absolute; inset: 0; border-radius: 0.5rem; overflow: hidden;
+            background: color-mix(in srgb, var(--fg) 8%, transparent);
+          }
+          .ss-shimmer::after {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--fg) 14%, transparent) 50%, transparent 80%);
+            animation: ssShimmerSweep 1.4s ease-in-out infinite;
           }
 
           .ss-fab { right: max(1.25rem, env(safe-area-inset-right)); }
@@ -1766,7 +2119,7 @@ export default function SmartStreamStore() {
           .ss-btn-outline:hover { background: var(--hover); }
           .ss-saved-on { background: var(--hover); border-color: var(--fg); }
           .ss-btn-wa { background: #25D366; color: #052e14; box-shadow: 0 6px 20px rgba(37,211,102,.3); }
-          .ss-btn-wa:hover { filter: brightness(1.05); }
+          .ss-btn-wa:hover { filter: brightness(1.05); box-shadow: 0 8px 28px rgba(37,211,102,.42); }
           .ss-btn-cta { background: var(--bg); color: var(--fg); }
           .ss-btn-cta:hover { opacity: .9; }
 
@@ -1804,10 +2157,16 @@ export default function SmartStreamStore() {
           .ss-icon-chip { display: inline-flex; align-items: center; justify-content: center; height: 2rem; width: 2rem; flex-shrink: 0; margin-top: 2px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
           .ss-pay { display: inline-flex; align-items: center; gap: .4rem; height: 1.75rem; padding: 0 .75rem; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 11px; font-weight: 600; }
 
-          .ss-grid-bg { background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, #000, transparent); mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, #000, transparent); }
+          /* ── Ambient blobs (now three, theme-tinted) ── */
           .ss-blob { position: absolute; border-radius: 999px; filter: blur(100px); pointer-events: none; }
           .ss-blob-a { left: -100px; top: 80px; width: 300px; height: 300px; background: var(--blob-a); animation: ssFloatA 20s ease-in-out infinite; }
           .ss-blob-b { right: -100px; top: 160px; width: 350px; height: 350px; background: var(--blob-b); animation: ssFloatB 24s ease-in-out infinite; }
+          .ss-blob-c { left: 38%; bottom: -140px; width: 420px; height: 420px; background: var(--blob-c); animation: ssFloatA 28s ease-in-out infinite reverse; }
+          @media (min-width: 1920px) {
+            .ss-blob-a { width: 480px; height: 480px; }
+            .ss-blob-b { width: 560px; height: 560px; }
+            .ss-blob-c { width: 640px; height: 640px; }
+          }
           .ss-gradient-text { background: linear-gradient(90deg, var(--fg), color-mix(in srgb, var(--fg) 40%, transparent), var(--fg)); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: ssShimmer 6s linear infinite; }
 
           .ss-marquee-wrap { background: var(--accent); color: var(--accent-fg); }
@@ -1818,12 +2177,14 @@ export default function SmartStreamStore() {
 
           @keyframes ssMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
           @keyframes ssShimmer { to { background-position: 200% center; } }
+          @keyframes ssShimmerSweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
           @keyframes ssFloatA { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px,30px); } }
           @keyframes ssFloatB { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px,36px); } }
 
           @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
-            .ss-marquee, .ss-blob, .ss-gradient-text { animation: none !important; }
+            .ss-marquee, .ss-blob, .ss-gradient-text, .ss-shimmer::after { animation: none !important; }
+            .ss-tilt { transform: none !important; }
             .ss-root *, .ss-root *::before, .ss-root *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
           }
         `}</style>
