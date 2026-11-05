@@ -1,38 +1,4 @@
-/* ════════════════════════════════════════════════════════════════════
-   FEATHERED EXPERTS — Introduction page
-   Single-file React component (React + Tailwind CSS + framer-motion).
-   No store, no cart — this page only introduces the brand and its
-   facilities. Every call to action opens a WhatsApp chat.
 
-   ── HOW TO USE ───────────────────────────────────────────────────
-   1. Put this file and `feather-logo.png` in the same folder
-      (e.g. `src/components/`) and render it:
-         import FeatheredExperts from "./FeatheredExperts";
-         <FeatheredExperts />
-   2. Install the dependencies (same family as the SmartStream build):
-         npm i react-router-dom lucide-react react-icons framer-motion
-   3. Make sure the `feather-logo.png` file sits next to this file —
-      the import at the top (`./feather-logo.png`) points at it.
-
-   ── TAILWIND `3xl:` BREAKPOINT — REQUIRED SETUP ──────────────────
-   This file uses `3xl:` utilities (e.g. `3xl:max-w-6xl`, `3xl:text-lg`)
-   for the 1920px+ HD/4K enlargements. `3xl` is NOT a default Tailwind
-   breakpoint, so those classes are silently ignored unless you define it:
-
-   • Tailwind v3 — in `tailwind.config.js`, inside `theme.extend`:
-         screens: {
-           '3xl': '1920px',
-         },
-   • Tailwind v4 — in the stylesheet that has `@import "tailwindcss"`:
-         @theme {
-           --breakpoint-3xl: 1920px;
-         },
-
-   The core 1920px / 2560px scaling does NOT depend on this — it lives
-   in the embedded <style> block below (fluid container, fluid type and
-   media queries) — so the page still works without the config; only the
-   `3xl:` enlargements would not apply on very large screens.
-   ════════════════════════════════════════════════════════════════════ */
 
 import React, {
   useState,
