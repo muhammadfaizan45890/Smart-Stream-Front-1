@@ -24,10 +24,12 @@
    • Accessibility — skip link, visible focus rings, aria labels on
      card actions, 44px touch targets on mobile, safe-area insets,
      full prefers-reduced-motion support.
+   • Logo is a vector icon — `FaFeather` (react-icons/fa6) in a black
+     tile, favicon as an inline SVG data URI; no image file to ship.
 
    ── HOW TO USE ───────────────────────────────────────────────────
-   1. Drop this file AND `feather-logo.png` into your project
-      (e.g. `src/components/`) and render it inside a router:
+   1. Drop this file into your project (e.g. `src/components/`) and
+      render it inside a router:
          import { BrowserRouter } from "react-router-dom";
          import FeatheredExpertsPro from "./FeatheredExpertsPro.advanced";
          <BrowserRouter><FeatheredExpertsPro /></BrowserRouter>
@@ -36,12 +38,11 @@
       without a <BrowserRouter> wrapper.
    2. Install the dependencies (same family as the SmartStream build):
          npm i react-router-dom lucide-react react-icons framer-motion
-   3. Logo: the import below points at `./feather-logo.png` — keep the
-      feather PNG next to this file (it is supplied with it). The logo
-      is shown inside a black rounded tile, so it stays crisp in both
-      themes, and is also used as the page favicon. Do NOT point this
-      import at `../assets/logo2.jpeg` — in some projects that file is
-      a different (SmartStream "S") logo.
+   3. Logo: no image file needed. The logo is the `FaFeather` vector
+      icon (react-icons/fa6) rendered in white inside a black rounded
+      tile, so it stays crisp at any size in both themes. The favicon
+      is the same feather as an inline SVG data URI — no logo file
+      to ship, and no `../assets/logo2.jpeg` import anywhere.
 
    ── TAILWIND `3xl:` BREAKPOINT — REQUIRED SETUP ──────────────────
    This file uses `3xl:` utilities for the 1920px+ HD/4K enlargements.
@@ -114,6 +115,7 @@ import {
 } from "lucide-react";
 import {
   FaFacebookF,
+  FaFeather,
   FaInstagram,
   FaLinkedinIn,
   FaTiktok,
@@ -144,11 +146,15 @@ import {
 } from "framer-motion";
 
 /* ════════════════════════════════════════════════════════════════════
-   LOGO IMPORT — white feather on black.
-   Keep `feather-logo.png` next to this file. The logo is shown
-   inside a black rounded tile, so it stays crisp in both themes.
+   LOGO — vector feather icon, no image file needed.
+   `FaFeather` (react-icons/fa6) renders in white inside a black
+   rounded tile (`FeatherLogoTile`), so the brand mark stays crisp at
+   any size in both themes. The favicon below is the same feather as
+   an inline SVG data URI (lucide feather paths on a black rounded
+   square). No logo file is imported anywhere in this component.
    ════════════════════════════════════════════════════════════════════ */
-import featherLogo from "../assets/logo2.jpeg";
+const FEATHER_FAVICON =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23000'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z'/%3E%3Cline x1='16' y1='8' x2='2' y2='22'/%3E%3Cline x1='17.5' y1='15' x2='9' y2='15'/%3E%3C/g%3E%3C/svg%3E";
 
 /* ════════════════════════════════════════════════════════════════════
    CONFIGURATION & CONSTANTS
@@ -203,11 +209,11 @@ const OpenAiLogo = ({ className = "" }) => (
 );
 
 const LinkedInLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="LinkedIn logo"><rect width="24" height="24" rx="4.5" fill="#0A66C2"/><text x="12" y="17.2" textAnchor="middle" fontSize="11.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,Helvetica,sans-serif">in</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="LinkedIn logo"><rect width="24" height="24" rx="4.5" fill="#0A66C2"/><text x="12" y="17.2" textAnchor="middle" fontSize="11.5" fontWeight="500" fill="#FFFFFF" fontFamily="Arial,Helvetica,sans-serif">in</text></svg>
 );
 
 const CanvaLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Canva logo"><defs><linearGradient id="canvaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#00C4CC"/><stop offset="1" stopColor="#7D2AE8"/></linearGradient></defs><circle cx="12" cy="12" r="11.5" fill="url(#canvaGrad)"/><text x="12" y="15.2" textAnchor="middle" fontSize="5.9" fontWeight="700" fontStyle="italic" fill="#FFFFFF" fontFamily="Georgia,serif">Canva</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Canva logo"><defs><linearGradient id="canvaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#00C4CC"/><stop offset="1" stopColor="#7D2AE8"/></linearGradient></defs><circle cx="12" cy="12" r="11.5" fill="url(#canvaGrad)"/><text x="12" y="15.2" textAnchor="middle" fontSize="5.9" fontWeight="500" fontStyle="italic" fill="#FFFFFF" fontFamily="Georgia,serif">Canva</text></svg>
 );
 
 const PrimeVideoLogo = ({ className = "" }) => (
@@ -219,7 +225,7 @@ const AdobeLogo = ({ className = "" }) => (
 );
 
 const PremiereProLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe Premiere Pro logo"><rect width="24" height="24" rx="4.5" fill="#00005B"/><text x="12" y="17" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#9999FF" fontFamily="Arial,Helvetica,sans-serif">Pr</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe Premiere Pro logo"><rect width="24" height="24" rx="4.5" fill="#00005B"/><text x="12" y="17" textAnchor="middle" fontSize="10.5" fontWeight="500" fill="#9999FF" fontFamily="Arial,Helvetica,sans-serif">Pr</text></svg>
 );
 
 const WorkspaceLogo = ({ className = "" }) => (
@@ -227,7 +233,7 @@ const WorkspaceLogo = ({ className = "" }) => (
 );
 
 const OfficeLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Microsoft Office logo"><rect x="0.5" y="0.5" width="11" height="11" rx="2" fill="#2B579A"/><rect x="12.5" y="0.5" width="11" height="11" rx="2" fill="#217346"/><rect x="0.5" y="12.5" width="11" height="11" rx="2" fill="#D24726"/><rect x="12.5" y="12.5" width="11" height="11" rx="2" fill="#EB3C00"/><text x="6" y="9.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">W</text><text x="18" y="9.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">X</text><text x="6" y="21.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">P</text><text x="18" y="21.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">O</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Microsoft Office logo"><rect x="0.5" y="0.5" width="11" height="11" rx="2" fill="#2B579A"/><rect x="12.5" y="0.5" width="11" height="11" rx="2" fill="#217346"/><rect x="0.5" y="12.5" width="11" height="11" rx="2" fill="#D24726"/><rect x="12.5" y="12.5" width="11" height="11" rx="2" fill="#EB3C00"/><text x="6" y="9.2" textAnchor="middle" fontSize="6.5" fontWeight="500" fill="#FFFFFF" fontFamily="Arial,sans-serif">W</text><text x="18" y="9.2" textAnchor="middle" fontSize="6.5" fontWeight="500" fill="#FFFFFF" fontFamily="Arial,sans-serif">X</text><text x="6" y="21.2" textAnchor="middle" fontSize="6.5" fontWeight="500" fill="#FFFFFF" fontFamily="Arial,sans-serif">P</text><text x="18" y="21.2" textAnchor="middle" fontSize="6.5" fontWeight="500" fill="#FFFFFF" fontFamily="Arial,sans-serif">O</text></svg>
 );
 
 const CapCutLogo = ({ className = "" }) => (
@@ -247,11 +253,11 @@ const RunwayLogo = ({ className = "" }) => (
 );
 
 const VidIqLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="vidIQ logo"><text x="12" y="15.8" textAnchor="middle" fontSize="6.7" fontWeight="800" fill="#111827" fontFamily="Arial,Helvetica,sans-serif">vid<tspan fill="#7B2CBF">IQ</tspan></text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="vidIQ logo"><text x="12" y="15.8" textAnchor="middle" fontSize="6.7" fontWeight="500" fill="#111827" fontFamily="Arial,Helvetica,sans-serif">vid<tspan fill="#7B2CBF">IQ</tspan></text></svg>
 );
 
 const VidIqMaxLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="vidIQ Max logo"><text x="12" y="13.3" textAnchor="middle" fontSize="6.7" fontWeight="800" fill="#111827" fontFamily="Arial,Helvetica,sans-serif">vid<tspan fill="#7B2CBF">IQ</tspan></text><rect x="5" y="16" width="14" height="4.6" rx="2.3" fill="#2563EB"/><text x="12" y="19.9" textAnchor="middle" fontSize="3.6" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,Helvetica,sans-serif">MAX</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="vidIQ Max logo"><text x="12" y="13.3" textAnchor="middle" fontSize="6.7" fontWeight="500" fill="#111827" fontFamily="Arial,Helvetica,sans-serif">vid<tspan fill="#7B2CBF">IQ</tspan></text><rect x="5" y="16" width="14" height="4.6" rx="2.3" fill="#2563EB"/><text x="12" y="19.9" textAnchor="middle" fontSize="3.6" fontWeight="500" fill="#FFFFFF" fontFamily="Arial,Helvetica,sans-serif">MAX</text></svg>
 );
 
 const HeyGenLogo = ({ className = "" }) => (
@@ -265,7 +271,7 @@ const MoreToolsLogo = ({ className = "" }) => (
 /* ════════════════════════════════════════════════════════════════════
    MARKETPLACE DATA — 31 cards. Featured Gemini Pro Plan first.
    Every card: real official logo, category + duration badges,
-   features, "Price on Request", Live Demo + Negotiate on WhatsApp.
+   features, "Price on Request", Live Demo + Buy Now.
    No prices anywhere. The "More Tools" card is always visible.
    ════════════════════════════════════════════════════════════════════ */
 const TOOLS = [
@@ -1299,12 +1305,13 @@ const SmartLink = React.memo(({ to, children, ...props }) => {
   );
 });
 
-/* The white feather on black — always inside a black rounded tile. */
+/* The white feather on black — vector icon inside a black rounded tile. */
 const FeatherLogoTile = React.memo(function FeatherLogoTile({ size = "md", className = "" }) {
   const dims = size === "lg" ? "h-14 w-14" : size === "sm" ? "h-8 w-8" : "h-10 w-10";
+  const icon = size === "lg" ? "h-7 w-7" : size === "sm" ? "h-4 w-4" : "h-5 w-5";
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-black shadow-lg shadow-cyan-500/20 ring-1 ring-white/10 ${dims} ${className}`}>
-      <img src={featherLogo} alt="Feathered Experts Pro logo" className="h-full w-full object-cover" />
+    <span className={`fe-logo-tile inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-black shadow-lg shadow-cyan-500/20 ring-1 ring-white/10 ${dims} ${className}`} aria-hidden="true">
+      <FaFeather className={`fe-logo-icon text-white ${icon}`} />
     </span>
   );
 });
@@ -1312,10 +1319,10 @@ const FeatherLogoTile = React.memo(function FeatherLogoTile({ size = "md", class
 const SectionHead = React.memo(function SectionHead({ eyebrow, title, sub, align = "center" }) {
   return (
     <Reveal className={`mb-10 ${align === "center" ? "text-center" : "text-left"} 3xl:mb-14`}>
-      <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-[var(--cyan-dark)] 3xl:text-sm">
+      <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-[var(--cyan-dark)] 3xl:text-sm">
         {eyebrow}
       </p>
-      <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-[var(--ink)] sm:text-4xl 3xl:text-5xl">
+      <h2 className="text-3xl font-light leading-tight tracking-tight text-[var(--ink)] sm:text-4xl 3xl:text-5xl">
         {title}
       </h2>
       {sub ? (
@@ -1328,7 +1335,7 @@ const SectionHead = React.memo(function SectionHead({ eyebrow, title, sub, align
 });
 
 /* One marketplace card — logo tile, badges, features, Price on Request,
-   Live Demo + Negotiate on WhatsApp. 3D tilt + cursor glare on hover
+   Live Demo + Buy Now. 3D tilt + cursor glare on hover
    (desktop fine pointers only); the tilt lives on an inner div so it
    never fights framer-motion's reveal transform on the outer article.
    Memoised so filtering/search only re-renders the cards that change.
@@ -1362,21 +1369,21 @@ const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
               style={tool.logoColor ? { color: tool.logoColor } : undefined}
             />
           </span>
-          <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[var(--muted)]">
+          <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
             {tool.catLabel}
           </span>
         </div>
 
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <h3 className="text-lg font-extrabold leading-snug text-[var(--ink)]">{tool.name}</h3>
+          <h3 className="text-lg font-light leading-snug text-[var(--ink)]">{tool.name}</h3>
           {tool.badge ? (
-            <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">
+            <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
               {tool.badge}
             </span>
           ) : null}
         </div>
         {tool.duration ? (
-          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
             {tool.duration}
           </p>
         ) : null}
@@ -1392,9 +1399,9 @@ const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
         </ul>
 
         <div className="mt-auto">
-          <p className="mb-3 text-base font-extrabold text-[var(--ink)]">
+          <p className="mb-3 text-base font-light text-[var(--ink)]">
             Price on Request
-            <span className="ml-2 text-xs font-semibold text-[var(--muted)]">
+            <span className="ml-2 text-xs font-medium text-[var(--muted)]">
               Negotiate on WhatsApp
             </span>
           </p>
@@ -1403,18 +1410,18 @@ const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
               type="button"
               onClick={() => onDemo(tool)}
               aria-label={`Live demo of ${tool.name}`}
-              className="btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-bold"
+              className="btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"
             >
               Live Demo
             </button>
             <button
               type="button"
               onClick={() => onBuy(tool)}
-              aria-label={tool.more ? "Ask about other tools on WhatsApp" : `Negotiate ${tool.name} on WhatsApp`}
-              className="btn-primary min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-bold"
+              aria-label={tool.more ? "Ask about other tools on WhatsApp" : `Buy ${tool.name} now on WhatsApp`}
+              className="btn-primary min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"
             >
-              <FaWhatsapp className="mr-1.5 inline h-4 w-4" />
-              {tool.more ? "Ask About Other Tools on WhatsApp" : "Negotiate on WhatsApp"}
+              <FaWhatsapp className="mr-1.5 inline h-4 w-4 shrink-0" />
+              {tool.more ? "Ask on WhatsApp" : "Buy Now"}
             </button>
           </div>
         </div>
@@ -1453,7 +1460,7 @@ export default function FeatheredExpertsPro() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* Favicon — the feather logo, set once. */
+  /* Favicon — the feather as an inline SVG data URI, set once. */
   useLayoutEffect(() => {
     let link = document.querySelector("link[rel~='icon']");
     if (!link) {
@@ -1461,7 +1468,8 @@ export default function FeatheredExpertsPro() {
       link.rel = "icon";
       document.head.appendChild(link);
     }
-    link.href = featherLogo;
+    link.type = "image/svg+xml";
+    link.href = FEATHER_FAVICON;
   }, []);
 
   const { scrollYProgress } = useScroll();
@@ -1570,7 +1578,7 @@ export default function FeatheredExpertsPro() {
               aria-label="Feathered Experts Pro — home"
             >
               <FeatherLogoTile />
-              <span className="truncate text-lg font-extrabold tracking-tight text-[var(--ink)] sm:text-xl 3xl:text-2xl">
+              <span className="truncate text-base font-light tracking-tight text-[var(--ink)] sm:text-xl 3xl:text-2xl">
                 Feathered Experts <span className="text-[var(--cyan-dark)]">Pro</span>
               </span>
             </a>
@@ -1584,9 +1592,9 @@ export default function FeatheredExpertsPro() {
                     e.preventDefault();
                     scrollToId(l.id);
                   }}
-                  className={`rounded-full px-3.5 py-2 text-sm font-semibold transition-colors 3xl:text-base ${
+                  className={`fe-nav-link rounded-full px-3.5 py-2 text-sm font-medium transition-colors 3xl:text-base ${
                     activeSection === l.id
-                      ? "bg-[var(--chip)] text-[var(--cyan-dark)]"
+                      ? "fe-active bg-[var(--chip)] text-[var(--cyan-dark)]"
                       : "text-[var(--muted)] hover:bg-[var(--chip)] hover:text-[var(--ink)]"
                   }`}
                 >
@@ -1612,7 +1620,7 @@ export default function FeatheredExpertsPro() {
                   e.preventDefault();
                   scrollToId("contact");
                 }}
-                className="btn-primary hidden items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold sm:inline-flex 3xl:px-6 3xl:py-3 3xl:text-base"
+                className="btn-primary hidden items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-medium sm:inline-flex 3xl:px-6 3xl:py-3 3xl:text-base"
               >
                 <Rocket className="h-4 w-4" />
                 Get Started
@@ -1620,7 +1628,7 @@ export default function FeatheredExpertsPro() {
               <button
                 type="button"
                 onClick={() => setDrawerOpen((o) => !o)}
-                className="fe-icon-btn lg:hidden"
+                className="fe-icon-btn fe-menu-btn lg:hidden"
                 aria-expanded={drawerOpen}
                 aria-label={drawerOpen ? "Close menu" : "Open menu"}
               >
@@ -1654,7 +1662,7 @@ export default function FeatheredExpertsPro() {
                 <div className="mb-6 flex items-center justify-between">
                   <span className="flex items-center gap-2.5">
                     <FeatherLogoTile size="sm" />
-                    <span className="text-base font-extrabold text-[var(--ink)]">
+                    <span className="text-base font-light text-[var(--ink)]">
                       Feathered Experts Pro
                     </span>
                   </span>
@@ -1676,7 +1684,7 @@ export default function FeatheredExpertsPro() {
                         e.preventDefault();
                         scrollToId(l.id);
                       }}
-                      className="rounded-2xl px-4 py-3 text-base font-bold text-[var(--ink)] hover:bg-[var(--chip)]"
+                      className="rounded-2xl px-4 py-3 text-base font-medium text-[var(--ink)] hover:bg-[var(--chip)]"
                     >
                       {l.label}
                     </a>
@@ -1688,7 +1696,7 @@ export default function FeatheredExpertsPro() {
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-primary mt-auto inline-flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-bold"
+                  className="btn-primary mt-auto inline-flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-medium"
                 >
                   <FaWhatsapp className="h-5 w-5" />
                   Book an Agency Call
@@ -1715,10 +1723,10 @@ export default function FeatheredExpertsPro() {
                   className="mb-5 flex flex-wrap items-center gap-2"
                 >
                   <FeatherLogoTile size="sm" />
-                  <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted)]">
                     Feathered Experts Pro
                   </span>
-                  <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white">
+                  <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-white">
                     AI Tools • Websites • Meta Ads
                   </span>
                 </motion.div>
@@ -1727,7 +1735,7 @@ export default function FeatheredExpertsPro() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                  className="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-[var(--cyan-dark)]"
+                  className="mb-3 text-sm font-medium uppercase tracking-[0.22em] text-[var(--cyan-dark)]"
                 >
                   Marketplace + Agency — One Team
                 </motion.p>
@@ -1736,11 +1744,11 @@ export default function FeatheredExpertsPro() {
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
-                  className="text-[clamp(2.4rem,6vw,4.2rem)] font-extrabold leading-[1.04] tracking-tight text-[var(--ink)] 3xl:text-[5rem] 3xl:leading-[1.02]"
+                  className="text-[clamp(2.4rem,6vw,4.2rem)] font-light leading-[1.04] tracking-tight text-[var(--ink)] 3xl:text-[5rem] 3xl:leading-[1.02]"
                 >
                   Lightweight Execution.
                   <br />
-                  <span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-violet-500 bg-clip-text text-transparent">
+                  <span className="fe-hero-grad">
                     Heavyweight Digital Dominance.
                   </span>
                 </motion.h1>
@@ -1767,7 +1775,7 @@ export default function FeatheredExpertsPro() {
                       e.preventDefault();
                       scrollToId("tools");
                     }}
-                    className="btn-primary inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold sm:px-6 sm:py-3.5 sm:text-base 3xl:px-8 3xl:py-4 3xl:text-lg"
+                    className="btn-primary inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium sm:px-6 sm:py-3.5 sm:text-base 3xl:px-8 3xl:py-4 3xl:text-lg"
                   >
                     Explore AI Tools Marketplace
                     <ArrowRight className="h-5 w-5" />
@@ -1778,7 +1786,7 @@ export default function FeatheredExpertsPro() {
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-ghost inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-base font-bold 3xl:px-8 3xl:py-4 3xl:text-lg"
+                    className="btn-ghost inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-base font-medium 3xl:px-8 3xl:py-4 3xl:text-lg"
                   >
                     <FaWhatsapp className="h-5 w-5" />
                     Book an Agency Call
@@ -1793,32 +1801,32 @@ export default function FeatheredExpertsPro() {
                 >
                   <div>
                     <dt className="sr-only">AI tools ready</dt>
-                    <dd className="text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                    <dd className="text-2xl font-light text-[var(--ink)] 3xl:text-3xl">
                       <Counter value={50} suffix="+" />
                     </dd>
-                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">AI tools ready</dd>
+                    <dd className="mt-0.5 text-xs font-medium text-[var(--muted)]">AI tools ready</dd>
                   </div>
                   <div>
                     <dt className="sr-only">Projects shipped</dt>
-                    <dd className="text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                    <dd className="text-2xl font-light text-[var(--ink)] 3xl:text-3xl">
                       <Counter value={120} suffix="+" />
                     </dd>
-                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">Projects shipped</dd>
+                    <dd className="mt-0.5 text-xs font-medium text-[var(--muted)]">Projects shipped</dd>
                   </div>
                   <div>
                     <dt className="sr-only">Average Meta Ads ROAS</dt>
-                    <dd className="text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                    <dd className="text-2xl font-light text-[var(--ink)] 3xl:text-3xl">
                       <Counter value={4.8} suffix="×" decimals={1} />
                     </dd>
-                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">Avg. Meta Ads ROAS</dd>
+                    <dd className="mt-0.5 text-xs font-medium text-[var(--muted)]">Avg. Meta Ads ROAS</dd>
                   </div>
                   <div>
                     <dt className="sr-only">Support</dt>
-                    <dd className="flex items-center gap-1.5 text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                    <dd className="flex items-center gap-1.5 text-2xl font-light text-[var(--ink)] 3xl:text-3xl">
                       24/7
                       <Headphones className="h-5 w-5 text-[var(--cyan-dark)]" />
                     </dd>
-                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">Support on WhatsApp</dd>
+                    <dd className="mt-0.5 text-xs font-medium text-[var(--muted)]">Support on WhatsApp</dd>
                   </div>
                 </motion.dl>
               </div>
@@ -1836,11 +1844,11 @@ export default function FeatheredExpertsPro() {
                   <div className="mb-5 flex items-center justify-between gap-3">
                     <span className="flex items-center gap-2.5">
                       <FeatherLogoTile size="sm" />
-                      <span className="text-sm font-extrabold text-[var(--ink)]">
+                      <span className="text-sm font-light text-[var(--ink)]">
                         Feathered OS — Live Dashboard
                       </span>
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-500">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-500">
                       <span className="fe-live-dot h-2 w-2 rounded-full bg-emerald-500" />
                       Live
                     </span>
@@ -1848,10 +1856,10 @@ export default function FeatheredExpertsPro() {
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl bg-[var(--chip)] p-4">
-                      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                      <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--muted)]">
                         <BarChart3 className="h-3.5 w-3.5" /> Revenue Growth
                       </p>
-                      <p className="mt-1.5 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">+184%</p>
+                      <p className="mt-1.5 text-2xl font-light text-[var(--ink)] sm:text-3xl">+184%</p>
                       <div className="mt-3 flex h-12 items-end gap-1.5" aria-hidden="true">
                         {[38, 55, 44, 66, 58, 82, 74, 100].map((h, i) => (
                           <span
@@ -1863,24 +1871,24 @@ export default function FeatheredExpertsPro() {
                       </div>
                     </div>
                     <div className="rounded-2xl bg-[var(--chip)] p-4">
-                      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                      <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--muted)]">
                         <TrendingUp className="h-3.5 w-3.5" /> Ad ROAS
                       </p>
-                      <p className="mt-1.5 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">4.8×</p>
+                      <p className="mt-1.5 text-2xl font-light text-[var(--ink)] sm:text-3xl">4.8×</p>
                       <p className="mt-3 text-xs leading-relaxed text-[var(--muted)]">
                         Meta Ads average across managed campaigns, updated weekly.
                       </p>
                       <div className="mt-3 flex flex-wrap gap-1.5">
-                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--ink2)] ring-1 ring-[var(--line)]">
                           Next.js • React
                         </span>
-                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--ink2)] ring-1 ring-[var(--line)]">
                           AI Integrations
                         </span>
-                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--ink2)] ring-1 ring-[var(--line)]">
                           Meta Ads
                         </span>
-                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--ink2)] ring-1 ring-[var(--line)]">
                           Blogs &amp; Content
                         </span>
                       </div>
@@ -1895,22 +1903,22 @@ export default function FeatheredExpertsPro() {
                 <div className="fe-badge flex items-center gap-2 rounded-2xl bg-[var(--surface)] px-3.5 py-2.5 shadow-xl ring-1 ring-[var(--line)] lg:absolute lg:-left-6 lg:top-6">
                   <Zap className="h-4 w-4 text-amber-400" />
                   <span>
-                    <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">99.9% Uptime</span>
-                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Always-on delivery</span>
+                    <span className="block text-sm font-medium leading-none text-[var(--ink)]">99.9% Uptime</span>
+                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-medium text-[var(--muted)]">Always-on delivery</span>
                   </span>
                 </div>
                 <div className="fe-badge flex items-center gap-2 rounded-2xl bg-[var(--surface)] px-3.5 py-2.5 shadow-xl ring-1 ring-[var(--line)] lg:absolute lg:-right-5 lg:top-1/2" style={{ animationDelay: "1.2s" }}>
                   <TrendingUp className="h-4 w-4 text-emerald-500" />
                   <span>
-                    <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">4.8× ROAS</span>
-                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Meta Ads average</span>
+                    <span className="block text-sm font-medium leading-none text-[var(--ink)]">4.8× ROAS</span>
+                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-medium text-[var(--muted)]">Meta Ads average</span>
                   </span>
                 </div>
                 <div className="fe-badge flex items-center gap-2 rounded-2xl bg-[var(--surface)] px-3.5 py-2.5 shadow-xl ring-1 ring-[var(--line)] lg:absolute lg:-bottom-4 lg:left-8" style={{ animationDelay: "2.1s" }}>
                   <Sparkles className="h-4 w-4 text-violet-500" />
                   <span>
-                    <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">50+ AI Tools</span>
-                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Instant activation</span>
+                    <span className="block text-sm font-medium leading-none text-[var(--ink)]">50+ AI Tools</span>
+                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-medium text-[var(--muted)]">Instant activation</span>
                   </span>
                 </div>
                 </div>
@@ -1924,7 +1932,7 @@ export default function FeatheredExpertsPro() {
                   e.preventDefault();
                   scrollToId("tools");
                 }}
-                className="flex flex-col items-center gap-1 text-xs font-bold uppercase tracking-[0.2em] text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]"
+                className="flex flex-col items-center gap-1 text-xs font-medium uppercase tracking-[0.2em] text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]"
               >
                 Scroll to explore
                 <ChevronDown className="fe-bounce h-4 w-4" />
@@ -1950,7 +1958,7 @@ export default function FeatheredExpertsPro() {
                       type="button"
                       onClick={() => setFilter(f.id)}
                       aria-pressed={filter === f.id}
-                      className={`rounded-full px-4 py-2 text-sm font-bold transition-all ${
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                         filter === f.id
                           ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg shadow-cyan-500/25"
                           : "bg-[var(--surface)] text-[var(--muted)] ring-1 ring-[var(--line)] hover:text-[var(--ink)]"
@@ -1981,7 +1989,7 @@ export default function FeatheredExpertsPro() {
               {visibleTools.length === 0 ? (
                 <div className="fe-card rounded-3xl p-10 text-center">
                   <Bot className="mx-auto mb-3 h-10 w-10 text-[var(--muted)]" />
-                  <p className="text-lg font-bold text-[var(--ink)]">No tools match that search.</p>
+                  <p className="text-lg font-light text-[var(--ink)]">No tools match that search.</p>
                   <p className="mt-1 text-sm text-[var(--muted)]">
                     Try another keyword, or ask us on WhatsApp — we stock 50+ tools.
                   </p>
@@ -1991,7 +1999,7 @@ export default function FeatheredExpertsPro() {
                       setQuery("");
                       setFilter("all");
                     }}
-                    className="btn-ghost mt-5 rounded-full px-5 py-2.5 text-sm font-bold"
+                    className="btn-ghost mt-5 rounded-full px-5 py-2.5 text-sm font-medium"
                   >
                     Clear filters
                   </button>
@@ -2014,7 +2022,7 @@ export default function FeatheredExpertsPro() {
                 <p className="fe-card rounded-3xl px-6 py-5 text-center text-sm leading-relaxed text-[var(--muted)]">
                   <FaWhatsapp className="mr-2 inline h-4 w-4 text-emerald-500" />
                   Negotiate on WhatsApp opens a chat with our team on{" "}
-                  <strong className="text-[var(--ink)]">{CONFIG.whatsappDisplay}</strong> — your
+                  <span className="font-medium text-[var(--ink)]">{CONFIG.whatsappDisplay}</span> — your
                   message naming the tool is pre-filled, just press send to negotiate your
                   price. No prices are listed on this site; all payments are agreed on
                   WhatsApp. Also available: blog uploads &amp; publishing, content packages
@@ -2030,13 +2038,13 @@ export default function FeatheredExpertsPro() {
                     <div className="fe-card flex h-full items-start gap-3.5 rounded-3xl p-5">
                       <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 text-white shadow-md">
                         {t.title.startsWith("24/7") ? (
-                          <span className="text-[13px] font-extrabold leading-none">24</span>
+                          <span className="text-[13px] font-medium leading-none">24</span>
                         ) : (
                           <t.icon className="h-5 w-5" strokeWidth={2.5} />
                         )}
                       </span>
                       <span>
-                        <span className="block text-base font-extrabold leading-snug text-[var(--ink)]">
+                        <span className="block text-base font-light leading-snug text-[var(--ink)]">
                           {t.title}
                         </span>
                         {t.stars ? (
@@ -2075,7 +2083,7 @@ export default function FeatheredExpertsPro() {
                       <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 p-3.5 text-white shadow-lg">
                         <s.icon className="h-6 w-6" />
                       </span>
-                      <h3 className="text-xl font-extrabold leading-snug text-[var(--ink)] 3xl:text-2xl">
+                      <h3 className="text-xl font-light leading-snug text-[var(--ink)] 3xl:text-2xl">
                         {s.title}
                       </h3>
                       <p className="mb-5 mt-2 text-sm leading-relaxed text-[var(--muted)]">{s.desc}</p>
@@ -2091,7 +2099,7 @@ export default function FeatheredExpertsPro() {
                         href={waLink(s.wa)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-auto inline-flex items-center gap-1.5 text-sm font-extrabold text-[var(--cyan-dark)] hover:gap-2.5"
+                        className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-[var(--cyan-dark)] hover:gap-2.5"
                       >
                         {s.cta}
                         <ArrowRight className="h-4 w-4 transition-all" />
@@ -2117,7 +2125,7 @@ export default function FeatheredExpertsPro() {
                   <div className="fe-card flex h-full flex-col justify-between gap-6 rounded-3xl p-6 sm:p-7">
                     {COUNTERS.map((c) => (
                       <div key={c.label} className="border-b border-[var(--line)] pb-5 last:border-0 last:pb-0">
-                        <p className="text-4xl font-extrabold tracking-tight text-[var(--ink)] 3xl:text-6xl">
+                        <p className="text-4xl font-light tracking-tight text-[var(--ink)] 3xl:text-6xl">
                           <Counter value={c.value} suffix={c.suffix} decimals={c.decimals} />
                         </p>
                         <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">{c.label}</p>
@@ -2130,8 +2138,8 @@ export default function FeatheredExpertsPro() {
                 <Reveal delay={0.08} className="lg:col-span-2">
                   <div className="fe-card h-full rounded-3xl p-6 sm:p-7">
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <h3 className="text-lg font-extrabold text-[var(--ink)]">Performance, visualised</h3>
-                      <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-bold text-[var(--muted)]">
+                      <h3 className="text-lg font-light text-[var(--ink)]">Performance, visualised</h3>
+                      <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium text-[var(--muted)]">
                         Last 12 months
                       </span>
                     </div>
@@ -2155,12 +2163,12 @@ export default function FeatheredExpertsPro() {
                         <circle cx="560" cy="22" r="5" fill="#00C8DC" />
                         <circle cx="560" cy="130" r="5" fill="#7B2CBF" />
                       </svg>
-                      <span className="absolute right-1 top-0 rounded-full bg-[var(--surface)] px-2.5 py-1 text-xs font-extrabold text-[var(--cyan-dark)] ring-1 ring-[var(--line)]">
+                      <span className="absolute right-1 top-0 rounded-full bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--cyan-dark)] ring-1 ring-[var(--line)]">
                         +184% growth
                       </span>
                     </div>
                     <div className="mt-5 grid grid-cols-1 gap-4 border-t border-[var(--line)] pt-5 sm:grid-cols-3">
-                      <p className="text-sm font-bold text-[var(--ink)]">
+                      <p className="text-sm font-medium text-[var(--ink)]">
                         Us vs. typical freelancers
                       </p>
                       {COMPARE_ROWS.map((r) => (
@@ -2169,7 +2177,7 @@ export default function FeatheredExpertsPro() {
                             <Gauge className="h-4 w-4 text-[var(--cyan-dark)]" />
                             {r.label}
                           </span>
-                          <strong className="text-[var(--ink)]">{r.us}</strong>
+                          <span className="font-medium text-[var(--ink)]">{r.us}</span>
                         </div>
                       ))}
                     </div>
@@ -2182,10 +2190,10 @@ export default function FeatheredExpertsPro() {
                 {CASES.map((c, i) => (
                   <Reveal key={c.title} delay={i * 0.08}>
                     <article className="fe-card h-full rounded-3xl p-6">
-                      <p className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-3xl font-extrabold text-transparent 3xl:text-4xl">
+                      <p className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-3xl font-light text-transparent 3xl:text-4xl">
                         {c.stat}
                       </p>
-                      <h3 className="mt-2 text-lg font-extrabold text-[var(--ink)]">{c.title}</h3>
+                      <h3 className="mt-2 text-lg font-light text-[var(--ink)]">{c.title}</h3>
                       <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">{c.desc}</p>
                     </article>
                   </Reveal>
@@ -2210,7 +2218,7 @@ export default function FeatheredExpertsPro() {
                     role="tab"
                     aria-selected={!agency}
                     onClick={() => setAgency(false)}
-                    className={`rounded-full px-3 py-2 text-xs font-bold transition-all sm:px-6 sm:py-2.5 sm:text-sm ${
+                    className={`rounded-full px-3 py-2 text-xs font-medium transition-all sm:px-6 sm:py-2.5 sm:text-sm ${
                       !agency
                         ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg"
                         : "text-[var(--muted)] hover:text-[var(--ink)]"
@@ -2223,7 +2231,7 @@ export default function FeatheredExpertsPro() {
                     role="tab"
                     aria-selected={agency}
                     onClick={() => setAgency(true)}
-                    className={`rounded-full px-3 py-2 text-xs font-bold transition-all sm:px-6 sm:py-2.5 sm:text-sm ${
+                    className={`rounded-full px-3 py-2 text-xs font-medium transition-all sm:px-6 sm:py-2.5 sm:text-sm ${
                       agency
                         ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg"
                         : "text-[var(--muted)] hover:text-[var(--ink)]"
@@ -2251,16 +2259,16 @@ export default function FeatheredExpertsPro() {
                       }`}
                     >
                       {p.badge ? (
-                        <span className="absolute -top-3.5 left-6 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-lg">
+                        <span className="absolute -top-3.5 left-6 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-3.5 py-1 text-[11px] font-medium uppercase tracking-wider text-white shadow-lg">
                           {p.badge}
                         </span>
                       ) : null}
-                      <h3 className={p.badge ? "text-xl font-extrabold text-white 3xl:text-2xl" : "text-xl font-extrabold text-[var(--ink)] 3xl:text-2xl"}>{p.name}</h3>
+                      <h3 className={p.badge ? "text-xl font-light text-white 3xl:text-2xl" : "text-xl font-light text-[var(--ink)] 3xl:text-2xl"}>{p.name}</h3>
                       <p className={p.badge ? "mt-1 text-sm text-white/80" : "mt-1 text-sm text-[var(--muted)]"}>{p.desc}</p>
-                      <p className={p.badge ? "mt-5 text-3xl font-extrabold tracking-tight text-white 3xl:text-4xl" : "mt-5 text-3xl font-extrabold tracking-tight text-[var(--ink)] 3xl:text-4xl"}>
+                      <p className={p.badge ? "mt-5 text-3xl font-light tracking-tight text-white 3xl:text-4xl" : "mt-5 text-3xl font-light tracking-tight text-[var(--ink)] 3xl:text-4xl"}>
                         Price on Request
                       </p>
-                      <p className={p.badge ? "mt-1 text-sm font-bold text-cyan-300" : "mt-1 text-sm font-bold text-[var(--cyan-dark)]"}>
+                      <p className={p.badge ? "mt-1 text-sm font-medium text-cyan-300" : "mt-1 text-sm font-medium text-[var(--cyan-dark)]"}>
                         Negotiate on WhatsApp
                       </p>
                       <ul className="mb-6 mt-5 space-y-2">
@@ -2278,12 +2286,12 @@ export default function FeatheredExpertsPro() {
                         onClick={() =>
                           showToast(`Opening WhatsApp — your message for the ${p.name} plan is pre-filled, just press send.`)
                         }
-                        className={`mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-bold ${
+                        className={`mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-medium ${
                           p.badge ? "btn-primary" : "btn-ghost"
                         }`}
                       >
-                        <FaWhatsapp className="h-5 w-5" />
-                        Negotiate on WhatsApp
+                        <FaWhatsapp className="h-5 w-5 shrink-0" />
+                        Buy Now
                       </a>
                     </article>
                   ))}
@@ -2320,8 +2328,8 @@ export default function FeatheredExpertsPro() {
                         &ldquo;{t.text}&rdquo;
                       </blockquote>
                       <figcaption className="mt-4">
-                        <p className="text-sm font-extrabold text-[var(--ink)]">{t.name}</p>
-                        <p className="text-xs font-semibold text-[var(--muted)]">— {t.role}</p>
+                        <p className="text-sm font-medium text-[var(--ink)]">{t.name}</p>
+                        <p className="text-xs font-medium text-[var(--muted)]">— {t.role}</p>
                       </figcaption>
                     </figure>
                   ))}
@@ -2333,7 +2341,7 @@ export default function FeatheredExpertsPro() {
                 {BRANDS.map((b) => (
                   <span
                     key={b}
-                    className="text-lg font-extrabold tracking-wide text-[var(--muted)] opacity-70 transition-opacity hover:opacity-100 3xl:text-xl"
+                    className="text-lg font-light tracking-wide text-[var(--muted)] opacity-70 transition-opacity hover:opacity-100 3xl:text-xl"
                   >
                     {b}
                   </span>
@@ -2345,10 +2353,10 @@ export default function FeatheredExpertsPro() {
             <div id="contact" className="mx-auto mt-16 w-full max-w-7xl scroll-mt-24 px-4 sm:px-6 3xl:max-w-[1500px]">
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.9fr_1.1fr]">
                 <Reveal>
-                  <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-[var(--ink)] sm:text-4xl 3xl:text-5xl">
+                  <h2 className="text-3xl font-light leading-tight tracking-tight text-[var(--ink)] sm:text-4xl 3xl:text-5xl">
                     Start Today
                   </h2>
-                  <p className="mt-3 text-base font-bold text-[var(--ink2)]">
+                  <p className="mt-3 text-base font-normal text-[var(--ink2)]">
                     Tell us what you&apos;re building. We&apos;ll reply with a plan.
                   </p>
                   <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--muted)] sm:text-base">
@@ -2360,21 +2368,21 @@ export default function FeatheredExpertsPro() {
                     <p className="flex items-start gap-2.5 text-sm text-[var(--ink2)]">
                       <Zap className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
                       <span>
-                        <strong className="text-[var(--ink)]">Fast start</strong> — Most tool
+                        <span className="font-medium text-[var(--ink)]">Fast start</span> — Most tool
                         activations and project kickoffs begin within 24–48 hours.
                       </span>
                     </p>
                     <p className="flex items-start gap-2.5 text-sm text-[var(--ink2)]">
                       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                       <span>
-                        <strong className="text-[var(--ink)]">Warranty &amp; support</strong> —
+                        <span className="font-medium text-[var(--ink)]">Warranty &amp; support</span> —
                         Subscriptions covered for the plan period, with real human support.
                       </span>
                     </p>
                     <p className="flex items-start gap-2.5 text-sm text-[var(--ink2)]">
                       <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cyan-dark)]" />
                       <span>
-                        <strong className="text-[var(--ink)]">WhatsApp first</strong> — Chat with
+                        <span className="font-medium text-[var(--ink)]">WhatsApp first</span> — Chat with
                         us on {CONFIG.whatsappDisplay} any time, day or night.
                       </span>
                     </p>
@@ -2395,7 +2403,7 @@ export default function FeatheredExpertsPro() {
             <div>
               <a href="#main-content" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5">
                 <FeatherLogoTile />
-                <span className="text-lg font-extrabold tracking-tight text-[var(--ink)]">
+                <span className="text-lg font-light tracking-tight text-[var(--ink)]">
                   Feathered Experts <span className="text-[var(--cyan-dark)]">Pro</span>
                 </span>
               </a>
@@ -2421,7 +2429,7 @@ export default function FeatheredExpertsPro() {
             </div>
 
             <nav aria-label="Marketplace">
-              <h4 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[var(--ink)]">Marketplace</h4>
+              <h4 className="mb-4 text-sm font-medium uppercase tracking-wider text-[var(--ink)]">Marketplace</h4>
               <ul className="space-y-2.5 text-sm">
                 {[
                   ["AI Chat Tools", "chat"],
@@ -2449,7 +2457,7 @@ export default function FeatheredExpertsPro() {
             </nav>
 
             <nav aria-label="Agency">
-              <h4 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[var(--ink)]">Agency</h4>
+              <h4 className="mb-4 text-sm font-medium uppercase tracking-wider text-[var(--ink)]">Agency</h4>
               <ul className="space-y-2.5 text-sm">
                 {[
                   ["Web Development", "webdev"],
@@ -2474,7 +2482,7 @@ export default function FeatheredExpertsPro() {
             </nav>
 
             <div>
-              <h4 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[var(--ink)]">Get Started</h4>
+              <h4 className="mb-4 text-sm font-medium uppercase tracking-wider text-[var(--ink)]">Get Started</h4>
               <ul className="space-y-2.5 text-sm">
                 <li>
                   <a
@@ -2520,7 +2528,7 @@ export default function FeatheredExpertsPro() {
               </p>
               <p className="mt-3 flex items-start gap-2 text-sm">
                 <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                <a href={CONFIG.channelUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--cyan-dark)] hover:underline">
+                <a href={CONFIG.channelUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-[var(--cyan-dark)] hover:underline">
                   Join our WhatsApp channel
                 </a>
               </p>
@@ -2533,7 +2541,7 @@ export default function FeatheredExpertsPro() {
               <span className="flex items-center gap-4">
                 <SmartLink to={CONFIG.privacyUrl} className="transition-colors hover:text-[var(--cyan-dark)]">Privacy</SmartLink>
                 <SmartLink to={CONFIG.termsUrl} className="transition-colors hover:text-[var(--cyan-dark)]">Terms</SmartLink>
-                <span className="font-mono text-xs font-bold tracking-widest">
+                <span className="font-mono text-xs font-medium tracking-widest">
                   LIGHTWEIGHT EXECUTION — HEAVYWEIGHT RESULTS
                 </span>
               </span>
@@ -2669,7 +2677,7 @@ const LeadForm = React.memo(function LeadForm({ showToast }) {
         </p>
       ) : null}
 
-      <button type="submit" className="btn-primary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 text-base font-bold">
+      <button type="submit" className="btn-primary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 text-base font-medium">
         Send My Brief on WhatsApp
         <ArrowRight className="h-5 w-5" />
       </button>
@@ -2688,10 +2696,10 @@ const LeadForm = React.memo(function LeadForm({ showToast }) {
    Glassmorphism cards, glowing gradient borders, marquee/float
    keyframes, and the 1920px / 2560px fluid scaling live here.
    ════════════════════════════════════════════════════════════════════ */
-const THEME_CSS = `@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap");
+const THEME_CSS = `@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Sora:wght@300;400;500&display=swap");
 
 /* ══ THEME CSS — light default, dark under [data-theme="dark"] ══
-   HD fonts: Sora (display) + Inter (body) via the @import above.
+   HD fonts: Sora (display) + Inter (body) via the @import above — light weights 300/400/500 only, no bold anywhere.
    Font tokens, fluid clamp() type + spacing tokens, film grain,
    tilt glare, glass, focus rings, safe-area and the 1920/2560 scale. */
 :root, [data-theme="light"] {
@@ -2743,6 +2751,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -2750,12 +2759,26 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
 }
+/* Light typography safety net — headings render light (300); <strong>/<b>
+   can never render bold (capped at 500). */
+.fe-root h1, .fe-root h2, .fe-root h3 { font-weight: 300; }
+.fe-root strong, .fe-root b { font-weight: 500; }
 .fe-root h1, .fe-root h2, .fe-root h3, .fe-display {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
 .fe-root h1 { letter-spacing: -0.03em; }
 .fe-hero h1 { font-size: var(--fs-display); }
+/* Animated gradient text on the hero headline — the gradient slowly
+   slides (background-position only, 60fps). */
+.fe-hero-grad {
+  background: linear-gradient(90deg, #00C2D1, #0EA5E9, #7B2CBF, #00C2D1);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+  animation: fe-grad-shift 7s linear infinite;
+}
+@keyframes fe-grad-shift { to { background-position: 200% center; } }
 .fe-root h2 { font-size: var(--fs-h2); }
 .fe-root h3 { font-size: var(--fs-h3); }
 .fe-num { font-variant-numeric: tabular-nums; }
@@ -2774,7 +2797,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 /* Skip link — hidden until keyboard focus */
 .fe-skip-link {
   position: fixed; top: -120px; left: 16px; z-index: 100;
-  background: #0B1220; color: #fff; font-weight: 700; font-size: 14px;
+  background: #0B1220; color: #fff; font-weight: 500; font-size: 14px;
   padding: 10px 16px; border-radius: 9999px; transition: top 0.2s ease;
 }
 .fe-skip-link:focus { top: calc(12px + env(safe-area-inset-top, 0px)); color: #fff; }
@@ -2798,14 +2821,22 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .fe-card.tilt:hover { box-shadow: var(--shadow-tilt); }
+.fe-card:hover { border-color: var(--ring); }
 .fe-card-pop {
   background: linear-gradient(135deg, #0B1220 0%, #123049 45%, #1E1B4B 100%);
   color: #fff; border-color: rgba(255, 255, 255, 0.12);
+  animation: fe-pop-glow 4.5s ease-in-out infinite;
+}
+/* Animated gradient border glow on the featured / popular card. */
+@keyframes fe-pop-glow {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.45), 0 18px 45px rgba(0, 0, 0, 0.45); }
+  50% { box-shadow: 0 0 0 2px rgba(123, 44, 191, 0.65), 0 18px 55px rgba(123, 44, 191, 0.35); }
 }
 [data-theme="dark"] .fe-card-pop {
   background: linear-gradient(135deg, #0E1626 0%, #123049 55%, #2B1B4B 100%);
 }
 .btn-primary {
+  position: relative; overflow: hidden;
   background: linear-gradient(120deg, #00C2D1 0%, #0EA5E9 50%, #7B2CBF 115%);
   color: #fff;
   box-shadow: 0 10px 26px rgba(14, 165, 233, 0.32);
@@ -2813,6 +2844,13 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 }
 .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 34px rgba(14, 165, 233, 0.4); }
 .btn-primary:active { transform: translateY(0) scale(0.98); }
+/* Shine sweep across primary buttons on hover (transform only). */
+.btn-primary::after {
+  content: ""; position: absolute; top: 0; left: -90%; width: 55%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+  transform: skewX(-20deg); transition: left 0.6s ease; pointer-events: none;
+}
+.btn-primary:hover::after { left: 140%; }
 .btn-ghost {
   background: transparent; border: 1px solid var(--line); color: var(--ink);
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
@@ -2824,16 +2862,42 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   transition: background 0.2s ease;
 }
 .fe-icon-btn:hover { background: var(--chip); }
+/* Hamburger — hidden on desktop (≥1024px). The embedded <style> renders
+   after Tailwind's stylesheet, so the plain lg:hidden utility alone
+   loses to .fe-icon-btn's display rule — this explicit rule wins. */
+@media (min-width: 1024px) {
+  .fe-menu-btn { display: none !important; }
+}
+/* Feather logo tile — icon gently rotates / lifts on hover; the hero
+   tile also floats very slowly. Transform only, no layout shift. */
+.fe-logo-tile { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+.fe-logo-tile .fe-logo-icon { transition: transform 0.35s ease; }
+.fe-logo-tile:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0, 180, 210, 0.28); }
+.fe-logo-tile:hover .fe-logo-icon { transform: rotate(-10deg) scale(1.12); }
+.fe-hero .fe-logo-tile { animation: fe-logo-bob 6s ease-in-out infinite; }
+@keyframes fe-logo-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 .fe-root header {
   background: transparent; border-bottom: 1px solid transparent;
+  padding-top: env(safe-area-inset-top, 0px);
   transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 .fe-nav-scrolled {
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
   border-bottom: 1px solid var(--line);
+  box-shadow: 0 12px 32px rgba(11, 18, 32, 0.10);
 }
+/* Desktop nav links — animated gradient underline on hover / active. */
+.fe-nav-link { position: relative; }
+.fe-nav-link::after {
+  content: ""; position: absolute; left: 14px; right: 14px; bottom: 1px;
+  height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, #00C2D1, #7B2CBF);
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform 0.3s ease; pointer-events: none;
+}
+.fe-nav-link:hover::after, .fe-nav-link.fe-active::after { transform: scaleX(1); }
 .fe-drawer {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: blur(18px) saturate(1.4);
@@ -2849,7 +2913,15 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 }
 .fe-particles { position: absolute; inset: 0; width: 100%; height: 100%; }
 .fe-hero-glow {
+  position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(560px 320px at 50% 38%, rgba(0, 240, 255, 0.16), transparent 70%);
+  animation: fe-aurora 14s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+/* Subtle animated aurora drift on the hero glow (transform only). */
+@keyframes fe-aurora {
+  from { transform: translate3d(-4%, -2%, 0) scale(1); opacity: 0.85; }
+  to { transform: translate3d(4%, 3%, 0) scale(1.12); opacity: 1; }
 }
 [data-theme="dark"] .fe-hero-glow {
   background: radial-gradient(560px 320px at 50% 38%, rgba(123, 44, 191, 0.28), transparent 70%);
@@ -2862,7 +2934,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 .fe-bounce { animation: fe-bounce 1.8s ease-in-out infinite; }
 @keyframes fe-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 .fe-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
   font-family: var(--font-display);
 }
 .fe-input {
@@ -2886,7 +2958,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   transform: translate(-50%, 80px); z-index: 90;
   background: #0B1220; color: #fff; border-radius: 9999px;
-  padding: 11px 18px; font-size: 14px; font-weight: 600;
+  padding: 11px 18px; font-size: 14px; font-weight: 500;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
   opacity: 0; pointer-events: none; transition: transform 0.35s ease, opacity 0.35s ease;
   max-width: calc(100vw - 32px); text-align: center;
@@ -2935,10 +3007,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot { animation: none !important; }
-  .fe-card, .btn-primary, .btn-ghost, .fe-tilt { transition: none !important; }
+  .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot, .fe-hero-grad, .fe-hero-glow, .fe-card-pop, .fe-logo-tile { animation: none !important; }
+  .fe-card, .btn-primary, .btn-ghost, .fe-tilt, .fe-logo-tile, .fe-nav-link::after { transition: none !important; }
   .fe-tilt { transform: none !important; }
-  .fe-glare { display: none; }
+  .fe-glare, .btn-primary::after { display: none; }
   html { scroll-behavior: auto; }
 }
 `;
