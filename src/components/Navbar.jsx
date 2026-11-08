@@ -124,7 +124,7 @@ import {
    Keep `feather-logo.png` next to this file. The logo is shown inside
    a black rounded tile, so it stays crisp in both themes.
    ════════════════════════════════════════════════════════════════════ */
-import featherLogo from "./feather-logo.png";
+import featherLogo from "../assets/logo2.jpeg";
 
 /* ════════════════════════════════════════════════════════════════════
    CONFIGURATION & CONSTANTS
