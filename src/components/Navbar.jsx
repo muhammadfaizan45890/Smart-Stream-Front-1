@@ -26,8 +26,8 @@
      full prefers-reduced-motion support.
 
    ── HOW TO USE ───────────────────────────────────────────────────
-   1. Drop this file into your project (e.g. `src/components/`) and
-      render it inside a router:
+   1. Drop this file AND `feather-logo.png` into your project
+      (e.g. `src/components/`) and render it inside a router:
          import { BrowserRouter } from "react-router-dom";
          import FeatheredExpertsPro from "./FeatheredExpertsPro.advanced";
          <BrowserRouter><FeatheredExpertsPro /></BrowserRouter>
@@ -36,10 +36,12 @@
       without a <BrowserRouter> wrapper.
    2. Install the dependencies (same family as the SmartStream build):
          npm i react-router-dom lucide-react react-icons framer-motion
-   3. Logo: the import below points at `../assets/logo2.jpeg` — keep
-      that file in your project's assets folder. The logo is shown
-      inside a black rounded tile, so it stays crisp in both themes,
-      and is also used as the page favicon.
+   3. Logo: the import below points at `./feather-logo.png` — keep the
+      feather PNG next to this file (it is supplied with it). The logo
+      is shown inside a black rounded tile, so it stays crisp in both
+      themes, and is also used as the page favicon. Do NOT point this
+      import at `../assets/logo2.jpeg` — in some projects that file is
+      a different (SmartStream "S") logo.
 
    ── TAILWIND `3xl:` BREAKPOINT — REQUIRED SETUP ──────────────────
    This file uses `3xl:` utilities for the 1920px+ HD/4K enlargements.
@@ -142,11 +144,11 @@ import {
 } from "framer-motion";
 
 /* ════════════════════════════════════════════════════════════════════
-   LOGO IMPORT — white feather on black, from the user's project.
-   `../assets/logo2.jpeg` must exist in the project. The logo is shown
+   LOGO IMPORT — white feather on black.
+   Keep `feather-logo.png` next to this file. The logo is shown
    inside a black rounded tile, so it stays crisp in both themes.
    ════════════════════════════════════════════════════════════════════ */
-import featherLogo from "../assets/logo2.jpeg";
+import featherLogo from "./feather-logo.png";
 
 /* ════════════════════════════════════════════════════════════════════
    CONFIGURATION & CONSTANTS
@@ -1396,12 +1398,12 @@ const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
               Negotiate on WhatsApp
             </span>
           </p>
-          <div className="flex min-w-0 flex-wrap gap-2">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
             <button
               type="button"
               onClick={() => onDemo(tool)}
               aria-label={`Live demo of ${tool.name}`}
-              className="btn-ghost min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
+              className="btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-bold"
             >
               Live Demo
             </button>
@@ -1409,7 +1411,7 @@ const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
               type="button"
               onClick={() => onBuy(tool)}
               aria-label={tool.more ? "Ask about other tools on WhatsApp" : `Negotiate ${tool.name} on WhatsApp`}
-              className="btn-primary min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
+              className="btn-primary min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-bold"
             >
               <FaWhatsapp className="mr-1.5 inline h-4 w-4" />
               {tool.more ? "Ask About Other Tools on WhatsApp" : "Negotiate on WhatsApp"}
@@ -1765,7 +1767,7 @@ export default function FeatheredExpertsPro() {
                       e.preventDefault();
                       scrollToId("tools");
                     }}
-                    className="btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-base font-bold 3xl:px-8 3xl:py-4 3xl:text-lg"
+                    className="btn-primary inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold sm:px-6 sm:py-3.5 sm:text-base 3xl:px-8 3xl:py-4 3xl:text-lg"
                   >
                     Explore AI Tools Marketplace
                     <ArrowRight className="h-5 w-5" />
@@ -1844,7 +1846,7 @@ export default function FeatheredExpertsPro() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl bg-[var(--chip)] p-4">
                       <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
                         <BarChart3 className="h-3.5 w-3.5" /> Revenue Growth
@@ -1886,27 +1888,31 @@ export default function FeatheredExpertsPro() {
                   </div>
                 </div>
 
-                {/* Live metric badges */}
-                <div className="fe-badge absolute -left-2 top-6 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl sm:-left-6">
+                {/* Live metric badges — in normal flow below the dashboard
+                    on small screens (never overlapping it); floating only
+                    from lg up. */}
+                <div className="fe-badges mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3 lg:contents">
+                <div className="fe-badge flex items-center gap-2 rounded-2xl bg-[var(--surface)] px-3.5 py-2.5 shadow-xl ring-1 ring-[var(--line)] lg:absolute lg:-left-6 lg:top-6">
                   <Zap className="h-4 w-4 text-amber-400" />
                   <span>
                     <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">99.9% Uptime</span>
                     <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Always-on delivery</span>
                   </span>
                 </div>
-                <div className="fe-badge absolute -right-2 top-1/2 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl sm:-right-5" style={{ animationDelay: "1.2s" }}>
+                <div className="fe-badge flex items-center gap-2 rounded-2xl bg-[var(--surface)] px-3.5 py-2.5 shadow-xl ring-1 ring-[var(--line)] lg:absolute lg:-right-5 lg:top-1/2" style={{ animationDelay: "1.2s" }}>
                   <TrendingUp className="h-4 w-4 text-emerald-500" />
                   <span>
                     <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">4.8× ROAS</span>
                     <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Meta Ads average</span>
                   </span>
                 </div>
-                <div className="fe-badge absolute -bottom-4 left-8 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl" style={{ animationDelay: "2.1s" }}>
+                <div className="fe-badge flex items-center gap-2 rounded-2xl bg-[var(--surface)] px-3.5 py-2.5 shadow-xl ring-1 ring-[var(--line)] lg:absolute lg:-bottom-4 lg:left-8" style={{ animationDelay: "2.1s" }}>
                   <Sparkles className="h-4 w-4 text-violet-500" />
                   <span>
                     <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">50+ AI Tools</span>
                     <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Instant activation</span>
                   </span>
+                </div>
                 </div>
               </motion.div>
             </div>
@@ -2198,13 +2204,13 @@ export default function FeatheredExpertsPro() {
               />
 
               <Reveal className="mb-8 flex justify-center">
-                <div className="inline-flex rounded-full bg-[var(--surface)] p-1.5 ring-1 ring-[var(--line)]" role="tablist" aria-label="Pricing type">
+                <div className="inline-flex max-w-full rounded-full bg-[var(--surface)] p-1.5 ring-1 ring-[var(--line)]" role="tablist" aria-label="Pricing type">
                   <button
                     type="button"
                     role="tab"
                     aria-selected={!agency}
                     onClick={() => setAgency(false)}
-                    className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all sm:px-6 ${
+                    className={`rounded-full px-3 py-2 text-xs font-bold transition-all sm:px-6 sm:py-2.5 sm:text-sm ${
                       !agency
                         ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg"
                         : "text-[var(--muted)] hover:text-[var(--ink)]"
@@ -2217,7 +2223,7 @@ export default function FeatheredExpertsPro() {
                     role="tab"
                     aria-selected={agency}
                     onClick={() => setAgency(true)}
-                    className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all sm:px-6 ${
+                    className={`rounded-full px-3 py-2 text-xs font-bold transition-all sm:px-6 sm:py-2.5 sm:text-sm ${
                       agency
                         ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg"
                         : "text-[var(--muted)] hover:text-[var(--ink)]"
@@ -2249,17 +2255,17 @@ export default function FeatheredExpertsPro() {
                           {p.badge}
                         </span>
                       ) : null}
-                      <h3 className="text-xl font-extrabold text-[var(--ink)] 3xl:text-2xl">{p.name}</h3>
-                      <p className="mt-1 text-sm text-[var(--muted)]">{p.desc}</p>
-                      <p className="mt-5 text-3xl font-extrabold tracking-tight text-[var(--ink)] 3xl:text-4xl">
+                      <h3 className={p.badge ? "text-xl font-extrabold text-white 3xl:text-2xl" : "text-xl font-extrabold text-[var(--ink)] 3xl:text-2xl"}>{p.name}</h3>
+                      <p className={p.badge ? "mt-1 text-sm text-white/80" : "mt-1 text-sm text-[var(--muted)]"}>{p.desc}</p>
+                      <p className={p.badge ? "mt-5 text-3xl font-extrabold tracking-tight text-white 3xl:text-4xl" : "mt-5 text-3xl font-extrabold tracking-tight text-[var(--ink)] 3xl:text-4xl"}>
                         Price on Request
                       </p>
-                      <p className="mt-1 text-sm font-bold text-[var(--cyan-dark)]">
+                      <p className={p.badge ? "mt-1 text-sm font-bold text-cyan-300" : "mt-1 text-sm font-bold text-[var(--cyan-dark)]"}>
                         Negotiate on WhatsApp
                       </p>
                       <ul className="mb-6 mt-5 space-y-2">
                         {p.features.map((f) => (
-                          <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+                          <li key={f} className={p.badge ? "flex items-start gap-2 text-sm text-white/90" : "flex items-start gap-2 text-sm text-[var(--ink2)]"}>
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
                             <span>{f}</span>
                           </li>
@@ -2895,9 +2901,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 /* ── Responsive scale: 360 / 480 / 640 / 768 / 1024 / 1280 / 1440 / 1920 / 2560 ── */
 @media (max-width: 400px) {
   .fe-dash { padding: 0.875rem; border-radius: 22px; }
-  .fe-badge { max-width: 64vw; padding: 0.5rem 0.625rem; }
-  .fe-badge-sub { display: none; }
   .fe-hero { padding-top: 104px; }
+}
+/* Badges sit in normal flow below lg — no float bobbing while stacked. */
+@media (max-width: 1023.5px) {
+  .fe-badge { animation: none; }
 }
 @media (max-width: 767px) {
   .fe-icon-btn { height: 44px; width: 44px; }
