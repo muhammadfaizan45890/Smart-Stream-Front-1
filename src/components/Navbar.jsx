@@ -209,23 +209,23 @@ const OpenAiLogo = ({ className = "" }) => (
 );
 
 const LinkedInLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="LinkedIn logo"><rect width="24" height="24" rx="4.5" fill="#0A66C2"/><text x="12" y="17.2" textAnchor="middle" fontSize="11.5" fontWeight="500" fill="#FFFFFF" fontFamily="Arial,Helvetica,sans-serif">in</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="LinkedIn logo"><path fill="#0A66C2" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
 );
 
 const CanvaLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Canva logo"><defs><linearGradient id="canvaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#00C4CC"/><stop offset="1" stopColor="#7D2AE8"/></linearGradient></defs><circle cx="12" cy="12" r="11.5" fill="url(#canvaGrad)"/><text x="12" y="15.2" textAnchor="middle" fontSize="5.9" fontWeight="500" fontStyle="italic" fill="#FFFFFF" fontFamily="Georgia,serif">Canva</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Canva logo"><path fill="#00C4CC" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zM6.962 7.68c.754 0 1.337.549 1.405 1.2.069.583-.171 1.097-.822 1.406-.343.171-.48.172-.549.069-.034-.069 0-.137.069-.206.617-.514.617-.926.548-1.508-.034-.378-.308-.618-.583-.618-1.2 0-2.914 2.674-2.674 4.629.103.754.549 1.646 1.509 1.646.308 0 .65-.103.96-.24.5-.264.799-.47 1.097-.8-.073-.885.704-2.046 1.851-2.046.515 0 .926.205.96.583.068.514-.377.582-.514.582s-.378-.034-.378-.17c-.034-.138.309-.07.275-.378-.035-.206-.24-.274-.446-.274-.72 0-1.131.994-1.029 1.611.035.275.172.549.447.549.205 0 .514-.31.617-.755.068-.308.343-.514.583-.514.102 0 .17.034.205.171v.138c-.034.137-.137.548-.102.651 0 .069.034.171.17.171.092 0 .436-.18.777-.459.117-.59.253-1.298.253-1.357.034-.24.137-.48.617-.48.103 0 .171.034.205.171v.138l-.136.617c.445-.583 1.097-.994 1.508-.994.172 0 .309.102.309.274 0 .103 0 .274-.069.446-.137.377-.309.96-.412 1.474 0 .137.035.274.207.274.171 0 .685-.206 1.096-.754l.007-.004c-.002-.068-.007-.134-.007-.202 0-.411.035-.754.104-.994.068-.274.411-.514.617-.514.103 0 .205.069.205.171 0 .035 0 .103-.034.137-.137.446-.24.857-.24 1.269 0 .24.034.582.102.788 0 .034.035.069.07.069.068 0 .548-.445.89-1.028-.308-.206-.48-.549-.48-.96 0-.72.446-1.097.858-1.097.343 0 .617.24.617.72 0 .308-.103.65-.274.96h.102a.77.77 0 0 0 .584-.24.293.293 0 0 1 .134-.117c.335-.425.83-.74 1.41-.74.48 0 .924.205.959.582.068.515-.378.618-.515.618l-.002-.002c-.138 0-.377-.035-.377-.172 0-.137.309-.068.274-.376-.034-.206-.24-.275-.446-.275-.686 0-1.13.891-1.028 1.611.034.275.171.583.445.583.206 0 .515-.308.652-.754.068-.274.343-.514.583-.514.103 0 .17.034.205.171 0 .069 0 .206-.137.652-.17.308-.171.48-.137.617.034.274.171.48.309.583.034.034.068.102.068.102 0 .069-.034.138-.137.138-.034 0-.068 0-.103-.035-.514-.205-.72-.548-.789-.891-.205.24-.445.377-.72.377-.445 0-.89-.411-.96-.926a1.609 1.609 0 0 1 .075-.649c-.203.13-.422.203-.623.203h-.17c-.447.652-.927 1.098-1.27 1.303a.896.896 0 0 1-.377.104c-.068 0-.171-.035-.205-.104-.095-.152-.156-.392-.193-.667-.481.527-1.145.805-1.453.805-.343 0-.548-.206-.582-.55v-.376c.102-.754.377-1.2.377-1.337a.074.074 0 0 0-.069-.07c-.24 0-1.028.824-1.166 1.373l-.103.445c-.068.309-.377.515-.582.515-.103 0-.172-.035-.206-.172v-.137l.046-.233c-.435.31-.87.508-1.075.508-.308 0-.48-.172-.514-.412-.206.274-.445.412-.754.412-.352 0-.696-.24-.862-.593-.244.275-.523.553-.852.764-.48.309-1.028.549-1.68.549-.582 0-1.097-.309-1.371-.583-.412-.377-.651-.96-.686-1.509-.205-1.68.823-3.84 2.4-4.8.378-.205.755-.343 1.132-.343zm9.77 3.291c-.104 0-.172.172-.172.343 0 .274.137.583.309.755a1.74 1.74 0 0 0 .102-.583c0-.343-.137-.515-.24-.515z"/></svg>
 );
 
 const PrimeVideoLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Prime Video logo"><rect width="24" height="24" rx="5" fill="#00A8E1"/><path fill="#FFFFFF" d="M9.2 6.2v8.4c0 .6.65.97 1.16.65l7-4.2c.5-.3.5-1.02 0-1.32l-7-4.2c-.51-.3-1.16.07-1.16.67z"/><path d="M5.5 17.6c2.8 2 8.2 2.3 12.2.1" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round"/><path d="M16.6 16.4l1.9-.3-.5 1.8" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Prime Video logo"><path fill="#1F2E3E" d="M0 9.508c0-.043.01-.073.028-.09.018-.017.047-.025.086-.025h.329c.07 0 .112.034.127.101l.032.119c.091-.088.202-.159.33-.21a1.04 1.04 0 0 1 .396-.079c.294 0 .528.109.7.326.171.217.257.51.257.88 0 .254-.042.475-.127.665-.086.19-.201.335-.347.437a.85.85 0 0 1-.502.154c-.125 0-.243-.02-.355-.06a.857.857 0 0 1-.288-.164v1.003c0 .043-.008.073-.025.09-.017.016-.046.025-.09.025H.115c-.04 0-.068-.009-.086-.025-.019-.017-.028-.047-.028-.09zm1.113.32a.868.868 0 0 0-.447.124v1.206a.834.834 0 0 0 .447.124c.17 0 .296-.058.376-.174.081-.117.121-.3.121-.55 0-.254-.04-.439-.118-.555-.08-.116-.206-.174-.379-.174zm2.248-.087c.121-.134.236-.23.344-.286a.733.733 0 0 1 .345-.085h.063c.043 0 .073.009.092.025.018.017.027.047.027.09v.385c0 .04-.008.068-.025.087-.017.018-.046.027-.089.027a.923.923 0 0 1-.082-.004 1.369 1.369 0 0 0-.383.025c-.1.02-.186.045-.256.076v1.54c0 .04-.008.069-.025.087-.016.018-.046.028-.089.028h-.437c-.04 0-.069-.01-.087-.028-.018-.018-.028-.047-.028-.087V9.508c0-.043.01-.073.028-.09.018-.017.047-.025.087-.025h.328c.07 0 .112.034.128.1zm1.526-.71a.396.396 0 0 1-.278-.096.338.338 0 0 1-.105-.262c0-.11.035-.197.105-.26a.395.395 0 0 1 .278-.097c.116 0 .208.032.278.096.07.064.105.151.105.261a.34.34 0 0 1-.105.262.396.396 0 0 1-.278.096zm-.333.477c0-.043.01-.073.027-.09.019-.017.048-.025.087-.025h.438c.043 0 .072.008.089.025s.025.047.025.09v2.113c0 .04-.008.069-.025.087-.017.018-.046.028-.09.028h-.437c-.04 0-.068-.01-.087-.028-.018-.018-.027-.047-.027-.087zm1.837.11c.161-.107.306-.183.435-.227.13-.045.263-.067.4-.067.273 0 .466.098.579.294.155-.104.3-.18.438-.225.137-.046.278-.069.424-.069.213 0 .377.06.495.179.117.12.175.286.175.5v1.618c0 .04-.008.069-.025.087-.017.019-.046.027-.089.027h-.438c-.04 0-.068-.008-.086-.027-.018-.018-.028-.047-.028-.087V10.15c0-.208-.092-.312-.278-.312-.164 0-.33.04-.497.119v1.664c0 .04-.008.069-.025.087-.017.019-.046.027-.09.027h-.437c-.04 0-.068-.008-.086-.027-.019-.018-.028-.047-.028-.087V10.15c0-.208-.093-.312-.278-.312-.17 0-.337.04-.502.123v1.66c0 .04-.008.069-.025.087-.017.019-.046.027-.089.027h-.438c-.039 0-.068-.008-.086-.027-.018-.018-.027-.047-.027-.087V9.508c0-.043.009-.073.027-.09.018-.017.047-.025.086-.025h.329c.07 0 .112.034.128.101zm4.387 1.16a1.81 1.81 0 0 1-.451-.05c.018.204.08.35.185.44.105.088.263.132.476.132.085 0 .168-.005.249-.016a3.08 3.08 0 0 0 .362-.078.143.143 0 0 1 .023-.002c.052 0 .078.035.078.105v.211c0 .049-.007.083-.02.103a.169.169 0 0 1-.08.053 1.953 1.953 0 0 1-.708.128c-.377 0-.666-.103-.868-.312-.203-.207-.304-.505-.304-.893 0-.398.104-.71.31-.935.207-.227.494-.34.862-.34.283 0 .504.069.664.206a.69.69 0 0 1 .24.55c0 .23-.087.403-.258.52-.172.119-.425.177-.76.177zm.064-.99c-.292 0-.46.18-.506.54.122.025.257.037.406.037.155 0 .267-.024.337-.071.07-.047.105-.12.105-.218 0-.193-.114-.289-.342-.289zm2.948 1.946a.21.21 0 0 1-.075-.011.119.119 0 0 1-.05-.037.274.274 0 0 1-.038-.071l-.777-2.04a1.863 1.863 0 0 1-.023-.063.162.162 0 0 1-.009-.05c0-.047.03-.07.091-.07h.454c.049 0 .084.01.107.028.023.018.04.049.052.092l.468 1.622.477-1.622a.175.175 0 0 1 .052-.092c.023-.018.058-.027.107-.027h.44c.061 0 .091.022.091.068a.16.16 0 0 1-.009.05l-.022.065-.777 2.039a.274.274 0 0 1-.039.07.122.122 0 0 1-.047.038.207.207 0 0 1-.078.01zm2.02-2.703a.393.393 0 0 1-.277-.097.338.338 0 0 1-.105-.26c0-.11.035-.198.105-.262a.393.393 0 0 1 .277-.096c.115 0 .207.032.277.096.07.064.104.151.104.261 0 .11-.034.197-.104.261a.393.393 0 0 1-.277.097zm-.218 2.703c-.04 0-.068-.01-.086-.028-.019-.018-.028-.047-.028-.087V9.507c0-.043.01-.072.028-.09.018-.016.047-.024.086-.024h.436c.042 0 .072.008.089.025.016.017.024.046.024.09v2.111c0 .04-.008.07-.024.087-.017.019-.047.028-.09.028zm1.948.05a.869.869 0 0 1-.513-.153.97.97 0 0 1-.334-.426 1.6 1.6 0 0 1-.116-.63c0-.38.09-.682.268-.91a.856.856 0 0 1 .709-.341.98.98 0 0 1 .622.206V8.458c0-.043.01-.073.027-.09.018-.016.047-.025.087-.025h.436c.042 0 .071.009.088.025.017.017.025.047.025.09v3.161c0 .04-.008.07-.025.087-.017.019-.046.028-.088.028h-.364a.135.135 0 0 1-.084-.023.137.137 0 0 1-.043-.078l-.027-.105a.958.958 0 0 1-.668.256zm.218-.504a.762.762 0 0 0 .418-.128v-1.21a.872.872 0 0 0-.45-.114c-.16 0-.28.06-.358.18-.08.121-.118.304-.118.548 0 .245.041.426.124.546.084.119.212.178.384.178zm2.588-.51c-.169 0-.315-.016-.44-.05.018.201.078.345.18.432.103.087.257.13.465.13.083 0 .164-.005.242-.016a2.997 2.997 0 0 0 .354-.076.135.135 0 0 1 .022-.002c.05 0 .075.035.075.103v.207c0 .048-.007.082-.02.101a.165.165 0 0 1-.077.052 1.895 1.895 0 0 1-.69.126c-.367 0-.65-.102-.846-.306-.197-.204-.296-.496-.296-.876 0-.39.1-.695.302-.917.202-.222.482-.333.84-.333.276 0 .492.068.647.203a.678.678 0 0 1 .234.539c0 .225-.084.395-.251.51-.168.115-.415.173-.74.173zm.063-.97c-.285 0-.45.176-.494.53.119.024.25.036.396.036.15 0 .26-.024.329-.07.068-.046.102-.117.102-.213 0-.19-.111-.284-.333-.284zm2.442 2.003c-.36 0-.642-.11-.845-.328-.203-.218-.304-.523-.304-.914 0-.388.101-.691.304-.91.203-.218.485-.327.845-.327s.642.109.845.327c.203.219.304.522.304.91 0 .39-.101.696-.304.914-.203.218-.485.328-.845.328zm0-.514c.318 0 .477-.242.477-.728 0-.483-.16-.724-.477-.724-.318 0-.477.241-.477.724 0 .486.16.728.477.728zm-6.844 1.886c.405-.306.944-.408 1.39-.408.418 0 .756.09.828.185.15.2-.039 1.584-.775 2.244-.112.102-.22.047-.17-.087.166-.442.536-1.436.36-1.677-.175-.242-1.158-.115-1.6-.058-.068.008-.107-.02-.112-.061v-.023c.004-.036.03-.078.079-.115zm-10.184-.172a.105.105 0 0 1 .106-.091c.027 0 .057.009.089.028a11.778 11.778 0 0 0 6.194 1.772c1.52 0 3.19-.34 4.726-1.043.232-.105.426.164.2.346-1.371 1.09-3.359 1.67-5.07 1.67-2.397 0-4.557-.956-6.191-2.547a.173.173 0 0 1-.054-.097Z"/></svg>
 );
 
 const AdobeLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe logo"><path fill="#EB1000" fillRule="evenodd" d="M14.86 3H23v19zM9.14 3H1v19zM11.992 9.998 17.182 22h-3.394l-1.549-3.813h-3.79z"/></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe logo"><path fill="#FF0000" d="M13.966 22.624l-1.69-4.281H8.122l3.892-9.144 5.662 13.425zM8.884 1.376H0v21.248zm15.116 0h-8.884L24 22.624Z"/></svg>
 );
 
 const PremiereProLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe Premiere Pro logo"><rect width="24" height="24" rx="4.5" fill="#00005B"/><text x="12" y="17" textAnchor="middle" fontSize="10.5" fontWeight="500" fill="#9999FF" fontFamily="Arial,Helvetica,sans-serif">Pr</text></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe Premiere Pro logo"><path fill="#9999FF" d="M10.15 8.42a2.93 2.93 0 00-1.18-.2 13.9 13.9 0 00-1.09.02v3.36l.39.02h.53c.39 0 .78-.06 1.15-.18.32-.09.6-.28.82-.53.21-.25.31-.59.31-1.03a1.45 1.45 0 00-.93-1.46zM19.75.3H4.25A4.25 4.25 0 000 4.55v14.9c0 2.35 1.9 4.25 4.25 4.25h15.5c2.35 0 4.25-1.9 4.25-4.25V4.55C24 2.2 22.1.3 19.75.3zm-7.09 11.65c-.4.56-.96.98-1.61 1.22-.68.25-1.43.34-2.25.34l-.5-.01-.43-.01v3.21a.12.12 0 01-.11.14H5.82c-.08 0-.12-.04-.12-.13V6.42c0-.07.03-.11.1-.11l.56-.01.76-.02.87-.02.91-.01c.82 0 1.5.1 2.06.31.5.17.96.45 1.34.82.32.32.57.71.73 1.14.15.42.23.85.23 1.3 0 .86-.2 1.57-.6 2.13zm6.82-3.15v1.95c0 .08-.05.11-.16.11a4.35 4.35 0 00-1.92.37c-.19.09-.37.21-.51.37v5.1c0 .1-.04.14-.13.14h-1.97a.14.14 0 01-.16-.12v-5.58l-.01-.75-.02-.78c0-.23-.02-.45-.04-.68a.1.1 0 01.07-.11h1.78c.1 0 .18.07.2.16a3.03 3.03 0 01.13.92c.3-.35.67-.64 1.08-.86a3.1 3.1 0 011.52-.39c.07-.01.13.04.14.11v.04z"/></svg>
 );
 
 const WorkspaceLogo = ({ className = "" }) => (
@@ -241,7 +241,7 @@ const CapCutLogo = ({ className = "" }) => (
 );
 
 const MuseAiLogo = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="MuseAI logo"><defs><linearGradient id="museGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7C6CFF"/><stop offset="1" stopColor="#B16CFF"/></linearGradient></defs><path fill="url(#museGrad)" d="M5.91 3.869c.867 0 1.486.677 1.486 1.738 0 1.062-.171 2.019-.455 4.052-.203 1.425-.552 3.599-.698 4.503.28-.534.935-1.784 1.051-2.018 1.372-2.769 2.802-5.243 3.214-5.898.546-.874 1.027-1.225 1.77-1.225.386.001.846.196 1.074.456.308.352.373.921.362 1.542-.016.951-.14 2.467-.309 4.158-.075.752-.22 2.289-.318 3.319.878-1.571 2.504-4.461 3.159-5.471.571-.879 1.146-1.466 1.918-1.466.666 0 1.487.471 1.439 1.723-.072 1.847-.339 5.872-.46 7.677.817-1.189 1.89-2.95 2.293-3.612.406-.669.824-1.21 1.458-1.228.65-.018 1.085.424 1.105 1.106.02.683-.387 1.45-.927 2.321-.586.946-1.384 2.0-2.182 2.945-.797.945-1.734 1.663-2.852 1.663-1.002 0-1.668-.666-1.717-1.885-.026-.639.095-2.012.186-3.086.106-1.243.234-2.443.323-3.237-.881 1.612-2.735 4.986-3.569 6.307-.816 1.29-1.216 1.744-2.079 1.745-.862 0-1.483-.621-1.497-1.555-.014-1.012.247-7.095.505-9.122-.418 1.048-1.462 3.242-2.086 4.547-.623 1.305-1.247 2.608-2.292 3.871-.759 1.258-1.518 1.89-2.427 1.89-.91 0-1.424-.612-1.424-1.596s.285-2.623.591-4.656c.153-.984.328-2.056.525-3.193.144-.822.394-2.27.548-3.159-.7 1.09-1.959 3.052-2.342 3.643-.427.657-.809 1.135-1.443 1.135-.699 0-1.115-.545-1.115-1.179S.322 9.848.846 8.988C1.518 7.883 2.726 6.377 3.388 5.586 4.168 4.654 4.947 3.869 5.91 3.869Z"/></svg>
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="MuseAI logo"><defs><linearGradient id="museGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7C6CFF"/><stop offset="1" stopColor="#B16CFF"/></linearGradient></defs><g transform="translate(1.5 1.1) scale(0.9)"><path fill="url(#museGrad)" d="M5.91 3.869c.867 0 1.486.677 1.486 1.738 0 1.062-.171 2.019-.455 4.052-.203 1.425-.552 3.599-.698 4.503.28-.534.935-1.784 1.051-2.018 1.372-2.769 2.802-5.243 3.214-5.898.546-.874 1.027-1.225 1.77-1.225.386.001.846.196 1.074.456.308.352.373.921.362 1.542-.016.951-.14 2.467-.309 4.158-.075.752-.22 2.289-.318 3.319.878-1.571 2.504-4.461 3.159-5.471.571-.879 1.146-1.466 1.918-1.466.666 0 1.487.471 1.439 1.723-.072 1.847-.339 5.872-.46 7.677.817-1.189 1.89-2.95 2.293-3.612.406-.669.824-1.21 1.458-1.228.65-.018 1.085.424 1.105 1.106.02.683-.387 1.45-.927 2.321-.586.946-1.384 2.0-2.182 2.945-.797.945-1.734 1.663-2.852 1.663-1.002 0-1.668-.666-1.717-1.885-.026-.639.095-2.012.186-3.086.106-1.243.234-2.443.323-3.237-.881 1.612-2.735 4.986-3.569 6.307-.816 1.29-1.216 1.744-2.079 1.745-.862 0-1.483-.621-1.497-1.555-.014-1.012.247-7.095.505-9.122-.418 1.048-1.462 3.242-2.086 4.547-.623 1.305-1.247 2.608-2.292 3.871-.759 1.258-1.518 1.89-2.427 1.89-.91 0-1.424-.612-1.424-1.596s.285-2.623.591-4.656c.153-.984.328-2.056.525-3.193.144-.822.394-2.27.548-3.159-.7 1.09-1.959 3.052-2.342 3.643-.427.657-.809 1.135-1.443 1.135-.699 0-1.115-.545-1.115-1.179S.322 9.848.846 8.988C1.518 7.883 2.726 6.377 3.388 5.586 4.168 4.654 4.947 3.869 5.91 3.869Z"/></g></svg>
 );
 
 const PikaLogo = ({ className = "" }) => (
@@ -271,7 +271,7 @@ const MoreToolsLogo = ({ className = "" }) => (
 /* ════════════════════════════════════════════════════════════════════
    MARKETPLACE DATA — 31 cards. Featured Gemini Pro Plan first.
    Every card: real official logo, category + duration badges,
-   features, "Price on Request", Live Demo + Buy Now.
+   features, "Price on Request", Details + Buy Now.
    No prices anywhere. The "More Tools" card is always visible.
    ════════════════════════════════════════════════════════════════════ */
 const TOOLS = [
@@ -1335,13 +1335,13 @@ const SectionHead = React.memo(function SectionHead({ eyebrow, title, sub, align
 });
 
 /* One marketplace card — logo tile, badges, features, Price on Request,
-   Live Demo + Buy Now. 3D tilt + cursor glare on hover
+   Details + Buy Now. 3D tilt + cursor glare on hover
    (desktop fine pointers only); the tilt lives on an inner div so it
    never fights framer-motion's reveal transform on the outer article.
    Memoised so filtering/search only re-renders the cards that change.
    Card content is unchanged from the source — same fields (catLabel,
    tag, badge, duration, features), same labels, same handlers. */
-const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
+const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index }) {
   const ref = useRef(null);
   const reduced = usePrefersReducedMotion();
   useTilt(ref, !reduced);
@@ -1408,17 +1408,17 @@ const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
           <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
             <button
               type="button"
-              onClick={() => onDemo(tool)}
-              aria-label={`Live demo of ${tool.name}`}
+              onClick={() => onDetails(tool)}
+              aria-label={`Details of ${tool.name}`}
               className="btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"
             >
-              Live Demo
+              Details
             </button>
             <button
               type="button"
               onClick={() => onBuy(tool)}
               aria-label={tool.more ? "Ask about other tools on WhatsApp" : `Buy ${tool.name} now on WhatsApp`}
-              className="btn-primary min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"
+              className="btn-primary btn-noglow min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"
             >
               <FaWhatsapp className="mr-1.5 inline h-4 w-4 shrink-0" />
               {tool.more ? "Ask on WhatsApp" : "Buy Now"}
@@ -1429,6 +1429,170 @@ const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
     </motion.article>
   );
 });
+
+
+/* ── TOOL DETAILS MODAL ───────────────────────────────────────────────
+   Opens from a "Details" button. Shows ALL details of one tool: big
+   logo, name, badge, duration, category, full tagline, the complete
+   features list, "Price on Request" + Negotiate on WhatsApp, and a
+   Buy Now button (WhatsApp to 03716804766, tool pre-filled).
+   Closes via X, backdrop click or Escape; body scroll locks while open. */
+const ToolDetailsModal = React.memo(function ToolDetailsModal({ tool, onClose, onBuy }) {
+  useEscape(onClose, tool !== null);
+  const Logo = tool ? tool.logo : null;
+  return (
+    <AnimatePresence>
+      {tool ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="fixed inset-0 z-[85] flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${tool.name} details`}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: 12 }}
+            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+            className="fe-card relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-3xl p-6 sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              className="fe-icon-btn absolute right-4 top-4"
+              aria-label="Close details"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <span className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5">
+              <Logo
+                className="h-14 w-14 shrink-0"
+                style={tool.logoColor ? { color: tool.logoColor } : undefined}
+              />
+            </span>
+            <span className="mb-2 inline-block rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
+              {tool.catLabel}
+            </span>
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <h2 className="text-2xl font-light leading-snug text-[var(--ink)]">{tool.name}</h2>
+              {tool.badge ? (
+                <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
+                  {tool.badge}
+                </span>
+              ) : null}
+            </div>
+            {tool.duration ? (
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
+                {tool.duration}
+              </p>
+            ) : null}
+            <p className="mb-5 text-sm leading-relaxed text-[var(--muted)]">{tool.tag}</p>
+            <ul className="mb-6 space-y-2">
+              {tool.features.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mb-4 text-base font-light text-[var(--ink)]">
+              Price on Request
+              <span className="ml-2 text-xs font-medium text-[var(--muted)]">
+                Negotiate on WhatsApp
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                onBuy(tool);
+                onClose();
+              }}
+              className="btn-primary btn-noglow inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-medium"
+            >
+              <FaWhatsapp className="h-5 w-5" />
+              {tool.more ? "Ask on WhatsApp" : "Buy Now"}
+            </button>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+});
+
+/* ── WHATSAPP CHANNEL POPUP ───────────────────────────────────────────
+   Shows on EVERY fresh page load (~900ms after mount) — no localStorage,
+   no "don't show again": it appears on every visit. Promotes the
+   Feathered Experts Pro WhatsApp channel (CONFIG.channelUrl).
+   Closable via X, backdrop click, "Maybe later" or Escape. */
+function ChannelPopup({ open, onClose }) {
+  useEscape(onClose, open);
+  return (
+    <AnimatePresence>
+      {open ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="fixed inset-0 z-[95] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Join our WhatsApp channel"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            className="fe-card relative w-full max-w-md rounded-3xl p-6 text-center sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              className="fe-icon-btn absolute right-4 top-4"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <span className="mx-auto mb-4 flex justify-center">
+              <FeatherLogoTile size="lg" />
+            </span>
+            <h2 className="text-2xl font-light leading-snug text-[var(--ink)]">
+              Join our WhatsApp Channel
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--muted)]">
+              Get instant updates, new AI tools and exclusive deals from Feathered Experts Pro — straight to your WhatsApp.
+            </p>
+            <a
+              href={CONFIG.channelUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-medium"
+            >
+              <FaWhatsapp className="h-5 w-5" />
+              Join WhatsApp Channel
+            </a>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-3 text-sm font-medium text-[var(--muted)] underline-offset-4 hover:underline"
+            >
+              Maybe later
+            </button>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}
 
 /* ════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
@@ -1443,6 +1607,8 @@ export default function FeatheredExpertsPro() {
   const [agency, setAgency] = useState(false);
   const [toast, setToast] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [detailTool, setDetailTool] = useState(null);
+  const [channelOpen, setChannelOpen] = useState(false);
   const toastTimer = useRef(null);
   const dashRef = useRef(null);
   const dashWrapRef = useRef(null);
@@ -1458,6 +1624,14 @@ export default function FeatheredExpertsPro() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* WhatsApp channel popup — shows on EVERY fresh load, ~900ms after
+     mount. No localStorage, no "don't show again": it appears on every
+     visit. */
+  useEffect(() => {
+    const t = setTimeout(() => setChannelOpen(true), 900);
+    return () => clearTimeout(t);
   }, []);
 
   /* Favicon — the feather as an inline SVG data URI, set once. */
@@ -1485,7 +1659,7 @@ export default function FeatheredExpertsPro() {
     "cases",
     "contact",
   ]);
-  useLockBody(drawerOpen);
+  useLockBody(drawerOpen || detailTool !== null || channelOpen);
   useEscape(useCallback(() => setDrawerOpen(false), []), drawerOpen);
 
   /* 3D tilt for the hero dashboard (desktop, fine pointer only). */
@@ -1516,15 +1690,9 @@ export default function FeatheredExpertsPro() {
     });
   }, [filter, deferredQuery]);
 
-  const handleDemo = useCallback(
-    (tool) => {
-      showToast(
-        `Live demo: ${tool.name} — ask for a guided walkthrough in the form below and we'll show it live on a call.`
-      );
-      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-    },
-    [showToast]
-  );
+  const handleDetails = useCallback((tool) => {
+    setDetailTool(tool);
+  }, []);
 
   const handleBuy = useCallback(
     (tool) => {
@@ -1563,7 +1731,7 @@ export default function FeatheredExpertsPro() {
 
         {/* ── STICKY GLASS NAVBAR ─────────────────────────────── */}
         <header
-          className={`fixed inset-x-0 top-0 z-[70] transition-all duration-300 ${
+          className={`fe-nav-pill fixed left-3 right-3 top-3 z-[70] rounded-full transition-all duration-300 sm:left-6 sm:right-6 sm:top-4 ${
             scrolled ? "fe-nav-scrolled" : ""
           }`}
         >
@@ -2011,7 +2179,7 @@ export default function FeatheredExpertsPro() {
                       key={tool.id}
                       tool={tool}
                       index={i}
-                      onDemo={handleDemo}
+                      onDetails={handleDetails}
                       onBuy={handleBuy}
                     />
                   ))}
@@ -2287,7 +2455,7 @@ export default function FeatheredExpertsPro() {
                           showToast(`Opening WhatsApp — your message for the ${p.name} plan is pre-filled, just press send.`)
                         }
                         className={`mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-medium ${
-                          p.badge ? "btn-primary" : "btn-ghost"
+                          p.badge ? "btn-primary btn-noglow" : "btn-ghost btn-noglow"
                         }`}
                       >
                         <FaWhatsapp className="h-5 w-5 shrink-0" />
@@ -2570,6 +2738,12 @@ export default function FeatheredExpertsPro() {
           {toast}
         </div>
 
+        {/* Tool details modal */}
+        <ToolDetailsModal tool={detailTool} onClose={() => setDetailTool(null)} onBuy={handleBuy} />
+
+        {/* WhatsApp channel popup — shows on every fresh load */}
+        <ChannelPopup open={channelOpen} onClose={() => setChannelOpen(false)} />
+
         <style>{THEME_CSS}</style>
       </div>
     </MotionConfig>
@@ -2844,6 +3018,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 }
 .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 34px rgba(14, 165, 233, 0.4); }
 .btn-primary:active { transform: translateY(0) scale(0.98); }
+/* Buy Now buttons — flat, no glow/shadow in normal or hover state.
+   Other primary buttons (Get Started, lead form, back-to-top) keep theirs. */
+.btn-noglow, .btn-noglow:hover { box-shadow: none !important; }
+
 /* Shine sweep across primary buttons on hover (transform only). */
 .btn-primary::after {
   content: ""; position: absolute; top: 0; left: -90%; width: 55%; height: 100%;
@@ -2887,6 +3065,19 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
   border-bottom: 1px solid var(--line);
   box-shadow: 0 12px 32px rgba(11, 18, 32, 0.10);
+}
+/* Floating pill navbar — rounded, with top/side margins, glass + soft
+   shadow at all times (not only after scrolling). Higher specificity
+   than fe-root header so the glass background actually applies. */
+.fe-root header.fe-nav-pill {
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(11, 18, 32, 0.10);
+}
+.fe-root header.fe-nav-pill.fe-nav-scrolled {
+  box-shadow: 0 18px 44px rgba(11, 18, 32, 0.16);
 }
 /* Desktop nav links — animated gradient underline on hover / active. */
 .fe-nav-link { position: relative; }
@@ -2964,11 +3155,15 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   max-width: calc(100vw - 32px); text-align: center;
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
-@supports (bottom: env(safe-area-inset-bottom)) {
-  .fe-to-top {
-    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
-    right: calc(1.25rem + env(safe-area-inset-right, 0px));
-  }
+/* Back-to-top button — pinned bottom-right with !important so the
+   position can never be lost to a Tailwind utility cascade issue
+   (the button was seen rendered bottom-left, half cut off). */
+.fe-to-top {
+  position: fixed !important;
+  right: max(1.25rem, env(safe-area-inset-right, 0px)) !important;
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)) !important;
+  left: auto !important;
+  top: auto !important;
 }
 /* ── Responsive scale: 360 / 480 / 640 / 768 / 1024 / 1280 / 1440 / 1920 / 2560 ── */
 @media (max-width: 400px) {
