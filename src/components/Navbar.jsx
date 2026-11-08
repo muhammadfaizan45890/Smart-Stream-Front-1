@@ -32,9 +32,9 @@
    • WhatsApp channel popup — shows ~900ms after EVERY fresh page load
      (no "don't show again"), inviting visitors to join the Feathered
      Experts AI WhatsApp channel; closable via X, backdrop or Escape.
-   • Premium cards — tools badged "Premium" / "Featured Premium" get a
-     golden premium card (champagne → amber → deep gold) with a slow
-     warm sheen; all text stays dark on gold.
+   • Premium tools — tools badged "Premium" / "Featured Premium" carry
+     the standard gradient "PREMIUM" badge pill, but their cards render
+     exactly like all other tool cards.
    • Real Claude logo — official coral starburst from Simple Icons
      (`claude`, #D97757); search bar rebuilt with one icon + clear
      button and no native browser search decorations.
@@ -180,7 +180,7 @@ const CONFIG = {
   supportNumber: "923716837122", // general support: +92 371 6837122
   supportDisplay: "+92 371 6837122",
   supportEmail: "smartstreamsoftware@gmail.com",
-  channelUrl: "https://whatsapp.com/channel/0029VbE66le8fewoR2Y8ZF2y",
+  channelUrl: "https://whatsapp.com/channel/0029VbDPF64AzNboi0yoks1s",
   termsUrl: "/terms",
   privacyUrl: "/privacy",
 };
@@ -1367,7 +1367,6 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
   const reduced = usePrefersReducedMotion();
   useTilt(ref, !reduced);
   const Logo = tool.logo;
-  const isPremium = tool.badge === "Premium" || tool.badge === "Featured Premium";
   return (
     <motion.article
       initial={{ opacity: 0, y: 24 }}
@@ -1381,7 +1380,7 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
     >
       <div
         ref={ref}
-        className={`fe-card fe-tilt tilt group relative flex h-full flex-col rounded-3xl p-5${isPremium ? " fe-card-premium" : ""}`}
+        className="fe-card fe-tilt tilt group relative flex h-full flex-col rounded-3xl p-5"
       >
         <span className="fe-glare" aria-hidden="true" />
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -1391,39 +1390,39 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
               style={tool.logoColor ? { color: tool.logoColor } : undefined}
             />
           </span>
-          <span className={isPremium ? "rounded-full bg-black/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[#6B3F00] ring-1 ring-black/15" : "rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]"}>
+          <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
             {tool.catLabel}
           </span>
         </div>
 
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <h3 className={isPremium ? "text-lg font-light leading-snug text-[#231A06]" : "text-lg font-light leading-snug text-[var(--ink)]"}>{tool.name}</h3>
+          <h3 className="text-lg font-light leading-snug text-[var(--ink)]">{tool.name}</h3>
           {tool.badge ? (
-            <span className={isPremium ? "rounded-full bg-[#201500] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#FFD97A]" : "rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white"}>
+            <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
               {tool.badge}
             </span>
           ) : null}
         </div>
         {tool.duration ? (
-          <p className={isPremium ? "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[#92400E]" : "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]"}>
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
             {tool.duration}
           </p>
         ) : null}
-        <p className={isPremium ? "mb-4 text-sm leading-relaxed text-[#5B3A00]" : "mb-4 text-sm leading-relaxed text-[var(--muted)]"}>{tool.tag}</p>
+        <p className="mb-4 text-sm leading-relaxed text-[var(--muted)]">{tool.tag}</p>
 
         <ul className="mb-5 space-y-1.5">
           {tool.features.map((f) => (
-            <li key={f} className={isPremium ? "flex items-start gap-2 text-sm text-[#3D2A00]" : "flex items-start gap-2 text-sm text-[var(--ink2)]"}>
-              <Check className={isPremium ? "mt-0.5 h-4 w-4 shrink-0 text-emerald-700" : "mt-0.5 h-4 w-4 shrink-0 text-emerald-500"} strokeWidth={3} />
+            <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
               <span>{f}</span>
             </li>
           ))}
         </ul>
 
         <div className="mt-auto">
-          <p className={isPremium ? "mb-3 text-base font-light text-[#1F1400]" : "mb-3 text-base font-light text-[var(--ink)]"}>
+          <p className="mb-3 text-base font-light text-[var(--ink)]">
             Price on Request
-            <span className={isPremium ? "ml-2 text-xs font-medium text-[#4A2E00]" : "ml-2 text-xs font-medium text-[var(--muted)]"}>
+            <span className="ml-2 text-xs font-medium text-[var(--muted)]">
               Negotiate on WhatsApp
             </span>
           </p>
@@ -1432,7 +1431,7 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
               type="button"
               onClick={() => onDetails(tool)}
               aria-label={`Details of ${tool.name}`}
-              className={isPremium ? "btn-ghost-dark min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium" : "btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"}
+              className="btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"
             >
               Details
             </button>
@@ -1462,7 +1461,6 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
 const ToolDetailsModal = React.memo(function ToolDetailsModal({ tool, onClose, onBuy }) {
   useEscape(onClose, tool !== null);
   const Logo = tool ? tool.logo : null;
-  const modalIsPremium = tool ? (tool.badge === "Premium" || tool.badge === "Featured Premium") : false;
   return (
     <AnimatePresence>
       {tool ? (
@@ -1505,7 +1503,7 @@ const ToolDetailsModal = React.memo(function ToolDetailsModal({ tool, onClose, o
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <h2 className="text-2xl font-light leading-snug text-[var(--ink)]">{tool.name}</h2>
               {tool.badge ? (
-                <span className={modalIsPremium ? "rounded-full bg-[#201500] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#FFD97A]" : "rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white"}>
+                <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
                   {tool.badge}
                 </span>
               ) : null}
@@ -1592,7 +1590,7 @@ function ChannelPopup({ open, onClose }) {
               Join our WhatsApp Channel
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--muted)]">
-              Get instant updates, new AI tools and exclusive deals from Feathered Experts AI — straight to your WhatsApp.
+              Follow the Feathered Experts AI channel on WhatsApp for instant updates, new tools and exclusive deals.
             </p>
             <a
               href={CONFIG.channelUrl}
@@ -3049,43 +3047,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 [data-theme="dark"] .fe-card-pop {
   background: linear-gradient(135deg, #0E1626 0%, #123049 55%, #2B1B4B 100%);
 }
-/* ── PREMIUM TOOL CARDS — GOLDEN ────────────────────────────────────
-   Tools with badge "Premium" / "Featured Premium" get a golden
-   premium card in BOTH themes: champagne → amber → deep gold
-   gradient, gold border, and a slow warm diagonal sheen. All text on
-   premium cards uses unconditional DARK colours in the JSX (near-black
-   / dark brown / deep amber), so contrast is safe in light and dark
-   theme. The base text colour below is dark too, so the card stays
-   readable even if a Tailwind utility is lost in the user's build. */
-.fe-card.fe-card-premium {
-  background:
-    linear-gradient(135deg, #FFF7D6 0%, #FFE9A8 25%, #FFD97A 50%, #F5B83D 78%, #E9A23B 100%) padding-box,
-    linear-gradient(135deg, #B45309, #F59E0B 45%, #FDE68A 80%, #B45309) border-box;
-  border: 1px solid transparent;
-  color: #2A1E00;
-  overflow: hidden;
-  position: relative;
-}
-.fe-card.fe-card-premium:hover { border-color: transparent; }
-.fe-card-premium::after {
-  content: ""; position: absolute; inset: -20% -60%; pointer-events: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.35) 50%, transparent 58%);
-  transform: translateX(-45%);
-  animation: fe-premium-sheen 7s ease-in-out infinite;
-}
-@keyframes fe-premium-sheen {
-  0%, 55% { transform: translateX(-45%); }
-  95%, 100% { transform: translateX(45%); }
-}
-/* Dark button for the Details action on premium (gold) cards. */
-.btn-ghost-dark {
-  background: rgba(24, 16, 0, 0.88);
-  color: #fff;
-  border: 1px solid rgba(24, 16, 0, 0.35);
-  box-shadow: none;
-  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-}
-.btn-ghost-dark:hover { background: #181000; border-color: #181000; transform: translateY(-1px); }
 
 .btn-primary {
   position: relative; overflow: hidden;
@@ -3300,8 +3261,8 @@ input[type="search"] { -webkit-appearance: none; appearance: none; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot, .fe-hero-grad, .fe-hero-glow, .fe-card-pop, .fe-card-premium::after, .fe-logo-tile { animation: none !important; }
-  .fe-card, .btn-primary, .btn-ghost, .fe-tilt, .fe-logo-tile, .fe-nav-link::after, .btn-ghost-dark { transition: none !important; }
+  .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot, .fe-hero-grad, .fe-hero-glow, .fe-card-pop, .fe-logo-tile { animation: none !important; }
+  .fe-card, .btn-primary, .btn-ghost, .fe-tilt, .fe-logo-tile, .fe-nav-link::after { transition: none !important; }
   .fe-tilt { transform: none !important; }
   .fe-glare, .btn-primary::after { display: none; }
   html { scroll-behavior: auto; }
