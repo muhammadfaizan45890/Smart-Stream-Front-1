@@ -26,6 +26,19 @@
      full prefers-reduced-motion support.
    • Logo is a vector icon — `FaFeather` (react-icons/fa6) in a black
      tile, favicon as an inline SVG data URI; no image file to ship.
+   • Details modal — every card's "Details" button opens a full
+     tool-details popup (logo, badge, duration, tagline, all features,
+     Price on Request, Buy Now); closes via X, backdrop or Escape.
+   • WhatsApp channel popup — shows ~900ms after EVERY fresh page load
+     (no "don't show again"), inviting visitors to join the Feathered
+     Experts Pro WhatsApp channel; closable via X, backdrop or Escape.
+   • Premium cards — tools badged "Premium" / "Featured Premium" get a
+     dark gradient premium card with a slow sheen; all text stays light.
+   • Real Claude logo — official coral starburst from Simple Icons
+     (`claude`, #D97757); search bar rebuilt with one icon + clear
+     button and no native browser search decorations.
+   • Floating pill navbar with margins, flat (no-glow) Buy Now buttons,
+     light HD type (no bold: headings 300, body 400, labels 500 max).
 
    ── HOW TO USE ───────────────────────────────────────────────────
    1. Drop this file into your project (e.g. `src/components/`) and
@@ -124,7 +137,6 @@ import {
   FaYoutube,
 } from "react-icons/fa6";
 import {
-  SiAnthropic,
   SiCoursera,
   SiCursor,
   SiElevenlabs,
@@ -198,6 +210,14 @@ const LeonardoLogo = ({ className = "" }) => (
 
 const LovableLogo = ({ className = "" }) => (
   <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Lovable Pro logo"><defs><radialGradient id="lovableGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-1 22.49999 -30.45394 -1.3535 14 3)"><stop offset=".25" stopColor="#FE7B02"/><stop offset=".433" stopColor="#FE4230"/><stop offset=".548" stopColor="#FE529A"/><stop offset=".654" stopColor="#DD67EE"/><stop offset=".95" stopColor="#4B73FF"/></radialGradient></defs><path clipRule="evenodd" fillRule="evenodd" fill="url(#lovableGrad)" d="M7.082 0c3.91 0 7.081 3.179 7.081 7.1v2.7h2.357c3.91 0 7.082 3.178 7.082 7.1 0 3.923-3.17 7.1-7.082 7.1H0V7.1C0 3.18 3.17 0 7.082 0z"/></svg>
+);
+
+/* Real Claude logo — official starburst from Simple Icons (`claude`,
+   hex #D97757, source https://claude.ai); path byte-identical in
+   simple-icons 13.21.0 and 16.37.0. Render-tested: coral starburst,
+   fully inside the 24x24 viewBox. */
+const ClaudeLogo = ({ className = "", style }) => (
+  <svg className={className} style={style} viewBox="0 0 24 24" role="img" aria-label="Claude logo"><path fill="#D97757" d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></svg>
 );
 
 const MidjourneyLogo = ({ className = "" }) => (
@@ -355,7 +375,7 @@ const TOOLS = [
     catLabel: "AI Chat",
     badge: null,
     duration: null,
-    logo: SiAnthropic,
+    logo: ClaudeLogo,
     logoColor: "#D97757",
     features: ["Latest Claude models", "5× more usage", "Priority access"],
   },
@@ -1346,6 +1366,7 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
   const reduced = usePrefersReducedMotion();
   useTilt(ref, !reduced);
   const Logo = tool.logo;
+  const isPremium = tool.badge === "Premium" || tool.badge === "Featured Premium";
   return (
     <motion.article
       initial={{ opacity: 0, y: 24 }}
@@ -1359,7 +1380,7 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
     >
       <div
         ref={ref}
-        className="fe-card fe-tilt tilt group relative flex h-full flex-col rounded-3xl p-5"
+        className={`fe-card fe-tilt tilt group relative flex h-full flex-col rounded-3xl p-5${isPremium ? " fe-card-premium" : ""}`}
       >
         <span className="fe-glare" aria-hidden="true" />
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -1369,13 +1390,13 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
               style={tool.logoColor ? { color: tool.logoColor } : undefined}
             />
           </span>
-          <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
+          <span className={isPremium ? "rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-white/70 ring-1 ring-white/15" : "rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]"}>
             {tool.catLabel}
           </span>
         </div>
 
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <h3 className="text-lg font-light leading-snug text-[var(--ink)]">{tool.name}</h3>
+          <h3 className={isPremium ? "text-lg font-light leading-snug text-white" : "text-lg font-light leading-snug text-[var(--ink)]"}>{tool.name}</h3>
           {tool.badge ? (
             <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
               {tool.badge}
@@ -1383,15 +1404,15 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
           ) : null}
         </div>
         {tool.duration ? (
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
+          <p className={isPremium ? "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-cyan-300" : "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]"}>
             {tool.duration}
           </p>
         ) : null}
-        <p className="mb-4 text-sm leading-relaxed text-[var(--muted)]">{tool.tag}</p>
+        <p className={isPremium ? "mb-4 text-sm leading-relaxed text-white/75" : "mb-4 text-sm leading-relaxed text-[var(--muted)]"}>{tool.tag}</p>
 
         <ul className="mb-5 space-y-1.5">
           {tool.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+            <li key={f} className={isPremium ? "flex items-start gap-2 text-sm text-white/90" : "flex items-start gap-2 text-sm text-[var(--ink2)]"}>
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
               <span>{f}</span>
             </li>
@@ -1399,9 +1420,9 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
         </ul>
 
         <div className="mt-auto">
-          <p className="mb-3 text-base font-light text-[var(--ink)]">
+          <p className={isPremium ? "mb-3 text-base font-light text-white" : "mb-3 text-base font-light text-[var(--ink)]"}>
             Price on Request
-            <span className="ml-2 text-xs font-medium text-[var(--muted)]">
+            <span className={isPremium ? "ml-2 text-xs font-medium text-white/60" : "ml-2 text-xs font-medium text-[var(--muted)]"}>
               Negotiate on WhatsApp
             </span>
           </p>
@@ -1410,7 +1431,7 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
               type="button"
               onClick={() => onDetails(tool)}
               aria-label={`Details of ${tool.name}`}
-              className="btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"
+              className={isPremium ? "btn-ghost-dark min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium" : "btn-ghost min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm font-medium"}
             >
               Details
             </button>
@@ -1603,6 +1624,7 @@ export default function FeatheredExpertsPro() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const searchRef = useRef(null);
   const deferredQuery = useDeferredValue(query);
   const [agency, setAgency] = useState(false);
   const [toast, setToast] = useState("");
@@ -2140,12 +2162,28 @@ export default function FeatheredExpertsPro() {
                   <span className="sr-only">Search tools</span>
                   <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
                   <input
-                    type="search"
+                    ref={searchRef}
+                    type="text"
+                    inputMode="search"
+                    autoComplete="off"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search tools — try Gemini, Netflix, VPN…"
-                    className="fe-input w-full rounded-full py-3 pl-11 pr-4 text-sm"
+                    className="fe-input w-full rounded-full py-3 pl-11 pr-10 text-sm"
                   />
+                  {query ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery("");
+                        searchRef.current?.focus();
+                      }}
+                      className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:bg-[var(--chip)] hover:text-[var(--ink)]"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  ) : null}
                 </label>
                 <p className="mt-3 text-sm text-[var(--muted)]" aria-live="polite">
                   Showing {visibleTools.length} of {TOOLS.length} tools
@@ -3009,6 +3047,42 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 [data-theme="dark"] .fe-card-pop {
   background: linear-gradient(135deg, #0E1626 0%, #123049 55%, #2B1B4B 100%);
 }
+/* ── PREMIUM TOOL CARDS ─────────────────────────────────────────────
+   Tools with badge "Premium" / "Featured Premium" get a dark premium
+   card in BOTH themes: deep obsidian → navy → violet gradient,
+   gradient border, and a slow diagonal sheen. All text on premium
+   cards uses unconditional light colours in the JSX (white / white-75 /
+   white-90 / cyan-300), so contrast is safe in light and dark theme. */
+.fe-card.fe-card-premium {
+  background:
+    linear-gradient(135deg, #0B1220 0%, #123049 45%, #1E1B4B 100%) padding-box,
+    linear-gradient(135deg, #00F0FF, #7B2CBF) border-box;
+  border: 1px solid transparent;
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+.fe-card.fe-card-premium:hover { border-color: transparent; }
+.fe-card-premium::after {
+  content: ""; position: absolute; inset: -20% -60%; pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.12) 50%, transparent 58%);
+  transform: translateX(-45%);
+  animation: fe-premium-sheen 7s ease-in-out infinite;
+}
+@keyframes fe-premium-sheen {
+  0%, 55% { transform: translateX(-45%); }
+  95%, 100% { transform: translateX(45%); }
+}
+/* Dark ghost button for the Details action on premium (dark) cards. */
+.btn-ghost-dark {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: none;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.btn-ghost-dark:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.35); transform: translateY(-1px); }
+
 .btn-primary {
   position: relative; overflow: hidden;
   background: linear-gradient(120deg, #00C2D1 0%, #0EA5E9 50%, #7B2CBF 115%);
@@ -3135,6 +3209,15 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 }
 .fe-input:focus { border-color: var(--cyan-dark); box-shadow: 0 0 0 3px var(--ring); }
 .fe-input::placeholder { color: var(--muted2); }
+/* Never let a browser-native search icon / clear button render beside
+   the custom one — Chrome/Safari add their own magnifier + cancel
+   control to type="search" inputs (that was the doubled icon). */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration { -webkit-appearance: none; appearance: none; display: none; }
+input[type="search"]::-ms-clear, input[type="search"]::-ms-reveal { display: none; width: 0; height: 0; }
+input[type="search"] { -webkit-appearance: none; appearance: none; }
 .success {
   max-height: 0; overflow: hidden; opacity: 0;
   transition: max-height 0.5s ease, opacity 0.4s ease;
@@ -3202,8 +3285,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot, .fe-hero-grad, .fe-hero-glow, .fe-card-pop, .fe-logo-tile { animation: none !important; }
-  .fe-card, .btn-primary, .btn-ghost, .fe-tilt, .fe-logo-tile, .fe-nav-link::after { transition: none !important; }
+  .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot, .fe-hero-grad, .fe-hero-glow, .fe-card-pop, .fe-card-premium::after, .fe-logo-tile { animation: none !important; }
+  .fe-card, .btn-primary, .btn-ghost, .fe-tilt, .fe-logo-tile, .fe-nav-link::after, .btn-ghost-dark { transition: none !important; }
   .fe-tilt { transform: none !important; }
   .fe-glare, .btn-primary::after { display: none; }
   html { scroll-behavior: auto; }
