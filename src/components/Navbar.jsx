@@ -1,25 +1,45 @@
 /* ════════════════════════════════════════════════════════════════════
-   FEATHERED EXPERTS PRO — AI Tools Marketplace & Digital Agency
-   Single-file React component (React + Tailwind CSS + framer-motion).
-   Converted from the live Feathered Experts Pro site
-   (31-card marketplace, light mode by default, no prices anywhere —
-   every purchase and every lead-form brief negotiates on WhatsApp
-   03716804766).
+   FEATHERED EXPERTS PRO — ADVANCED / HD
+   AI Tools Marketplace & Digital Agency — fully advanced, HD,
+   ultra-responsive rework of FeatheredExpertsPro.jsx.
+   Same default export `FeatheredExpertsPro`, same imports, no new
+   dependencies. Drop-in replacement: same props (none), same content,
+   same WhatsApp flows, light mode by default, no prices anywhere.
+
+   WHAT'S ADVANCED IN THIS VERSION
+   • HD fonts — Sora (display) + Inter (body) via Google Fonts @import
+     inside THEME_CSS, with system fallback stacks, antialiased
+     rendering, tuned letter-spacing and tabular-nums stats.
+   • Fluid clamp() type & spacing tokens from 320px phones to 2560px+
+     ultra-wide; breakpoints at 360/480/640/768/1024/1280/1440/1920/2560.
+   • DPR-aware particle canvas (devicePixelRatio capped at 2), debounced
+     resize, pauses when the tab is hidden, single static frame for
+     reduced motion. SVG film-grain overlay for depth.
+   • 3D tilt + cursor glare on marketplace cards (rAF-throttled), subtle
+     scroll parallax on the hero dashboard, staggered scroll reveals.
+   • Performance — memoised ToolCard/SectionHead/Counter/Reveal/
+     SmartLink/LeadForm, useDeferredValue on marketplace search,
+     content-visibility on below-fold sections, passive listeners,
+     will-change only on animated elements.
+   • Accessibility — skip link, visible focus rings, aria labels on
+     card actions, 44px touch targets on mobile, safe-area insets,
+     full prefers-reduced-motion support.
 
    ── HOW TO USE ───────────────────────────────────────────────────
-   1. Put this file and `feather-logo.png` in the same folder
-      (e.g. `src/components/`) and render it inside a router:
+   1. Drop this file into your project (e.g. `src/components/`) and
+      render it inside a router:
          import { BrowserRouter } from "react-router-dom";
-         import FeatheredExpertsPro from "./FeatheredExpertsPro";
+         import FeatheredExpertsPro from "./FeatheredExpertsPro.advanced";
          <BrowserRouter><FeatheredExpertsPro /></BrowserRouter>
       The footer Privacy/Terms links use `SmartLink`, which falls back
       to a plain <a> when there is no router, so it also renders
       without a <BrowserRouter> wrapper.
    2. Install the dependencies (same family as the SmartStream build):
          npm i react-router-dom lucide-react react-icons framer-motion
-   3. Make sure the `feather-logo.png` file sits next to this file —
-      the import at the top (`./feather-logo.png`) points at it. The
-      logo is also used as the page favicon.
+   3. Logo: the import below points at `../assets/logo2.jpeg` — keep
+      that file in your project's assets folder. The logo is shown
+      inside a black rounded tile, so it stays crisp in both themes,
+      and is also used as the page favicon.
 
    ── TAILWIND `3xl:` BREAKPOINT — REQUIRED SETUP ──────────────────
    This file uses `3xl:` utilities for the 1920px+ HD/4K enlargements.
@@ -59,6 +79,7 @@ import React, {
   useMemo,
   useCallback,
   useRef,
+  useDeferredValue,
 } from "react";
 import { Link, useInRouterContext } from "react-router-dom";
 import {
@@ -117,12 +138,13 @@ import {
   useScroll,
   useSpring,
   useInView,
+  useTransform,
 } from "framer-motion";
 
 /* ════════════════════════════════════════════════════════════════════
-   LOGO IMPORT — white feather on black.
-   Keep `feather-logo.png` next to this file. The logo is shown inside
-   a black rounded tile, so it stays crisp in both themes.
+   LOGO IMPORT — white feather on black, from the user's project.
+   `../assets/logo2.jpeg` must exist in the project. The logo is shown
+   inside a black rounded tile, so it stays crisp in both themes.
    ════════════════════════════════════════════════════════════════════ */
 import featherLogo from "../assets/logo2.jpeg";
 
@@ -1009,8 +1031,10 @@ function useScrollSpy(ids) {
   return active;
 }
 
-/* 3D tilt on hover — desktop fine pointers only, disabled when the
-   user prefers reduced motion. */
+/* 3D tilt + cursor glare — desktop fine pointers only, disabled when the
+   user prefers reduced motion. rAF-throttled so pointer moves stay at
+   60fps; rotation is applied to the element while the glare position is
+   exposed as --mx/--my custom properties for the .fe-glare overlay. */
 function useTilt(ref, enabled) {
   useEffect(() => {
     const el = ref.current;
@@ -1018,18 +1042,36 @@ function useTilt(ref, enabled) {
     if (!window.matchMedia("(hover:hover) and (pointer:fine)").matches) {
       return undefined;
     }
+    let raf = 0;
+    let tx = 0;
+    let ty = 0;
+    let mx = 50;
+    let my = 50;
+    const apply = () => {
+      raf = 0;
+      el.style.transform = `perspective(900px) rotateY(${(tx * 7).toFixed(2)}deg) rotateX(${(-ty * 7).toFixed(2)}deg) translateY(-2px)`;
+      el.style.setProperty("--mx", `${mx.toFixed(1)}%`);
+      el.style.setProperty("--my", `${my.toFixed(1)}%`);
+    };
     const onMove = (e) => {
       const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 7}deg) translateY(-2px)`;
+      tx = (e.clientX - r.left) / r.width - 0.5;
+      ty = (e.clientY - r.top) / r.height - 0.5;
+      mx = ((e.clientX - r.left) / r.width) * 100;
+      my = ((e.clientY - r.top) / r.height) * 100;
+      if (!raf) raf = requestAnimationFrame(apply);
     };
     const onLeave = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
       el.style.transform = "";
+      el.style.setProperty("--mx", "50%");
+      el.style.setProperty("--my", "50%");
     };
-    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointermove", onMove, { passive: true });
     el.addEventListener("pointerleave", onLeave);
     return () => {
+      cancelAnimationFrame(raf);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerleave", onLeave);
     };
@@ -1037,7 +1079,7 @@ function useTilt(ref, enabled) {
 }
 
 /* Animated counter — counts up once when it scrolls into view. */
-function Counter({ value, suffix = "", decimals = 0, className = "" }) {
+const Counter = React.memo(function Counter({ value, suffix = "", decimals = 0, className = "" }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const [val, setVal] = useState(0);
@@ -1055,15 +1097,15 @@ function Counter({ value, suffix = "", decimals = 0, className = "" }) {
     return () => cancelAnimationFrame(raf);
   }, [inView, value]);
   return (
-    <span ref={ref} className={className}>
+    <span ref={ref} className={className ? `fe-num ${className}` : "fe-num"}>
       {val.toFixed(decimals)}
       {suffix}
     </span>
   );
-}
+});
 
 /* Scroll-reveal wrapper (framer-motion, 60fps, respects reduced motion). */
-function Reveal({ children, delay = 0, className = "", y = 26 }) {
+const Reveal = React.memo(function Reveal({ children, delay = 0, className = "", y = 26 }) {
   const reduced = usePrefersReducedMotion();
   return (
     <motion.div
@@ -1076,7 +1118,7 @@ function Reveal({ children, delay = 0, className = "", y = 26 }) {
       {children}
     </motion.div>
   );
-}
+});
 
 /* Particle feather-wave canvas — a neural-network particle field with
    three sine "feather" waves that react to the cursor. Theme-aware:
@@ -1112,11 +1154,26 @@ function ParticleCanvas({ theme }) {
       }));
     };
 
+    // DPR-aware sizing: crisp on Retina / 4K (devicePixelRatio capped at 2).
+    // All drawing stays in CSS pixels via setTransform; resize is debounced
+    // and a static frame is redrawn for reduced-motion users.
+    let resizeTimer = 0;
     const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const r = canvas.parentElement.getBoundingClientRect();
-      W = canvas.width = r.width;
-      H = canvas.height = r.height;
+      W = r.width;
+      H = r.height;
+      canvas.width = Math.max(1, Math.round(r.width * dpr));
+      canvas.height = Math.max(1, Math.round(r.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       seed();
+    };
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        resize();
+        if (reduced) draw();
+      }, 120);
     };
 
     const draw = () => {
@@ -1189,12 +1246,24 @@ function ParticleCanvas({ theme }) {
 
     resize();
     draw();
-    window.addEventListener("resize", resize);
+    // Pause the animation loop while the tab is hidden (battery + CPU).
+    const onVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      } else if (!reduced) {
+        raf = requestAnimationFrame(draw);
+      }
+    };
+    window.addEventListener("resize", onResize);
     window.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [reduced]);
 
@@ -1212,7 +1281,7 @@ function ParticleCanvas({ theme }) {
 }
 
 /* Link that uses react-router when inside a router, plain <a> otherwise. */
-const SmartLink = ({ to, children, ...props }) => {
+const SmartLink = React.memo(({ to, children, ...props }) => {
   const inRouter = useInRouterContext();
   if (inRouter) {
     return (
@@ -1226,7 +1295,7 @@ const SmartLink = ({ to, children, ...props }) => {
       {children}
     </a>
   );
-};
+});
 
 /* The white feather on black — always inside a black rounded tile. */
 const FeatherLogoTile = React.memo(function FeatherLogoTile({ size = "md", className = "" }) {
@@ -1238,7 +1307,7 @@ const FeatherLogoTile = React.memo(function FeatherLogoTile({ size = "md", class
   );
 });
 
-function SectionHead({ eyebrow, title, sub, align = "center" }) {
+const SectionHead = React.memo(function SectionHead({ eyebrow, title, sub, align = "center" }) {
   return (
     <Reveal className={`mb-10 ${align === "center" ? "text-center" : "text-left"} 3xl:mb-14`}>
       <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-[var(--cyan-dark)] 3xl:text-sm">
@@ -1254,90 +1323,103 @@ function SectionHead({ eyebrow, title, sub, align = "center" }) {
       ) : null}
     </Reveal>
   );
-}
+});
 
 /* One marketplace card — logo tile, badges, features, Price on Request,
-   Live Demo + Negotiate on WhatsApp. 3D tilt on hover (desktop). */
-function ToolCard({ tool, onDemo, onBuy, index }) {
+   Live Demo + Negotiate on WhatsApp. 3D tilt + cursor glare on hover
+   (desktop fine pointers only); the tilt lives on an inner div so it
+   never fights framer-motion's reveal transform on the outer article.
+   Memoised so filtering/search only re-renders the cards that change.
+   Card content is unchanged from the source — same fields (catLabel,
+   tag, badge, duration, features), same labels, same handlers. */
+const ToolCard = React.memo(function ToolCard({ tool, onDemo, onBuy, index }) {
   const ref = useRef(null);
   const reduced = usePrefersReducedMotion();
   useTilt(ref, !reduced);
   const Logo = tool.logo;
   return (
     <motion.article
-      ref={ref}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.55, delay: Math.min(index * 0.04, 0.4), ease: [0.22, 1, 0.36, 1] }}
-      className={`fe-card tilt group relative flex flex-col rounded-3xl p-5 ${
+      aria-label={tool.name}
+      className={`${
         tool.featured ? "sm:col-span-2 lg:col-span-2 3xl:col-span-2" : ""
       }`}
     >
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-md ring-1 ring-black/5">
-          <Logo
-            className="h-9 w-9 shrink-0"
-            style={tool.logoColor ? { color: tool.logoColor } : undefined}
-          />
-        </span>
-        <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[var(--muted)]">
-          {tool.catLabel}
-        </span>
-      </div>
-
-      <div className="mb-1 flex flex-wrap items-center gap-2">
-        <h3 className="text-lg font-extrabold leading-snug text-[var(--ink)]">{tool.name}</h3>
-        {tool.badge ? (
-          <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">
-            {tool.badge}
+      <div
+        ref={ref}
+        className="fe-card fe-tilt tilt group relative flex h-full flex-col rounded-3xl p-5"
+      >
+        <span className="fe-glare" aria-hidden="true" />
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-md ring-1 ring-black/5">
+            <Logo
+              className="h-9 w-9 shrink-0"
+              style={tool.logoColor ? { color: tool.logoColor } : undefined}
+            />
           </span>
+          <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[var(--muted)]">
+            {tool.catLabel}
+          </span>
+        </div>
+
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <h3 className="text-lg font-extrabold leading-snug text-[var(--ink)]">{tool.name}</h3>
+          {tool.badge ? (
+            <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">
+              {tool.badge}
+            </span>
+          ) : null}
+        </div>
+        {tool.duration ? (
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
+            {tool.duration}
+          </p>
         ) : null}
-      </div>
-      {tool.duration ? (
-        <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
-          {tool.duration}
-        </p>
-      ) : null}
-      <p className="mb-4 text-sm leading-relaxed text-[var(--muted)]">{tool.tag}</p>
+        <p className="mb-4 text-sm leading-relaxed text-[var(--muted)]">{tool.tag}</p>
 
-      <ul className="mb-5 space-y-1.5">
-        {tool.features.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
+        <ul className="mb-5 space-y-1.5">
+          {tool.features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
 
-      <div className="mt-auto">
-        <p className="mb-3 text-base font-extrabold text-[var(--ink)]">
-          Price on Request
-          <span className="ml-2 text-xs font-semibold text-[var(--muted)]">
-            Negotiate on WhatsApp
-          </span>
-        </p>
-        <div className="flex min-w-0 flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => onDemo(tool)}
-            className="btn-ghost min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
-          >
-            Live Demo
-          </button>
-          <button
-            type="button"
-            onClick={() => onBuy(tool)}
-            className="btn-primary min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
-          >
-            <FaWhatsapp className="mr-1.5 inline h-4 w-4" />
-            {tool.more ? "Ask About Other Tools on WhatsApp" : "Negotiate on WhatsApp"}
-          </button>
+        <div className="mt-auto">
+          <p className="mb-3 text-base font-extrabold text-[var(--ink)]">
+            Price on Request
+            <span className="ml-2 text-xs font-semibold text-[var(--muted)]">
+              Negotiate on WhatsApp
+            </span>
+          </p>
+          <div className="flex min-w-0 flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onDemo(tool)}
+              aria-label={`Live demo of ${tool.name}`}
+              className="btn-ghost min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
+            >
+              Live Demo
+            </button>
+            <button
+              type="button"
+              onClick={() => onBuy(tool)}
+              aria-label={tool.more ? "Ask about other tools on WhatsApp" : `Negotiate ${tool.name} on WhatsApp`}
+              className="btn-primary min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
+            >
+              <FaWhatsapp className="mr-1.5 inline h-4 w-4" />
+              {tool.more ? "Ask About Other Tools on WhatsApp" : "Negotiate on WhatsApp"}
+            </button>
+          </div>
         </div>
       </div>
     </motion.article>
   );
-}
+});
 
 /* ════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
@@ -1348,6 +1430,7 @@ export default function FeatheredExpertsPro() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [agency, setAgency] = useState(false);
   const [toast, setToast] = useState("");
   const [scrolled, setScrolled] = useState(false);
@@ -1381,6 +1464,7 @@ export default function FeatheredExpertsPro() {
 
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
+  const dashParallax = useTransform(scrollYProgress, [0, 0.35], [0, -30]);
 
   const activeSection = useScrollSpy([
     "tools",
@@ -1413,14 +1497,14 @@ export default function FeatheredExpertsPro() {
   }, [reduced]);
 
   const visibleTools = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     return TOOLS.filter((t) => {
       if (t.more) return true;
       if (filter !== "all" && t.cat !== filter) return false;
       if (q && !(t.name + " " + t.tag).toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [filter, query]);
+  }, [filter, deferredQuery]);
 
   const handleDemo = useCallback(
     (tool) => {
@@ -1457,7 +1541,9 @@ export default function FeatheredExpertsPro() {
   return (
     <MotionConfig reducedMotion="user">
       <div data-theme={theme} className="fe-root min-h-screen overflow-x-clip bg-[var(--bg)] font-sans text-[var(--ink)] antialiased">
+        <a href="#main-content" className="fe-skip-link">Skip to main content</a>
         <style>{THEME_CSS}</style>
+        <div className="fe-grain" aria-hidden="true" />
 
         {/* Scroll progress */}
         <motion.div
@@ -1473,7 +1559,7 @@ export default function FeatheredExpertsPro() {
         >
           <div className="mx-auto flex h-[68px] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 3xl:max-w-[1500px]">
             <a
-              href="#top"
+              href="#main-content"
               onClick={(e) => {
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1558,7 +1644,7 @@ export default function FeatheredExpertsPro() {
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "spring", stiffness: 320, damping: 32 }}
-                className="absolute right-0 top-0 flex h-full w-[82%] max-w-sm flex-col bg-[var(--surface)] p-6 shadow-2xl"
+                className="fe-drawer absolute right-0 top-0 flex h-full w-[82%] max-w-sm flex-col bg-[var(--surface)] p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"
                 aria-label="Menu"
@@ -1610,7 +1696,7 @@ export default function FeatheredExpertsPro() {
           ) : null}
         </AnimatePresence>
 
-        <main id="top">
+        <main id="main-content">
           {/* ── HERO ──────────────────────────────────────────── */}
           <section className="fe-hero relative overflow-hidden pb-16 pt-[118px] sm:pt-[136px] 3xl:pt-[160px]">
             <div className="absolute inset-0" aria-hidden="true">
@@ -1737,12 +1823,12 @@ export default function FeatheredExpertsPro() {
 
               {/* Floating 3D dashboard mockup */}
               <motion.div
-                initial={{ opacity: 0, y: 32, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 className="relative"
                 ref={dashWrapRef}
-                style={{ perspective: "1100px" }}
+                style={{ perspective: "1100px", y: reduced ? 0 : dashParallax }}
               >
                 <div ref={dashRef} className="fe-dash relative rounded-[28px] p-5 transition-transform duration-200 will-change-transform sm:p-6">
                   <div className="mb-5 flex items-center justify-between gap-3">
@@ -1805,21 +1891,21 @@ export default function FeatheredExpertsPro() {
                   <Zap className="h-4 w-4 text-amber-400" />
                   <span>
                     <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">99.9% Uptime</span>
-                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Always-on delivery</span>
+                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Always-on delivery</span>
                   </span>
                 </div>
                 <div className="fe-badge absolute -right-2 top-1/2 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl sm:-right-5" style={{ animationDelay: "1.2s" }}>
                   <TrendingUp className="h-4 w-4 text-emerald-500" />
                   <span>
                     <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">4.8× ROAS</span>
-                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Meta Ads average</span>
+                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Meta Ads average</span>
                   </span>
                 </div>
                 <div className="fe-badge absolute -bottom-4 left-8 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl" style={{ animationDelay: "2.1s" }}>
                   <Sparkles className="h-4 w-4 text-violet-500" />
                   <span>
                     <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">50+ AI Tools</span>
-                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Instant activation</span>
+                    <span className="fe-badge-sub mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Instant activation</span>
                   </span>
                 </div>
               </motion.div>
@@ -1841,7 +1927,7 @@ export default function FeatheredExpertsPro() {
           </section>
 
           {/* ── SECTION 1 — AI TOOLS MARKETPLACE ──────────────── */}
-          <section id="tools" className="scroll-mt-24 py-16 sm:py-20">
+          <section id="tools" className="fe-cv scroll-mt-24 py-16 sm:py-20">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
               <SectionHead
                 eyebrow="AI Tools Marketplace"
@@ -1905,7 +1991,7 @@ export default function FeatheredExpertsPro() {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:gap-9">
+                <div className="fe-tools-grid grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:gap-9">
                   {visibleTools.map((tool, i) => (
                     <ToolCard
                       key={tool.id}
@@ -1966,7 +2052,7 @@ export default function FeatheredExpertsPro() {
           </section>
 
           {/* ── SECTION 2 — CORE AGENCY SERVICES ─────────────── */}
-          <section id="services" className="scroll-mt-24 py-16 sm:py-20">
+          <section id="services" className="fe-cv scroll-mt-24 py-16 sm:py-20">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
               <SectionHead
                 eyebrow="Core Agency Services"
@@ -2012,7 +2098,7 @@ export default function FeatheredExpertsPro() {
           </section>
 
           {/* ── SECTION 3 — WHY US BENTO ─────────────────────── */}
-          <section id="cases" className="scroll-mt-24 py-16 sm:py-20">
+          <section id="cases" className="fe-cv scroll-mt-24 py-16 sm:py-20">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
               <SectionHead
                 eyebrow="Why Feathered Experts Pro"
@@ -2103,7 +2189,7 @@ export default function FeatheredExpertsPro() {
           </section>
 
           {/* ── SECTION 4 — PRICING TOGGLE ───────────────────── */}
-          <section id="pricing" className="scroll-mt-24 py-16 sm:py-20">
+          <section id="pricing" className="fe-cv scroll-mt-24 py-16 sm:py-20">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
               <SectionHead
                 eyebrow="Pricing & Engagement"
@@ -2201,7 +2287,7 @@ export default function FeatheredExpertsPro() {
           </section>
 
           {/* ── SECTION 5 — TESTIMONIALS & LEAD FORM ─────────── */}
-          <section id="reviews" className="scroll-mt-24 overflow-hidden py-16 sm:py-20">
+          <section id="reviews" className="fe-cv scroll-mt-24 overflow-hidden py-16 sm:py-20">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
               <SectionHead
                 eyebrow="Client Love"
@@ -2298,10 +2384,10 @@ export default function FeatheredExpertsPro() {
         </main>
 
         {/* ── FOOTER ──────────────────────────────────────────── */}
-        <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
+        <footer className="fe-cv border-t border-[var(--line)] bg-[var(--surface)]">
           <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 3xl:max-w-[1500px]">
             <div>
-              <a href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5">
+              <a href="#main-content" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5">
                 <FeatherLogoTile />
                 <span className="text-lg font-extrabold tracking-tight text-[var(--ink)]">
                   Feathered Experts <span className="text-[var(--cyan-dark)]">Pro</span>
@@ -2454,7 +2540,7 @@ export default function FeatheredExpertsPro() {
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Back to top"
-          className={`btn-primary fixed bottom-5 right-5 z-[60] flex h-11 w-11 items-center justify-center rounded-full shadow-xl transition-all ${
+          className={`btn-primary fe-to-top fixed bottom-5 right-5 z-[60] flex h-11 w-11 items-center justify-center rounded-full shadow-xl transition-all ${
             scrolled ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
           }`}
         >
@@ -2479,7 +2565,7 @@ export default function FeatheredExpertsPro() {
 /* ── LEAD CAPTURE FORM ────────────────────────────────────────────
    Validates name + email, then opens WhatsApp to 03716804766 with the
    brief pre-filled. Nothing is stored on the page. */
-function LeadForm({ showToast }) {
+const LeadForm = React.memo(function LeadForm({ showToast }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -2587,7 +2673,7 @@ function LeadForm({ showToast }) {
       </p>
     </form>
   );
-}
+});
 
 /* ════════════════════════════════════════════════════════════════════
    THEME CSS — light palette in :root, obsidian dark palette under
@@ -2596,7 +2682,12 @@ function LeadForm({ showToast }) {
    Glassmorphism cards, glowing gradient borders, marquee/float
    keyframes, and the 1920px / 2560px fluid scaling live here.
    ════════════════════════════════════════════════════════════════════ */
-const THEME_CSS = `
+const THEME_CSS = `@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap");
+
+/* ══ THEME CSS — light default, dark under [data-theme="dark"] ══
+   HD fonts: Sora (display) + Inter (body) via the @import above.
+   Font tokens, fluid clamp() type + spacing tokens, film grain,
+   tilt glare, glass, focus rings, safe-area and the 1920/2560 scale. */
 :root, [data-theme="light"] {
   --bg: #F4F7FB;
   --surface: #FFFFFF;
@@ -2610,146 +2701,236 @@ const THEME_CSS = `
   --cyan-dark: #0891A5;
   --violet: #7B2CBF;
   --shadow: 0 18px 45px rgba(11, 18, 32, 0.08);
+  --shadow-tilt: 0 24px 55px rgba(0, 180, 210, 0.22);
+  --ring: rgba(0, 240, 255, 0.55);
+  /* HD font tokens — display stack first, system fallbacks always present */
+  --font-display: "Sora", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  /* Fluid type + spacing tokens (320px phones → 2560px+ ultra-wide) */
+  --fs-display: clamp(2.35rem, 5.8vw + 0.4rem, 4.4rem);
+  --fs-h2: clamp(1.8rem, 3.2vw + 0.6rem, 2.9rem);
+  --fs-h3: clamp(1.15rem, 1.6vw + 0.5rem, 1.5rem);
+  --space-section: clamp(4rem, 7vw, 6rem);
   color-scheme: light;
 }
 [data-theme="dark"] {
   --bg: #07090E;
-  --surface: #0D1117;
-  --ink: #F8FAFC;
+  --surface: #0F1420;
+  --ink: #EDF2F7;
   --ink2: #CBD5E1;
   --muted: #94A3B8;
-  --muted2: #64748B;
-  --line: #1E293B;
-  --chip: #141B26;
+  --muted2: #7C8AA0;
+  --line: rgba(148, 163, 184, 0.18);
+  --chip: rgba(148, 163, 184, 0.12);
   --cyan: #00F0FF;
-  --cyan-dark: #22D3EE;
+  --cyan-dark: #00C2D1;
   --violet: #9D4EDD;
   --shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+  --shadow-tilt: 0 24px 60px rgba(0, 240, 255, 0.16);
+  --ring: rgba(0, 240, 255, 0.45);
   color-scheme: dark;
 }
-.fe-root { background: var(--bg); color: var(--ink); }
-.fe-root ::selection { background: rgba(0, 240, 255, 0.35); }
+html, body { overflow-x: clip; }
+html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
+.fe-root {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.fe-root h1, .fe-root h2, .fe-root h3, .fe-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.fe-root h1 { letter-spacing: -0.03em; }
+.fe-hero h1 { font-size: var(--fs-display); }
+.fe-root h2 { font-size: var(--fs-h2); }
+.fe-root h3 { font-size: var(--fs-h3); }
+.fe-num { font-variant-numeric: tabular-nums; }
+.fe-root section:not(.fe-hero) { padding-top: var(--space-section); padding-bottom: var(--space-section); }
+.fe-root ::selection { background: var(--violet); color: #fff; }
 .fe-root { scrollbar-color: var(--muted2) transparent; }
-
-/* Glass cards with glowing gradient borders */
+.fe-root :focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 8px; }
+/* SVG film-grain overlay — fixed, pointer-transparent, adds HD depth */
+.fe-grain {
+  position: fixed; inset: 0; z-index: 5; pointer-events: none;
+  opacity: 0.045; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+[data-theme="dark"] .fe-grain { opacity: 0.07; }
+/* Skip link — hidden until keyboard focus */
+.fe-skip-link {
+  position: fixed; top: -120px; left: 16px; z-index: 100;
+  background: #0B1220; color: #fff; font-weight: 700; font-size: 14px;
+  padding: 10px 16px; border-radius: 9999px; transition: top 0.2s ease;
+}
+.fe-skip-link:focus { top: calc(12px + env(safe-area-inset-top, 0px)); color: #fff; }
+/* Below-fold sections render lazily (content-visibility) */
+.fe-cv { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+/* 3D tilt + cursor glare — transform only, will-change on animated el only */
+.fe-tilt { will-change: transform; }
+.fe-glare {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.28), transparent 55%);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.fe-tilt:hover .fe-glare { opacity: 1; }
+[data-theme="dark"] .fe-glare {
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(0, 240, 255, 0.16), transparent 55%);
+}
 .fe-card {
-  background:
-    linear-gradient(var(--surface), var(--surface)) padding-box,
-    linear-gradient(135deg, rgba(0, 240, 255, 0.55), rgba(123, 44, 191, 0.55)) border-box;
-  border: 1px solid transparent;
+  background: var(--surface);
+  border: 1px solid var(--line);
   box-shadow: var(--shadow);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.fe-card.tilt:hover { box-shadow: 0 24px 55px rgba(0, 180, 210, 0.22); }
+.fe-card.tilt:hover { box-shadow: var(--shadow-tilt); }
 .fe-card-pop {
-  background:
-    linear-gradient(var(--surface), var(--surface)) padding-box,
-    linear-gradient(135deg, #00F0FF, #7B2CBF) border-box;
+  background: linear-gradient(135deg, #0B1220 0%, #123049 45%, #1E1B4B 100%);
+  color: #fff; border-color: rgba(255, 255, 255, 0.12);
 }
-
-/* Buttons */
+[data-theme="dark"] .fe-card-pop {
+  background: linear-gradient(135deg, #0E1626 0%, #123049 55%, #2B1B4B 100%);
+}
 .btn-primary {
-  background: linear-gradient(90deg, #0891B2, #2563EB 55%, #7B2CBF);
+  background: linear-gradient(120deg, #00C2D1 0%, #0EA5E9 50%, #7B2CBF 115%);
   color: #fff;
-  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.35), 0 0 0 1px rgba(255,255,255,0.12) inset;
+  box-shadow: 0 10px 26px rgba(14, 165, 233, 0.32);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
-.btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: 0 16px 36px rgba(37, 99, 235, 0.45); }
-.btn-primary:active { transform: translateY(0); }
+.btn-primary:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 34px rgba(14, 165, 233, 0.4); }
+.btn-primary:active { transform: translateY(0) scale(0.98); }
 .btn-ghost {
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  box-shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  background: transparent; border: 1px solid var(--line); color: var(--ink);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
-.btn-ghost:hover { transform: translateY(-1px); border-color: var(--cyan); }
+.btn-ghost:hover { border-color: var(--cyan-dark); background: var(--chip); transform: translateY(-1px); }
 .fe-icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  height: 40px; width: 40px; border-radius: 9999px;
-  background: var(--surface); color: var(--ink);
-  border: 1px solid var(--line);
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  height: 40px; width: 40px; border-radius: 9999px; color: var(--ink);
+  transition: background 0.2s ease;
 }
-.fe-icon-btn:hover { border-color: var(--cyan); transform: translateY(-1px); }
-
-/* Sticky glass navbar */
-.fe-root header { background: transparent; }
-.fe-nav-scrolled { background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
-
-/* Hero */
-.fe-hero { background: radial-gradient(900px 480px at 85% -10%, rgba(0, 240, 255, 0.14), transparent 60%), radial-gradient(700px 420px at 0% 10%, rgba(123, 44, 191, 0.14), transparent 60%); }
-[data-theme="dark"] .fe-hero { background: radial-gradient(900px 480px at 85% -10%, rgba(0, 240, 255, 0.12), transparent 60%), radial-gradient(700px 420px at 0% 10%, rgba(123, 44, 191, 0.16), transparent 60%); }
+.fe-icon-btn:hover { background: var(--chip); }
+.fe-root header {
+  background: transparent; border-bottom: 1px solid transparent;
+  transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+.fe-nav-scrolled {
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--line);
+}
+.fe-drawer {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}
+.fe-hero {
+  background: linear-gradient(180deg, #FFFFFF 0%, #EAF6FF 48%, #F4F7FB 100%);
+}
+[data-theme="dark"] .fe-hero {
+  background: radial-gradient(1100px 500px at 70% -10%, rgba(123, 44, 191, 0.22), transparent 60%),
+    radial-gradient(900px 480px at 10% 0%, rgba(0, 240, 255, 0.12), transparent 55%),
+    linear-gradient(180deg, #07090E 0%, #0A0F1A 100%);
+}
 .fe-particles { position: absolute; inset: 0; width: 100%; height: 100%; }
-.fe-hero-glow { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(600px 300px at 50% 110%, rgba(0, 240, 255, 0.10), transparent 70%); }
-.fe-dash {
-  background: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(135deg, rgba(0,240,255,0.6), rgba(123,44,191,0.6)) border-box;
-  border: 1px solid transparent;
-  box-shadow: 0 30px 70px rgba(11, 18, 32, 0.16);
+.fe-hero-glow {
+  background: radial-gradient(560px 320px at 50% 38%, rgba(0, 240, 255, 0.16), transparent 70%);
 }
-.fe-badge {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  animation: fe-float 5s ease-in-out infinite;
+[data-theme="dark"] .fe-hero-glow {
+  background: radial-gradient(560px 320px at 50% 38%, rgba(123, 44, 191, 0.28), transparent 70%);
 }
-@keyframes fe-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.fe-dash { will-change: transform; }
+.fe-badge { animation: fe-float 7s ease-in-out infinite; will-change: transform; }
+@keyframes fe-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 .fe-live-dot { animation: fe-pulse 1.6s ease-in-out infinite; }
 @keyframes fe-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.8); } }
 .fe-bounce { animation: fe-bounce 1.8s ease-in-out infinite; }
 @keyframes fe-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
-
-/* Forms */
-.fe-label { display: block; font-size: 13px; font-weight: 700; color: var(--ink2); }
+.fe-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  font-family: var(--font-display);
+}
 .fe-input {
-  background: var(--bg);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  outline: none;
+  width: 100%; background: var(--surface); border: 1px solid var(--line); color: var(--ink);
+  border-radius: 12px; padding: 12px 14px; font-size: 15px; outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.fe-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.25); }
+.fe-input:focus { border-color: var(--cyan-dark); box-shadow: 0 0 0 3px var(--ring); }
 .fe-input::placeholder { color: var(--muted2); }
 .success {
-  display: none;
-  border-radius: 16px;
-  padding: 12px 16px;
-  font-size: 14px; font-weight: 600;
-  color: #065F46; background: #D1FAE5; border: 1px solid #6EE7B7;
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease;
 }
-.success.show { display: block; }
-[data-theme="dark"] .success { color: #A7F3D0; background: rgba(16, 185, 129, 0.14); border-color: rgba(16, 185, 129, 0.4); }
-
-/* Marquee */
-.fe-marquee-wrap { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.fe-marquee { animation: fe-marquee 46s linear infinite; }
+.success.show { max-height: 240px; opacity: 1; }
+[data-theme="dark"] .success { background: rgba(22, 163, 74, 0.14); border-color: rgba(74, 222, 128, 0.35); }
+.fe-marquee-wrap { mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.fe-marquee { animation: fe-marquee 46s linear infinite; will-change: transform; }
 .fe-marquee-wrap:hover .fe-marquee { animation-play-state: paused; }
 @keyframes fe-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-/* Toast */
 .toast {
-  position: fixed; left: 50%; bottom: 24px; z-index: 90;
-  transform: translate(-50%, 16px);
-  max-width: min(92vw, 560px);
-  padding: 13px 18px; border-radius: 9999px;
-  background: #0B1220; color: #F8FAFC;
-  font-size: 14px; font-weight: 600; text-align: center;
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 80px); z-index: 90;
+  background: #0B1220; color: #fff; border-radius: 9999px;
+  padding: 11px 18px; font-size: 14px; font-weight: 600;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  opacity: 0; pointer-events: none; transition: transform 0.35s ease, opacity 0.35s ease;
+  max-width: calc(100vw - 32px); text-align: center;
 }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-
-/* Fluid 4K scaling — 1920px and 2560px */
+.toast.show { transform: translate(-50%, 0); opacity: 1; }
+@supports (bottom: env(safe-area-inset-bottom)) {
+  .fe-to-top {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    right: calc(1.25rem + env(safe-area-inset-right, 0px));
+  }
+}
+/* ── Responsive scale: 360 / 480 / 640 / 768 / 1024 / 1280 / 1440 / 1920 / 2560 ── */
+@media (max-width: 400px) {
+  .fe-dash { padding: 0.875rem; border-radius: 22px; }
+  .fe-badge { max-width: 64vw; padding: 0.5rem 0.625rem; }
+  .fe-badge-sub { display: none; }
+  .fe-hero { padding-top: 104px; }
+}
+@media (max-width: 767px) {
+  .fe-icon-btn { height: 44px; width: 44px; }
+  [role="group"] button { min-height: 44px; }
+  .fe-input { min-height: 44px; }
+}
+@media (min-width: 1440px) {
+  .fe-root { font-size: 16.5px; }
+}
 @media (min-width: 1920px) {
   .fe-root { font-size: 17px; }
+  :root {
+    --fs-display: clamp(3.4rem, 4.6vw, 5rem);
+    --fs-h2: clamp(2.4rem, 2.4vw, 3rem);
+  }
   .fe-hero { padding-top: 150px; }
+  .fe-hero h1 { line-height: 1.03; }
+  .fe-root h2 { letter-spacing: -0.02em; }
 }
 @media (min-width: 2560px) {
   .fe-root { font-size: 18px; }
+  .fe-root .max-w-7xl { max-width: 112rem; }
+  .fe-tools-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  :root {
+    --fs-display: clamp(4rem, 3.6vw, 5.6rem);
+    --fs-h2: clamp(2.6rem, 2.2vw, 3.4rem);
+  }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot { animation: none !important; }
-  .fe-card, .btn-primary, .btn-ghost { transition: none !important; }
+  .fe-card, .btn-primary, .btn-ghost, .fe-tilt { transition: none !important; }
+  .fe-tilt { transform: none !important; }
+  .fe-glare { display: none; }
+  html { scroll-behavior: auto; }
 }
 `;
