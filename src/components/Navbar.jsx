@@ -1,8 +1,56 @@
+/* ════════════════════════════════════════════════════════════════════
+   FEATHERED EXPERTS PRO — AI Tools Marketplace & Digital Agency
+   Single-file React component (React + Tailwind CSS + framer-motion).
+   Converted from the live Feathered Experts Pro site
+   (31-card marketplace, light mode by default, no prices anywhere —
+   every purchase and every lead-form brief negotiates on WhatsApp
+   03716804766).
 
+   ── HOW TO USE ───────────────────────────────────────────────────
+   1. Put this file and `feather-logo.png` in the same folder
+      (e.g. `src/components/`) and render it inside a router:
+         import { BrowserRouter } from "react-router-dom";
+         import FeatheredExpertsPro from "./FeatheredExpertsPro";
+         <BrowserRouter><FeatheredExpertsPro /></BrowserRouter>
+      The footer Privacy/Terms links use `SmartLink`, which falls back
+      to a plain <a> when there is no router, so it also renders
+      without a <BrowserRouter> wrapper.
+   2. Install the dependencies (same family as the SmartStream build):
+         npm i react-router-dom lucide-react react-icons framer-motion
+   3. Make sure the `feather-logo.png` file sits next to this file —
+      the import at the top (`./feather-logo.png`) points at it. The
+      logo is also used as the page favicon.
 
+   ── TAILWIND `3xl:` BREAKPOINT — REQUIRED SETUP ──────────────────
+   This file uses `3xl:` utilities for the 1920px+ HD/4K enlargements.
+   `3xl` is NOT a default Tailwind breakpoint, so those classes are
+   silently ignored unless you define it:
 
+   • Tailwind v3 — in `tailwind.config.js`, inside `theme.extend`:
+         screens: {
+           '3xl': '1920px',
+         },
+   • Tailwind v4 — in the stylesheet that has `@import "tailwindcss"`:
+         @theme {
+           --breakpoint-3xl: 1920px;
+         },
 
+   The core 1920px / 2560px scaling does NOT depend on this — it lives
+   in the embedded <style> block below (fluid container, fluid `clamp()`
+   type, media queries) — so the page still works without the config;
+   only the `3xl:` enlargements would not apply on very large screens.
 
+   ── LIGHT MODE BY DEFAULT ────────────────────────────────────────
+   Light mode is the default on every fresh load. The theme state
+   starts at "light", nothing is read from localStorage and nothing
+   reads prefers-color-scheme, so the page can never open dark. The
+   header toggle switches to dark for that visit only.
+
+   ── NO PRICES ────────────────────────────────────────────────────
+   No price is shown anywhere on this page. Every marketplace card
+   and every pricing tier says "Price on Request" and its button opens
+   WhatsApp to 03716804766 with the tool or plan pre-filled.
+   ════════════════════════════════════════════════════════════════════ */
 
 import React, {
   useState,
@@ -11,64 +59,56 @@ import React, {
   useMemo,
   useCallback,
   useRef,
-  useDeferredValue,
 } from "react";
 import { Link, useInRouterContext } from "react-router-dom";
 import {
-  Search,
-  ShoppingCart,
-  X,
-  Check,
-  Zap,
-  ShieldCheck,
-  Star,
   ArrowRight,
   ArrowUp,
-  ArrowUpRight,
-  MessageCircle,
-  Mail,
-  Clock,
-  Loader2,
-  AlertCircle,
-  CreditCard,
-  Headphones,
-  Play,
-  Monitor,
-  Cpu,
-  Layers,
-  Sparkles,
-  Menu,
-  Plus,
-  Minus,
-  Trash2,
-  Heart,
+  BarChart3,
+  Bot,
+  Check,
   ChevronDown,
-  SlidersHorizontal,
-  MousePointerClick,
-  Send,
-  PackageCheck,
-  Sun,
-  Moon,
+  Clock,
+  Cpu,
+  Gauge,
+  Globe,
+  Headphones,
   Landmark,
-  Smartphone,
-  Bitcoin,
-  Tag,
+  Mail,
+  Megaphone,
+  Menu,
+  MessageCircle,
+  Moon,
+  Rocket,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Sun,
+  TrendingUp,
+  X,
+  Zap,
 } from "lucide-react";
 import {
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
-  FaYoutube,
   FaTiktok,
-  FaXTwitter,
   FaWhatsapp,
+  FaXTwitter,
+  FaYoutube,
 } from "react-icons/fa6";
 import {
-  SiGooglegemini,
-  SiYoutube,
+  SiAnthropic,
+  SiCoursera,
   SiCursor,
   SiElevenlabs,
-  SiAnthropic,
+  SiNetflix,
+  SiNordvpn,
+  SiNotion,
+  SiSurfshark,
+  SiTiktok,
+  SiYoutube,
 } from "react-icons/si";
 import {
   motion,
@@ -77,243 +117,859 @@ import {
   useScroll,
   useSpring,
   useInView,
-  animate,
-  LayoutGroup,
 } from "framer-motion";
 
-/* ════════════════════════════════════════════════════════════
-   LOGO IMPORT
-   ════════════════════════════════════════════════════════════ */
-import logoImage from "../assets/logo2.jpeg";
+/* ════════════════════════════════════════════════════════════════════
+   LOGO IMPORT — white feather on black.
+   Keep `feather-logo.png` next to this file. The logo is shown inside
+   a black rounded tile, so it stays crisp in both themes.
+   ════════════════════════════════════════════════════════════════════ */
+import featherLogo from "./feather-logo.png";
 
-/* ════════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════════════
    CONFIGURATION & CONSTANTS
-   ════════════════════════════════════════════════════════════ */
+   ════════════════════════════════════════════════════════════════════ */
 const CONFIG = {
-  brandName: "SMARTSTREAM",
-  whatsappNumber: "923716837122",
-  whatsappDisplay: "+92 371 6837122",
-  currency: "$",
+  brandName: "Feathered Experts Pro",
+  tagline: "AI Tools • Websites • Meta Ads",
+  whatsappNumber: "923716804766", // display: 03716804766
+  whatsappDisplay: "0371 6804766",
+  supportNumber: "923716837122", // general support: +92 371 6837122
+  supportDisplay: "+92 371 6837122",
   supportEmail: "smartstreamsoftware@gmail.com",
+  channelUrl: "https://whatsapp.com/channel/0029VbE66le8fewoR2Y8ZF2y",
   termsUrl: "/terms",
   privacyUrl: "/privacy",
-  channelUrl: "https://whatsapp.com/channel/0029VbE66le8fewoR2Y8ZF2y",
 };
 
-const THEME_KEY = "ss-theme";
-const CART_KEY = "ss-cart";
-const WISH_KEY = "ss-wishlist";
-const POPUP_KEY = "ss-channel-popup-dismissed"; // Key for the popup
-const MAX_QTY = 10;
+const WA_NUMBER = CONFIG.whatsappNumber;
+const waLink = (text) =>
+  `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+const openWhatsApp = (text) =>
+  window.open(waLink(text), "_blank", "noopener,noreferrer");
+const buyText = (name, duration) =>
+  `Hello Feathered Experts Pro! I want to buy: ${name}${duration ? ` (${duration})` : ""}. Please share the activation details so we can negotiate on WhatsApp.`;
+const planText = (plan, group) =>
+  `Hello Feathered Experts Pro! I am interested in the ${plan} plan (${group}). Please share the details so we can negotiate on WhatsApp.`;
 
-/* Custom Midjourney SVG Icon */
-const MidjourneyIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path d="M22.36 19.06H1.64a.45.45 0 0 1-.39-.68l.83-1.42a.45.45 0 0 1 .78 0l.56.95h17.16l.56-.95a.45.45 0 0 1 .78 0l.83 1.42a.45.45 0 0 1-.39.68Z"/>
-    <path d="M18.15 11.28 12 2.06 5.85 11.28a.45.45 0 0 0 .37.7h11.56a.45.45 0 0 0 .37-.7Zm-6.15-6.4 3.8 5.68H8.2L12 4.88Z"/>
-  </svg>
+/* ── Official brand marks (inline SVG, same official artwork as the live site) ── */
+
+const GeminiProSparkLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Google Gemini logo"><defs><linearGradient id="gemGradPro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4796E3"/><stop offset=".55" stopColor="#9177C7"/><stop offset="1" stopColor="#D96570"/></linearGradient></defs><path fill="url(#gemGradPro)" d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/></svg>
 );
 
+const GeminiSparkLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Google Gemini logo"><defs><linearGradient id="gemGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4796E3"/><stop offset=".55" stopColor="#9177C7"/><stop offset="1" stopColor="#D96570"/></linearGradient></defs><path fill="url(#gemGrad)" d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/></svg>
+);
+
+const LeonardoLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 869.2332764 1000" role="img" aria-label="Leonardo.Ai logo"><path d="M792.0125122,686.2042236c0,0-42.4542236,182.7999268-172.6542358,248.0332642  c5.2000122-5.1916504,99.8583984-74.166626,135.3417358-248.0332642  c-37.3416748,7.4082642-69.5166626,5.6374512-102.2666626-6.9291992c0,6.7833252,28.1583252,222.7458496-145.5708618,274.4916382  C516.9750366,926.8041382,540.458313,862.8125,540.458313,862.8125  c-0.6958008-0.354187-58.5041199,103.020874-106.1916504,103.020874c-47.6916809,0-104.7916565-103.375061-105.4916382-103.020874  c0,0,23.4833069,63.9916382,33.5916443,90.9541626c-172.6208344-51.3041992-145.5666656-267.708313-145.5666656-274.4916382  c-32.7541656,12.5666504-64.9250031,14.3374634-102.2666702,6.9291992  c35.483345,173.8666382,130.1375122,242.8416138,135.3374939,248.0332642  C119.6458359,869.0041504,77.2166672,686.2042236,77.2166672,686.2042236  c-24.2374992,2.1832275-49.8708344-0.145874-72.0999985-6.9291992C8.3708363,688.7166748,116.1291656,1000,434.6166382,1000  c318.4833374,0,426.2750244-311.2833252,429.500061-320.7249756  C841.8833618,686.0583496,816.25,688.3874512,792.0125122,686.2042236z"/><path d="M714.2457886,228.1750031C627.0916748,230.625,603.0541992,212.625,599.479187,211.7416687  c0.9624634,2.0375061,28.5125122,62.6666565,35.604187,119.1625061c7.0874634,56.4958191-2.0917358,120.8416443-0.875,178.3166504  c11.249939,148.395813,120.8666382,145.7999878,127.5249023,147.3625488  C720.2042236,626.1416626,653.916687,547.5750122,669.7542114,434.3125  c1.1583252,7.6416626-1.7458496,195.3666382,199.4790649,222.7457886  C850.4874878,646.8833008,709.5958252,511.6958313,714.2457886,228.1750031z"/><path d="M199.4791718,434.3416748C215.3166656,547.5750122,149.0583344,626.1416626,107.5,656.6166382  c6.6541672-1.562439,116.2749939,1.0625,127.5208435-147.3666382c1.2499847-57.5041809-7.9333344-121.8166809-0.8708496-178.3166809  c7.0916595-56.4999695,34.6416626-117.1249847,35.6000061-119.1624908  c-3.6041565,0.9166565-27.6083374,18.8833313-114.7624969,16.4333496C159.6374969,511.7291565,18.7458344,646.9083252,0,657.0874634  C201.2208405,629.708313,198.3166656,441.9791565,199.4791718,434.3416748z"/><path d="M460.7166443,672.1333618c-4.5083008-4.4833984-8.6041565-5.6917114-14.3874817-5.3708496  c-1.9166565,0.0916138-21.5083313,0.0916138-23.4249878,0c-5.7833557-0.3208618-9.8791809,0.8874512-14.3875122,5.3708496  c-7.8708496,7.8166504-40.625,42.6916504-34.8416748,72.9624634c10.7500305,56.3791504,60.9416504,130.104187,60.9416504,130.104187  s50.1583557-73.7250366,60.9417114-130.104187C501.3416748,714.8250122,468.6208191,679.9500122,460.7166443,672.1333618z"/><path d="M421.4833374,56.2041664C382.25,63.0750008,336.6791992,70.7791672,287.0416565,106.5041656  c23.6875-26.6999969,67.5083618-76.8541641,147.5749817-76.8541641c80.0625,0,123.9458618,53.1041641,147.6333618,79.8333282  c-49.6708374-35.7874985-95.2333069-46.408329-134.4999695-53.2791634  c76.6957703,91.3083344,168.4124451,142.5874939,291.1708069,151.1416626C627.208313,159.1083374,615.4083252,0,434.6166382,0  S242.0250092,159.1083374,130.3125,207.3166504c122.7541656-8.5541534,213.1374817-58.7416534,291.1708374-151.1416473V56.2041664z"/><path d="M434.6166382,605.5166626C326.0416565,556.395874,324.5583496,708.6583252,324.1500244,751.4375  c48.9124756-83.9916992,72.0791321-123.229187,93.6374817-112.520874c12.0916443,5.9875488,21.2749634,6.4875488,33.6583252,0  c21.3291626-11.2124634,44.7250061,28.5291748,93.6333313,112.520874  C544.6749878,708.6583252,543.625,557.1624756,434.6166382,605.5166626z"/><path d="M559.145874,524.9749756l10.9249268,55.6125488c0,0-65.6457825-84.8208313-105.9833069-51.8083496  c-23.833313,19.5041504-35.75,19.0291748-58.9416504,0c-39.7833557-32.6000061-105.9833374,51.8083496-105.9833374,51.8083496  l10.9249878-55.6125488c-106.0166626,63.9291992-72.9708405,192.6791992,6.541687,312.4041748  c-2.2125244-9.291687-94.5958557-310.3416748,111.4499817-257.0582886c5.5499878,1.6832886,7.5833435,1.6541138,13.0791626,0  c205.604187-53.7833862,113.6583252,247.7666016,111.4458618,257.0582886  C632.1208496,717.6541748,665.1624756,588.9041748,559.145874,524.9749756z"/><path d="M434.6166382,125.6250076c-127.6958008,0-164.6582947,190.0874939-165.8541565,195.8083191  c28.6833496-30.770813,172.8291931-53.6374817,143.8000183,58.8625183c-3.9875183,25.0124817-2.8249817,52.8916321,1.3041687,72.75  c4.125,36.6416321-14.0916748,13.8958435-16.7374878,11.416687c-13.0499878-12.3291931-33.5083313,17.6166382-17.9625244,22.541626  c41.7625122,13.3041687,35.0791931,32.4833374,55.4499817,32.4833374c20.3708496,0,13.6875305-19.1791687,55.4500122-32.4833374  c15.5458374-4.9249878-4.9125061-34.8708191-17.9624939-22.541626c-2.645813,2.4791565-20.8624878,25.2249451-16.7374878-11.416687  c4.1291504-19.8583679,5.2916565-47.7375183,1.3083496-72.75c-29.0291748-112.5,115.1124573-89.6333313,143.7958069-58.8625183  C599.2791748,315.7124939,562.3125,125.6250076,434.6166382,125.6250076z"/><path d="M497.0416565,442.8083496c29.6708679,25.3416748,11.0958557,45.4958191,34.9624939,55.2874756  c18.1916504,7.4666748,21.6749878-0.8541565,29.7000122-25.2541504  c8.0166626-24.4000244,45.4499512-38.9750061,39.4041748-99.604187c-1.333313-15.5749817-19.6166382-20.5916443-35.1625366-12.0625  c-28.9749756,15.8999939-51.208313,4.7166748-63.9958191-4.2208252  c-32.1124573-17.1083374-29.7583313,64.6125183-4.9083252,85.8250122V442.8083496z"/><path d="M307.5,472.8708191c8.0208435,24.3999939,11.5083008,32.7208557,29.7000122,25.2541809  c23.8624878-9.7958374,5.2916565-29.9749756,34.9624939-55.2874756  c24.8458252-21.2124939,27.1999817-102.9333801-4.9125061-85.8250122c-12.8125,8.9374695-35.0458374,20.125-63.9916687,4.2207947  c-15.5500183-8.5291443-33.8291626-3.5124512-35.1666565,12.0666809C262.0499878,433.9541626,299.4791565,448.5,307.5,472.8999939  V472.8708191z"/><path d="M510,336.0375061h46.8791504C533.5708618,324,520.4333496,324.2666626,510,336.0375061z"/><path d="M312.3250122,336.0375061h46.875C348.7374878,324.2666626,335.6041565,324,312.3250122,336.0375061z"/></svg>
+);
+
+const LovableLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Lovable Pro logo"><defs><radialGradient id="lovableGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-1 22.49999 -30.45394 -1.3535 14 3)"><stop offset=".25" stopColor="#FE7B02"/><stop offset=".433" stopColor="#FE4230"/><stop offset=".548" stopColor="#FE529A"/><stop offset=".654" stopColor="#DD67EE"/><stop offset=".95" stopColor="#4B73FF"/></radialGradient></defs><path clipRule="evenodd" fillRule="evenodd" fill="url(#lovableGrad)" d="M7.082 0c3.91 0 7.081 3.179 7.081 7.1v2.7h2.357c3.91 0 7.082 3.178 7.082 7.1 0 3.923-3.17 7.1-7.082 7.1H0V7.1C0 3.18 3.17 0 7.082 0z"/></svg>
+);
+
+const MidjourneyLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Midjourney logo"><path fill="#000000" d="M22.36 19.06H1.64a.45.45 0 0 1-.39-.68l.83-1.42a.45.45 0 0 1 .78 0l.56.95h17.16l.56-.95a.45.45 0 0 1 .78 0l.83 1.42a.45.45 0 0 1-.39.68Z"/><path fill="#000000" d="M18.15 11.28 12 2.06 5.85 11.28a.45.45 0 0 0 .37.7h11.56a.45.45 0 0 0 .37-.7Zm-6.15-6.4 3.8 5.68H8.2L12 4.88Z"/></svg>
+);
+
+const OpenAiLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="ChatGPT (OpenAI) logo"><path fill="#000000" d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg>
+);
+
+const LinkedInLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="LinkedIn logo"><rect width="24" height="24" rx="4.5" fill="#0A66C2"/><text x="12" y="17.2" textAnchor="middle" fontSize="11.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,Helvetica,sans-serif">in</text></svg>
+);
+
+const CanvaLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Canva logo"><defs><linearGradient id="canvaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#00C4CC"/><stop offset="1" stopColor="#7D2AE8"/></linearGradient></defs><circle cx="12" cy="12" r="11.5" fill="url(#canvaGrad)"/><text x="12" y="15.2" textAnchor="middle" fontSize="5.9" fontWeight="700" fontStyle="italic" fill="#FFFFFF" fontFamily="Georgia,serif">Canva</text></svg>
+);
+
+const PrimeVideoLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Prime Video logo"><rect width="24" height="24" rx="5" fill="#00A8E1"/><path fill="#FFFFFF" d="M9.2 6.2v8.4c0 .6.65.97 1.16.65l7-4.2c.5-.3.5-1.02 0-1.32l-7-4.2c-.51-.3-1.16.07-1.16.67z"/><path d="M5.5 17.6c2.8 2 8.2 2.3 12.2.1" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round"/><path d="M16.6 16.4l1.9-.3-.5 1.8" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
+
+const AdobeLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe logo"><path fill="#EB1000" fillRule="evenodd" d="M14.86 3H23v19zM9.14 3H1v19zM11.992 9.998 17.182 22h-3.394l-1.549-3.813h-3.79z"/></svg>
+);
+
+const PremiereProLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Adobe Premiere Pro logo"><rect width="24" height="24" rx="4.5" fill="#00005B"/><text x="12" y="17" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#9999FF" fontFamily="Arial,Helvetica,sans-serif">Pr</text></svg>
+);
+
+const WorkspaceLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Google Workspace logo"><path fill="#1FA463" d="M12.01 1.485c-2.082 0-3.754.02-3.743.047.01.02 1.708 3.001 3.774 6.62l3.76 6.574h3.76c2.081 0 3.753-.02 3.742-.047-.005-.02-1.708-3.001-3.775-6.62l-3.76-6.574zm-4.76 1.73a789.8 789.8 0 0 0-3.63 6.319L0 15.868l1.89 3.298 1.885 3.297 3.62-6.335 3.618-6.33-1.88-3.287C8.1 4.704 7.255 3.22 7.25 3.214zm2.259 12.653-.203.348c-.114.198-.96 1.672-1.88 3.287a423.9 423.9 0 0 1-1.698 2.97c-.01.026 3.24.042 7.222.042h7.244l1.796-3.157c.992-1.734 1.85-3.23 1.906-3.323l.104-.167h-7.249z"/></svg>
+);
+
+const OfficeLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Microsoft Office logo"><rect x="0.5" y="0.5" width="11" height="11" rx="2" fill="#2B579A"/><rect x="12.5" y="0.5" width="11" height="11" rx="2" fill="#217346"/><rect x="0.5" y="12.5" width="11" height="11" rx="2" fill="#D24726"/><rect x="12.5" y="12.5" width="11" height="11" rx="2" fill="#EB3C00"/><text x="6" y="9.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">W</text><text x="18" y="9.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">X</text><text x="6" y="21.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">P</text><text x="18" y="21.2" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,sans-serif">O</text></svg>
+);
+
+const CapCutLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="CapCut logo"><path fill="#000000" fillRule="evenodd" d="M24.189 6.442V2.671l-4.535 2.383V4.91c.002-1.505-1.078-2.411-2.638-2.411H2.64C.993 2.5 0 3.407 0 4.91V8.72L6.354 12 0 15.316v3.8C0 20.595 1 21.5 2.64 21.5h14.373c1.56 0 2.639-.907 2.639-2.382v-.197l4.536 2.409v-3.828L13.64 12 24.19 6.443zM9.982 13.873l7.797 4.083H2.157l7.825-4.083zm7.741-7.828-7.742 4.057-7.825-4.057h15.567z"/></svg>
+);
+
+const MuseAiLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="MuseAI logo"><defs><linearGradient id="museGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7C6CFF"/><stop offset="1" stopColor="#B16CFF"/></linearGradient></defs><path fill="url(#museGrad)" d="M5.91 3.869c.867 0 1.486.677 1.486 1.738 0 1.062-.171 2.019-.455 4.052-.203 1.425-.552 3.599-.698 4.503.28-.534.935-1.784 1.051-2.018 1.372-2.769 2.802-5.243 3.214-5.898.546-.874 1.027-1.225 1.77-1.225.386.001.846.196 1.074.456.308.352.373.921.362 1.542-.016.951-.14 2.467-.309 4.158-.075.752-.22 2.289-.318 3.319.878-1.571 2.504-4.461 3.159-5.471.571-.879 1.146-1.466 1.918-1.466.666 0 1.487.471 1.439 1.723-.072 1.847-.339 5.872-.46 7.677.817-1.189 1.89-2.95 2.293-3.612.406-.669.824-1.21 1.458-1.228.65-.018 1.085.424 1.105 1.106.02.683-.387 1.45-.927 2.321-.586.946-1.384 2.0-2.182 2.945-.797.945-1.734 1.663-2.852 1.663-1.002 0-1.668-.666-1.717-1.885-.026-.639.095-2.012.186-3.086.106-1.243.234-2.443.323-3.237-.881 1.612-2.735 4.986-3.569 6.307-.816 1.29-1.216 1.744-2.079 1.745-.862 0-1.483-.621-1.497-1.555-.014-1.012.247-7.095.505-9.122-.418 1.048-1.462 3.242-2.086 4.547-.623 1.305-1.247 2.608-2.292 3.871-.759 1.258-1.518 1.89-2.427 1.89-.91 0-1.424-.612-1.424-1.596s.285-2.623.591-4.656c.153-.984.328-2.056.525-3.193.144-.822.394-2.27.548-3.159-.7 1.09-1.959 3.052-2.342 3.643-.427.657-.809 1.135-1.443 1.135-.699 0-1.115-.545-1.115-1.179S.322 9.848.846 8.988C1.518 7.883 2.726 6.377 3.388 5.586 4.168 4.654 4.947 3.869 5.91 3.869Z"/></svg>
+);
+
+const PikaLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Pika logo"><path fill="#000000" fillRule="evenodd" d="M.661 19.889h8.666c-.14-1.41-1.145-2.955-3.601-4.007v-.104c2.863.88 3.893 2.386 4.312 4.11H20.73l-1.72-1.476C20.017 15.244 24 13.747 24 13.747c-.141-2.541-1.441-4.909-5.787-6.827L8.326 3c.331 4.179 1.811 6.575 5.523 7.163v.102c-2.579-.064-4.368-1.216-5.275-3.588C.698 8.123-1.201 14.156.66 19.889z"/></svg>
+);
+
+const RunwayLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="Runway logo"><path fill="#000000" fillRule="evenodd" d="M17.86 22.992c-2.669.245-4.887-2.876-6.597-4.454C10.398 24.759 1 24.177 1 17.86V6.15c0-.921.244-1.861.733-2.65C2.635 1.977 4.383.98 6.15 1h11.71c6.316 0 6.918 9.398.677 10.243l2.97 2.951c3.252 3.064.808 8.929-3.646 8.797zm-1.428-3.721c1.842 1.898 4.774-1.034 2.876-2.876l-5.132-5.132H11.3v2.876l4.436 4.436.696.696zM4.12 17.842c-.037 2.632 4.117 2.632 4.06 0V6.132c.038-1.316-1.353-2.35-2.612-1.955-.057.019-.113.037-.15.056-.79.301-1.335 1.09-1.317 1.936v11.673h.02zm13.74-9.68c2.632.037 2.632-4.098 0-4.06h-6.973c.526 1.109.395 2.857.413 4.06h6.56z"/></svg>
+);
+
+const VidIqLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="vidIQ logo"><text x="12" y="15.8" textAnchor="middle" fontSize="6.7" fontWeight="800" fill="#111827" fontFamily="Arial,Helvetica,sans-serif">vid<tspan fill="#7B2CBF">IQ</tspan></text></svg>
+);
+
+const VidIqMaxLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="vidIQ Max logo"><text x="12" y="13.3" textAnchor="middle" fontSize="6.7" fontWeight="800" fill="#111827" fontFamily="Arial,Helvetica,sans-serif">vid<tspan fill="#7B2CBF">IQ</tspan></text><rect x="5" y="16" width="14" height="4.6" rx="2.3" fill="#2563EB"/><text x="12" y="19.9" textAnchor="middle" fontSize="3.6" fontWeight="800" fill="#FFFFFF" fontFamily="Arial,Helvetica,sans-serif">MAX</text></svg>
+);
+
+const HeyGenLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="HeyGen logo"><defs><linearGradient id="heyGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7B2CBF"/><stop offset="1" stopColor="#00A8C0"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#heyGrad)"/><path fill="#FFFFFF" d="M9.6 7.1v9.8c0 .55.6.9 1.08.6l8-4.9c.45-.28.45-.94 0-1.22l-8-4.9c-.48-.29-1.08.06-1.08.62z"/></svg>
+);
+
+const MoreToolsLogo = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" role="img" aria-label="More tools logo"><defs><linearGradient id="moreGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#0891A5"/><stop offset="1" stopColor="#7B2CBF"/></linearGradient></defs><circle cx="12" cy="12" r="11" fill="url(#moreGrad)"/><circle cx="6.5" cy="12" r="1.7" fill="#FFFFFF"/><circle cx="12" cy="12" r="1.7" fill="#FFFFFF"/><circle cx="17.5" cy="12" r="1.7" fill="#FFFFFF"/></svg>
+);
+
+/* ════════════════════════════════════════════════════════════════════
+   MARKETPLACE DATA — 31 cards. Featured Gemini Pro Plan first.
+   Every card: real official logo, category + duration badges,
+   features, "Price on Request", Live Demo + Negotiate on WhatsApp.
+   No prices anywhere. The "More Tools" card is always visible.
+   ════════════════════════════════════════════════════════════════════ */
 const TOOLS = [
   {
-    id: "gemini-pro",
+    id: "gemini-pro-plan",
+    name: "Google Gemini Pro Plan",
+    tag: "The flagship premium plan — full owner access for 18 months, private to you, with Google's most advanced AI, video, music and storage in one plan.",
+    cat: "chat",
+    catLabel: "AI Chat",
+    badge: "Featured Premium",
+    duration: "18-MONTHS PRIVATE",
+    featured: true,
+    logo: GeminiProSparkLogo,
+    features: [
+      "Full Owner Access",
+      "Add 5 Family Members",
+      "Deep Research",
+      "Canvas",
+      "Code",
+      "Labs",
+      "Nano Banana Pro",
+      "VEO 3.1 Video Generations",
+      "1K Flow Credits / Month",
+      "Generate Music With AI",
+      "Google Flow",
+      "5 TB Google Drive Storage",
+    ],
+  },
+  {
+    id: "leonardo",
+    name: "Leonardo.Ai",
+    tag: "High-resolution AI art generation with elite models and priority processing.",
+    cat: "image",
+    catLabel: "Image Gen",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: LeonardoLogo,
+    features: [
+      "High-Resolution Art Generation",
+      "Priority Processing",
+      "Custom Model Training",
+      "Access to Elite Models",
+    ],
+  },
+  {
+    id: "lovable",
+    name: "Lovable Pro",
+    tag: "Lite premium for a full year — more connections and full profile visibility.",
+    cat: "coding",
+    catLabel: "Coding",
+    badge: "Premium",
+    duration: "LITE 12 MONTHS",
+    logo: LovableLogo,
+    features: [
+      "Premium features",
+      "More Connections",
+      "See Who Likes You",
+      "Boost Your Profile",
+    ],
+  },
+  {
+    id: "gemini",
     name: "Gemini Advanced (Pro)",
-    category: "AI Chat",
-    duration: "1 Month",
-    rating: 4.9,
-    reviews: 1240,
-    icon: SiGooglegemini,
-    hue: "#3b82f6",
-    badge: "HOT",
-    desc: "Unlock Google's most capable AI model. Includes 2TB of Google One storage and integration with Gmail, Docs, and more.",
-    features: ["Gemini 1.5 Pro Access", "2TB Cloud Storage", "Google Workspace Integration", "Priority Support"],
+    tag: "Google's most capable model with Workspace integration and 2TB storage.",
+    cat: "chat",
+    catLabel: "AI Chat",
+    badge: "Bestseller",
+    duration: null,
+    logo: GeminiSparkLogo,
+    features: [
+      "Gemini Advanced access",
+      "2TB Google One storage",
+      "Gmail & Docs integration",
+    ],
   },
   {
-    id: "youtube-premium",
-    name: "YouTube Premium",
-    category: "Entertainment",
-    duration: "1 Month",
-    rating: 4.8,
-    reviews: 3890,
-    icon: SiYoutube,
-    hue: "#ef4444",
-    badge: "POPULAR",
-    desc: "Ad-free YouTube, YouTube Music Premium, offline downloads, and background play on all your devices.",
-    features: ["Ad-free Video", "YouTube Music Premium", "Background Play", "Offline Downloads"],
+    id: "claude",
+    name: "Claude Pro",
+    tag: "Exceptional reasoning, coding and long-document analysis from Anthropic.",
+    cat: "chat",
+    catLabel: "AI Chat",
+    badge: null,
+    duration: null,
+    logo: SiAnthropic,
+    logoColor: "#D97757",
+    features: ["Latest Claude models", "5× more usage", "Priority access"],
   },
   {
-    id: "cursor-pro",
+    id: "cursor",
     name: "Cursor AI Pro",
-    category: "Coding",
-    duration: "1 Month",
-    rating: 5.0,
-    reviews: 850,
-    icon: SiCursor,
-    hue: "#10b981",
-    badge: "DEV FAV",
-    desc: "The AI-first code editor. Built for pair programming with an AI that deeply understands your codebase.",
-    features: ["Unlimited AI Completions", "Claude 3.5 Sonnet Access", "GPT-4o Access", "Multi-file Edits"],
+    tag: "The AI-first code editor that understands your entire codebase.",
+    cat: "coding",
+    catLabel: "Coding",
+    badge: "Dev Favourite",
+    duration: null,
+    logo: SiCursor,
+    logoColor: "#111827",
+    features: ["Unlimited completions", "Multi-file edits", "Top model access"],
   },
   {
     id: "midjourney",
     name: "Midjourney Basic",
-    category: "Image Gen",
-    duration: "1 Month",
-    rating: 4.9,
-    reviews: 2100,
-    icon: MidjourneyIcon,
-    hue: "#d946ef",
-    badge: "",
-    desc: "Generate stunning, high-resolution images from simple text prompts using one of the best AI image models.",
-    features: ["~200 Generations/Month", "Standard Resolution", "Web App Access", "Commercial Use"],
+    tag: "Stunning, high-resolution images from simple text prompts.",
+    cat: "image",
+    catLabel: "Image Gen",
+    badge: null,
+    duration: null,
+    logo: MidjourneyLogo,
+    features: ["~200 generations / mo", "Commercial use", "Web app access"],
   },
   {
     id: "elevenlabs",
     name: "ElevenLabs Creator",
-    category: "Audio & Voice",
-    duration: "1 Month",
-    rating: 4.8,
-    reviews: 940,
-    icon: SiElevenlabs,
-    hue: "#f59e0b",
-    badge: "NEW",
-    desc: "A realistic AI text-to-speech engine. Clone your voice or use thousands of studio-quality voices.",
-    features: ["100k Characters/Month", "Voice Cloning", "Commercial License", "29 Languages"],
+    tag: "Studio-quality AI voices and voice cloning in 29 languages.",
+    cat: "audio",
+    catLabel: "Audio",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: SiElevenlabs,
+    logoColor: "#111827",
+    features: [
+      "AI Voice Generation",
+      "Text to Speech",
+      "High-Quality Voices",
+      "Commercial Use",
+    ],
   },
   {
-    id: "claude-pro",
-    name: "Claude Pro",
-    category: "AI Chat",
-    duration: "1 Month",
-    rating: 4.9,
-    reviews: 1670,
-    icon: SiAnthropic,
-    hue: "#f97316",
-    badge: "",
-    desc: "Anthropic's Claude. Exceptional at coding, reasoning, and analyzing massive documents.",
-    features: ["Latest Claude models", "5x more usage", "Priority access", "Early features"],
+    id: "chatgpt",
+    name: "ChatGPT Plus",
+    tag: "Faster responses, image generation and advanced reasoning tools.",
+    cat: "chat",
+    catLabel: "AI Chat",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: OpenAiLogo,
+    features: ["All Premium Features", "Team Access", "Save & Create More"],
+  },
+  {
+    id: "notion",
+    name: "Notion AI + Plus",
+    tag: "Write, summarise and organise your whole workspace with AI.",
+    cat: "productivity",
+    catLabel: "Productivity",
+    badge: null,
+    duration: null,
+    logo: SiNotion,
+    logoColor: "#111827",
+    features: ["AI writing & summaries", "Unlimited blocks", "Team workspaces"],
+  },
+  {
+    id: "youtube",
+    name: "YouTube Premium",
+    tag: "Ad-free video, background play, downloads and YouTube Music.",
+    cat: "entertainment",
+    catLabel: "Entertainment",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: SiYoutube,
+    logoColor: "#FF0000",
+    features: [
+      "Ad-Free Videos",
+      "Background Play",
+      "YouTube Music Premium",
+      "Offline Downloads",
+    ],
+  },
+  {
+    id: "coursera",
+    name: "Coursera Premium",
+    tag: "World-Class Learning from top universities and companies, on your schedule.",
+    cat: "learning",
+    catLabel: "Learning",
+    badge: "Premium",
+    duration: "1 YEAR",
+    logo: SiCoursera,
+    logoColor: "#0056D2",
+    features: [
+      "Unlimited Access to 7,000+ Courses",
+      "Professional Certificates",
+      "Degrees Credit Eligible",
+      "Job-Ready Skills",
+    ],
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn Premium",
+    tag: "Grow Your Career Faster with Premium insights, InMail and learning.",
+    cat: "career",
+    catLabel: "Career",
+    badge: "Premium",
+    duration: "1 MONTH / 3 MONTHS",
+    logo: LinkedInLogo,
+    features: [
+      "Who Viewed You",
+      "InMail Access",
+      "Career Growth",
+      "Advanced Insights",
+    ],
+  },
+  {
+    id: "surfshark",
+    name: "Surfshark",
+    tag: "Online Privacy Without Limits on unlimited devices with one account.",
+    cat: "vpn",
+    catLabel: "VPN & Privacy",
+    badge: "Premium",
+    duration: "2 MONTHS • Private",
+    logo: SiSurfshark,
+    logoColor: "#1EBFBF",
+    features: [
+      "Secure VPN",
+      "Strict No-Logs Policy",
+      "Camouflage Mode",
+      "CleanWeb Ad-Block",
+    ],
+  },
+  {
+    id: "netflix",
+    name: "Netflix",
+    tag: "Unlimited Entertainment — movies, series and originals on any screen.",
+    cat: "streaming",
+    catLabel: "Streaming",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: SiNetflix,
+    logoColor: "#E50914",
+    features: ["Premium Screen", "Full HD / 4K", "Private Access"],
+  },
+  {
+    id: "capcut",
+    name: "CapCut Pro",
+    tag: "Edit Like a Pro with premium effects, templates and cloud storage.",
+    cat: "video",
+    catLabel: "Video",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: CapCutLogo,
+    features: ["No Watermark", "All Pro Features", "Premium Access"],
+  },
+  {
+    id: "canva",
+    name: "Canva Pro",
+    tag: "Design Without Limits with premium templates, brand kits and AI tools.",
+    cat: "design",
+    catLabel: "Design",
+    badge: "Premium",
+    duration: "1 YEAR",
+    logo: CanvaLogo,
+    features: ["No Watermark", "All Pro Features", "Premium Access"],
+  },
+  {
+    id: "primevideo",
+    name: "Prime Video",
+    tag: "Movies, Shows, Originals — stream and download across all your devices.",
+    cat: "streaming",
+    catLabel: "Streaming",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: PrimeVideoLogo,
+    features: ["Premium Access", "All Content", "Private Account"],
+  },
+  {
+    id: "museai",
+    name: "MuseAI",
+    tag: "Create Without Limits — AI writing, images and creative tools in one suite.",
+    cat: "image",
+    catLabel: "Image Gen",
+    badge: null,
+    duration: null,
+    logo: MuseAiLogo,
+    features: [
+      "AI writing & image tools",
+      "Creative templates library",
+      "Fast content generation",
+    ],
+  },
+  {
+    id: "pika",
+    name: "Pika",
+    tag: "AI Video Generation that turns text and images into striking clips.",
+    cat: "video",
+    catLabel: "Video",
+    badge: null,
+    duration: null,
+    logo: PikaLogo,
+    features: [
+      "Text-to-video generation",
+      "Image-to-video animation",
+      "Cinematic effects & styles",
+    ],
+  },
+  {
+    id: "runway",
+    name: "Runway",
+    tag: "Video Creation powered by Gen AI models, editing and effects.",
+    cat: "video",
+    catLabel: "Video",
+    badge: null,
+    duration: null,
+    logo: RunwayLogo,
+    features: [
+      "Gen video models access",
+      "AI editing & effects suite",
+      "Text & image to video",
+    ],
+  },
+  {
+    id: "nordvpn",
+    name: "NordVPN",
+    tag: "Online Privacy & Security with ultra-fast, encrypted connections worldwide.",
+    cat: "vpn",
+    catLabel: "VPN & Privacy",
+    badge: "Premium",
+    duration: "3 MONTHS • Private",
+    logo: SiNordvpn,
+    logoColor: "#4687FF",
+    features: [
+      "Ultra-Fast VPN",
+      "Secure & Private",
+      "Access Global Content",
+      "No-Logs Policy",
+    ],
+  },
+  {
+    id: "adobecc",
+    name: "Adobe Creative Cloud",
+    tag: "Creative Cloud & More — Photoshop, Illustrator, Premiere and 20+ apps.",
+    cat: "design",
+    catLabel: "Design",
+    badge: null,
+    duration: null,
+    logo: AdobeLogo,
+    features: [
+      "20+ creative apps included",
+      "Photoshop, Illustrator & more",
+      "Cloud storage & Adobe Fonts",
+    ],
+  },
+  {
+    id: "vidiq",
+    name: "vidIQ",
+    tag: "Grow Your YouTube Channel with keyword research, analytics and AI coaching.",
+    cat: "social",
+    catLabel: "Social & Growth",
+    badge: null,
+    duration: null,
+    logo: VidIqLogo,
+    features: [
+      "Keyword & competitor research",
+      "Real-time channel analytics",
+      "AI video ideas & titles",
+    ],
+  },
+  {
+    id: "heygen",
+    name: "HeyGen",
+    tag: "AI Avatars & Videos — studio-quality presenter videos without a camera.",
+    cat: "video",
+    catLabel: "Video",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: HeyGenLogo,
+    features: [
+      "AI Video Generation",
+      "Realistic Avatars",
+      "Text to Video",
+      "120+ Languages",
+    ],
+  },
+  {
+    id: "tiktok",
+    name: "TikTok UK Accounts",
+    tag: "Grow Your Presence with ready-to-use UK TikTok accounts for creators and brands.",
+    cat: "social",
+    catLabel: "Social & Growth",
+    badge: null,
+    duration: null,
+    logo: SiTiktok,
+    logoColor: "#111827",
+    features: [
+      "UK-based accounts",
+      "Ready for posting & growth",
+      "Setup guidance included",
+    ],
+  },
+  {
+    id: "vidiqmax",
+    name: "vidIQ Max",
+    tag: "Advanced Analytics for serious creators — deeper data, coaching and AI tools.",
+    cat: "social",
+    catLabel: "Social & Growth",
+    badge: "Premium",
+    duration: "MAX PLAN",
+    logo: VidIqMaxLogo,
+    features: [
+      "Advanced Keyword Research",
+      "Competitor Tracking",
+      "Video Performance Insight",
+      "Bulk Optimization Tools",
+    ],
+  },
+  {
+    id: "premierepro",
+    name: "Adobe Premiere Pro",
+    tag: "Edit. Create. Inspire. — professional video editing used by filmmakers worldwide.",
+    cat: "video",
+    catLabel: "Video",
+    badge: "Premium",
+    duration: "1 MONTH",
+    logo: PremiereProLogo,
+    features: [
+      "Industry Standard Video Editing",
+      "Creative Cloud Integration",
+      "Pro Level Features",
+      "Faster Export Times",
+    ],
+  },
+  {
+    id: "workspace",
+    name: "Google Workspace",
+    tag: "Work Smarter with Gmail, Drive, Docs, Meet and business storage together.",
+    cat: "productivity",
+    catLabel: "Productivity",
+    badge: null,
+    duration: null,
+    logo: WorkspaceLogo,
+    features: ["Business Gmail & Meet", "Drive cloud storage", "Docs, Sheets & Slides"],
+  },
+  {
+    id: "office",
+    name: "Microsoft Office",
+    tag: "Boost Productivity with Word, Excel, PowerPoint, Outlook and cloud storage.",
+    cat: "productivity",
+    catLabel: "Productivity",
+    badge: "Premium",
+    duration: "1 YEAR",
+    logo: OfficeLogo,
+    features: [
+      "Word",
+      "Excel",
+      "PowerPoint",
+      "1TB OneDrive Cloud Storage",
+      "Premium Templates",
+      "Cross-Device Use",
+    ],
+  },
+  {
+    id: "more",
+    name: "More Tools & Many More",
+    tag: "Looking for something else? We stock 50+ tools and add new ones on request — just ask.",
+    cat: "all",
+    catLabel: "Everything Else",
+    badge: null,
+    duration: null,
+    logo: MoreToolsLogo,
+    more: true,
+    features: [
+      "50+ tools available on request",
+      "New tools added weekly",
+      "Tell us what you need",
+    ],
   },
 ];
 
-const CATEGORIES = ["All", "AI Chat", "Coding", "Image Gen", "Audio & Voice", "Entertainment"];
-
-const SORTS = [
-  { id: "featured", label: "Featured" },
-  { id: "rating", label: "Top Rated" },
-];
-
-const STEPS = [
-  { icon: MousePointerClick, title: "Pick your tool", desc: "Browse the store and add what you need to your cart." },
-  { icon: Send, title: "Order on WhatsApp", desc: "One tap sends your order to our team with all details filled in." },
-  { icon: CreditCard, title: "Negotiate & Pay", desc: "Discuss price, then pay via Bank transfer, Easypaisa, JazzCash, or crypto." },
-  { icon: PackageCheck, title: "Get activated", desc: "Receive your access details and setup help right in chat." },
-];
-
-const FEATURES = [
-  { icon: Zap, title: "Fast Delivery", desc: "Get your activation details right in WhatsApp after payment." },
-  { icon: ShieldCheck, title: "Warranty Cover", desc: "Covered for the duration of your subscription, with replacement if something breaks." },
-  { icon: CreditCard, title: "Local Payments", desc: "Pay via bank transfer, Easypaisa, JazzCash, or crypto." },
-  { icon: Headphones, title: "24/7 Support", desc: "Our team is on WhatsApp to help you get set up." },
-];
-
-const FAQS = [
-  { q: "How does delivery work?", a: "After you confirm payment on WhatsApp, we send your activation details in the same chat. Most orders are completed within minutes." },
-  { q: "How is the price decided?", a: "We offer the best market rates. Add items to your cart, click checkout, and our team will give you a final quote on WhatsApp based on your selected duration and bundle." },
-  { q: "Which payment methods do you accept?", a: "Local bank transfer, Easypaisa, JazzCash, and crypto. Our team shares the details once you place your order." },
-  { q: "What if something stops working?", a: "Message us on WhatsApp any time during your subscription period and we'll fix it or replace it." },
-  { q: "Can I renew when my month ends?", a: "Absolutely. Message us before expiry and we'll renew with the same setup." },
-];
-
-const PAYMENTS = [
-  { icon: Landmark, label: "Bank Transfer" },
-  { icon: Smartphone, label: "Easypaisa" },
-  { icon: Smartphone, label: "JazzCash" },
-  { icon: Bitcoin, label: "Crypto" },
+const FILTERS = [
+  { id: "all", label: "All" },
+  { id: "chat", label: "AI Chat" },
+  { id: "image", label: "Image Gen" },
+  { id: "coding", label: "Coding" },
+  { id: "audio", label: "Audio" },
+  { id: "entertainment", label: "Entertainment" },
+  { id: "streaming", label: "Streaming" },
+  { id: "design", label: "Design" },
+  { id: "video", label: "Video" },
+  { id: "learning", label: "Learning" },
+  { id: "vpn", label: "VPN & Privacy" },
+  { id: "social", label: "Social & Growth" },
+  { id: "productivity", label: "Productivity" },
+  { id: "career", label: "Career" },
 ];
 
 const NAV_LINKS = [
-  { id: "tools", href: "#tools", label: "Store" },
-  { id: "how", href: "#how", label: "How it works" },
-  { id: "features", href: "#features", label: "Why us" },
-  { id: "faq", href: "#faq", label: "FAQ" },
+  { id: "tools", label: "AI Tools" },
+  { id: "webdev", label: "Web Dev" },
+  { id: "software", label: "Software Dev" },
+  { id: "ads", label: "Meta Ads" },
+  { id: "pricing", label: "Pricing" },
+  { id: "cases", label: "Case Studies" },
 ];
 
-const waLink = (text) =>
-  `https://wa.me/${CONFIG.whatsappNumber}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
-const openWhatsApp = (text) => window.open(waLink(text), "_blank", "noopener,noreferrer");
+const SERVICES = [
+  {
+    id: "webdev",
+    icon: Globe,
+    title: "Custom Web Development",
+    desc: "High-speed, SEO-optimised, animated websites that convert visitors into customers.",
+    features: [
+      "Next.js / React web apps",
+      "E-commerce platforms",
+      "Landing pages that sell",
+      "Blog setup & uploads",
+    ],
+    cta: "Start a Website",
+    wa: "Hello Feathered Experts Pro! I want a custom website built. Please share the details so we can negotiate on WhatsApp.",
+  },
+  {
+    id: "software",
+    icon: Cpu,
+    title: "Custom Software Development",
+    desc: "Full-stack products and automations that remove manual work from your business.",
+    features: [
+      "Enterprise software & SaaS MVPs",
+      "Custom AI integrations",
+      "Automated workflows",
+      "APIs & dashboards",
+    ],
+    cta: "Build Software",
+    wa: "Hello Feathered Experts Pro! I want custom software / a SaaS MVP built. Please share the details so we can negotiate on WhatsApp.",
+  },
+  {
+    id: "ads",
+    icon: Megaphone,
+    title: "Meta Ads & Performance Marketing",
+    desc: "Facebook & Instagram campaigns engineered for measurable return, not vanity metrics.",
+    features: [
+      "AI-driven audience targeting",
+      "Creative testing & scaling",
+      "Real-time ROAS tracking",
+      "Retargeting funnels",
+    ],
+    cta: "Scale With Ads",
+    wa: "Hello Feathered Experts Pro! I want Meta Ads & performance marketing for my brand. Please share the details so we can negotiate on WhatsApp.",
+  },
+];
+
+const COUNTERS = [
+  { value: 50, suffix: "+", decimals: 0, label: "AI tools ready for instant activation, plus new tools added on request." },
+  { value: 99.9, suffix: "%", decimals: 1, label: "Uptime target across hosted sites & dashboards." },
+  { value: 4.8, suffix: "×", decimals: 1, label: "Average Meta Ads ROAS across managed campaigns." },
+];
+
+const COMPARE_ROWS = [
+  { label: "Page speed", us: "98 / 100" },
+  { label: "Delivery speed", us: "2–3× faster" },
+  { label: "Support response", us: "Same day" },
+];
+
+const CASES = [
+  {
+    stat: "+184%",
+    title: "E-commerce rebuild",
+    desc: "Next.js storefront rebuild + Meta Ads relaunch lifted revenue in one quarter.",
+  },
+  {
+    stat: "38 hrs/wk",
+    title: "Automation saved",
+    desc: "Custom AI workflow for a services firm replaced manual reporting & follow-ups.",
+  },
+  {
+    stat: "4.8× ROAS",
+    title: "Ads scaling",
+    desc: "Creative testing system scaled a local brand from small tests to sustained profit.",
+  },
+];
+
+const TRUST = [
+  {
+    icon: Check,
+    title: "Trusted by 1000+ Happy Clients",
+    desc: "Real buyers across AI tools, websites and ads.",
+    stars: true,
+  },
+  {
+    icon: Sparkles,
+    title: "Private Accounts",
+    desc: "Private & Secure — personal use, set up for you only.",
+  },
+  {
+    icon: Zap,
+    title: "Fast & Instant Delivery",
+    desc: "Activation sent fast once your price is agreed on WhatsApp.",
+  },
+  {
+    icon: Clock,
+    title: "24/7 Customer Support",
+    desc: "Real human help on WhatsApp, day and night.",
+  },
+];
+
+const SUB_PLANS = [
+  {
+    name: "Starter",
+    desc: "For solo creators getting AI leverage.",
+    features: ["2 AI tool subscriptions", "Setup assistance", "Email support"],
+  },
+  {
+    name: "Pro",
+    desc: "For teams who live in AI tools daily.",
+    badge: "Most Popular",
+    features: [
+      "6 AI tool subscriptions",
+      "Priority WhatsApp support",
+      "Monthly workflow tips",
+      "Warranty cover included",
+    ],
+  },
+  {
+    name: "Enterprise",
+    desc: "For companies standardising on AI.",
+    features: ["Unlimited tool requests", "Team onboarding", "Dedicated manager"],
+  },
+];
+
+const AGENCY_PLANS = [
+  {
+    name: "Launch Project",
+    desc: "A complete website or landing system, delivered fast.",
+    features: ["Custom design + build", "SEO foundations", "Blog & CMS setup"],
+  },
+  {
+    name: "Growth Retainer",
+    desc: "Dev + Meta Ads + content, one monthly engine.",
+    badge: "Best for Growth",
+    features: [
+      "Meta Ads management",
+      "Ongoing web improvements",
+      "Blog uploads & content",
+      "Weekly performance reports",
+    ],
+  },
+  {
+    name: "Scale / Custom",
+    desc: "Software, AI integrations and full-funnel growth.",
+    features: ["Custom software build", "AI integrations", "SLA & priority delivery"],
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    text: "They rebuilt our store and our ROAS jumped within weeks. Fast, honest, and the dashboard alone is worth it.",
+    name: "Sarah K.",
+    role: "E-commerce Founder",
+  },
+  {
+    text: "Got Claude, Cursor and Gemini set up the same day. The automation workflows saved our ops team hours every week.",
+    name: "Ahmed R.",
+    role: "SaaS Operator",
+  },
+  {
+    text: "Our Meta Ads finally make sense. Weekly reports, creative tests, real numbers — 4×+ return and climbing.",
+    name: "Priya M.",
+    role: "D2C Brand Lead",
+  },
+  {
+    text: "Blog uploads, website updates, ads — one team handles our entire digital presence. It feels feather-light for us.",
+    name: "Daniel O.",
+    role: "Agency Partner",
+  },
+  {
+    text: "The new site loads instantly and looks like a 4K product launch. Clients mention it on almost every call.",
+    name: "Lena T.",
+    role: "Consultant",
+  },
+  {
+    text: "From MVP idea to launched SaaS in weeks, with AI built in from day one. Exactly the partner we needed.",
+    name: "Omar S.",
+    role: "Startup Founder",
+  },
+];
+
+const BRANDS = ["SmartStream", "Feathered NEWS", "NorthPeak", "Lumen Co", "Atlas D2C", "Vertex Labs"];
 
 const SOCIALS = [
-  { id: "whatsapp", label: "WhatsApp Support", url: waLink(), Icon: FaWhatsapp, brand: "#25D366" },
-  { id: "youtube", label: "YouTube", url: "http://www.youtube.com/@SmartSteamAutomation", Icon: FaYoutube, brand: "#FF0000" },
-  { id: "instagram", label: "Instagram", url: "https://www.instagram.com/smartstreamsoftwaretools", Icon: FaInstagram, brand: "#E4405F" },
-  { id: "tiktok", label: "TikTok", url: "https://www.tiktok.com/@smart.steam.autom", Icon: FaTiktok, brand: "#ffffff" },
-  { id: "x", label: "X (Twitter)", url: "https://x.com/SmartSteamX", Icon: FaXTwitter, brand: "#ffffff" },
-  { id: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/in/muhammad-mubashir-483b6b392", Icon: FaLinkedinIn, brand: "#0A66C2" },
+  { label: "YouTube", href: "http://www.youtube.com/@SmartSteamAutomation", Icon: FaYoutube },
+  { label: "Instagram", href: "https://www.instagram.com/smartstreamsoftwaretools", Icon: FaInstagram },
+  { label: "TikTok", href: "https://www.tiktok.com/@smart.steam.autom", Icon: FaTiktok },
+  { label: "X", href: "https://x.com/SmartSteamX", Icon: FaXTwitter },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/muhammad-mubashir-483b6b392", Icon: FaLinkedinIn },
+  { label: "Facebook", href: "https://www.facebook.com", Icon: FaFacebookF },
 ];
 
-const tint = (hue) => ({ color: hue, background: `color-mix(in srgb, ${hue} 14%, transparent)` });
+const HERO_STATS = [
+  { value: "50+", label: "AI tools ready" },
+  { value: "120+", label: "Projects shipped" },
+  { value: "4.8×", label: "Avg. Meta Ads ROAS" },
+  { value: "24/7", label: "Support on WhatsApp" },
+];
 
-/* ════════════════════════════════════════════════════════════
-   HOOKS
-   ════════════════════════════════════════════════════════════ */
-const loadJSON = (key, fallback) => {
-  try {
-    const v = JSON.parse(localStorage.getItem(key));
-    return v ?? fallback;
-  } catch {
-    return fallback;
-  }
-};
-const saveJSON = (key, value) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    /* storage unavailable */
-  }
-};
+/* ════════════════════════════════════════════════════════════════════
+   HOOKS & SHARED PIECES
+   ════════════════════════════════════════════════════════════════════ */
 
-function getInitialTheme() {
-  if (typeof document === "undefined") return "dark";
-  const attr = document.documentElement.dataset.theme;
-  if (attr === "light" || attr === "dark") return attr;
-  try {
-    const s = localStorage.getItem(THEME_KEY);
-    if (s === "light" || s === "dark") return s;
-  } catch {
-    /* ignore */
-  }
-  return "dark";
+/* Light mode is the default on every fresh load: the state starts at
+   "light", nothing is read from localStorage and nothing reads
+   prefers-color-scheme, so the page can never open dark. The header
+   toggle switches to dark for that visit only. */
+function useTheme() {
+  const [theme, setTheme] = useState("light");
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute("data-theme", theme);
+    root.style.colorScheme = theme;
+  }, [theme]);
+  const toggle = useCallback(() => {
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  }, []);
+  return { theme, toggle, isDark: theme === "dark" };
 }
 
-function useTheme() {
-  const [theme, setTheme] = useState(getInitialTheme);
-
-  useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme;
-  }, [theme]);
-
-  const toggle = useCallback(() => {
-    const root = document.documentElement;
-    root.classList.add("ss-theme-transition");
-    window.setTimeout(() => root.classList.remove("ss-theme-transition"), 300);
-    setTheme((t) => {
-      const next = t === "dark" ? "light" : "dark";
-      try {
-        localStorage.setItem(THEME_KEY, next);
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = (e) => setReduced(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
   }, []);
-
-  return [theme, toggle];
+  return reduced;
 }
 
 function useLockBody(locked) {
   useEffect(() => {
-    if (!locked) return;
+    if (!locked) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -324,53 +980,24 @@ function useLockBody(locked) {
 
 function useEscape(handler, active) {
   useEffect(() => {
-    if (!active) return;
-    const onKey = (e) => e.key === "Escape" && handler();
+    if (!active) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") handler();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [handler, active]);
 }
 
-function useFocusTrap(active) {
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!active) return;
-    const node = ref.current;
-    if (!node) return;
-    const prev = document.activeElement;
-    const sel = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
-    const focusables = () => [...node.querySelectorAll(sel)].filter((el) => el.offsetParent !== null);
-    const t = setTimeout(() => (focusables()[0] || node).focus(), 60);
-    const onKey = (e) => {
-      if (e.key !== "Tab") return;
-      const f = focusables();
-      if (!f.length) return e.preventDefault();
-      const first = f[0];
-      const last = f[f.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    node.addEventListener("keydown", onKey);
-    return () => {
-      clearTimeout(t);
-      node.removeEventListener("keydown", onKey);
-      if (prev && prev.focus) prev.focus();
-    };
-  }, [active]);
-  return ref;
-}
-
 function useScrollSpy(ids) {
   const [active, setActive] = useState("");
   useEffect(() => {
-    if (typeof IntersectionObserver === "undefined") return;
     const obs = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(e.target.id);
+        });
+      },
       { rootMargin: "-40% 0px -55% 0px" }
     );
     ids.forEach((id) => {
@@ -378,1205 +1005,959 @@ function useScrollSpy(ids) {
       if (el) obs.observe(el);
     });
     return () => obs.disconnect();
-  }, []);
+  }, [ids]);
   return active;
 }
 
-/* ── NEW: prefers-reduced-motion as a reactive hook ── */
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(() =>
-    typeof window !== "undefined" && window.matchMedia
-      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      : false
-  );
-  useEffect(() => {
-    if (!window.matchMedia) return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = (e) => setReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
-}
-
-/* ── NEW: pointer-driven 3D tilt + glare for cards ──
-   Sets --rx/--ry/--mx/--my custom properties on the element.
-   Skips touch devices and reduced-motion users. Uses rAF to
-   avoid layout thrash on rapid pointermove events. */
+/* 3D tilt on hover — desktop fine pointers only, disabled when the
+   user prefers reduced motion. */
 function useTilt(ref, enabled) {
   useEffect(() => {
     const el = ref.current;
-    if (!el || !enabled) return;
-    if (typeof window === "undefined" || window.matchMedia("(hover: none)").matches) return;
-    let raf = 0;
+    if (!el || !enabled) return undefined;
+    if (!window.matchMedia("(hover:hover) and (pointer:fine)").matches) {
+      return undefined;
+    }
     const onMove = (e) => {
       const r = el.getBoundingClientRect();
-      if (r.width === 0) return;
-      const px = (e.clientX - r.left) / r.width;
-      const py = (e.clientY - r.top) / r.height;
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        el.style.setProperty("--rx", `${((0.5 - py) * 7).toFixed(2)}deg`);
-        el.style.setProperty("--ry", `${((px - 0.5) * 9).toFixed(2)}deg`);
-        el.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
-        el.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
-        el.classList.add("is-tilting");
-      });
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 7}deg) translateY(-2px)`;
     };
     const onLeave = () => {
-      cancelAnimationFrame(raf);
-      el.classList.remove("is-tilting");
-      el.style.setProperty("--rx", "0deg");
-      el.style.setProperty("--ry", "0deg");
+      el.style.transform = "";
     };
-    el.addEventListener("pointermove", onMove, { passive: true });
-    el.addEventListener("pointerleave", onLeave, { passive: true });
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerleave", onLeave);
     return () => {
-      cancelAnimationFrame(raf);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerleave", onLeave);
     };
   }, [ref, enabled]);
 }
 
-/* ════════════════════════════════════════════════════════════
-   SMALL COMPONENTS
-   ════════════════════════════════════════════════════════════ */
-const SmartLink = ({ to, children, ...props }) => {
-  const inRouter = useInRouterContext();
-  return inRouter ? (
-    <Link to={to} {...props}>{children}</Link>
-  ) : (
-    <a href={to} {...props}>{children}</a>
-  );
-};
-
-/* Brand logo with a shimmer placeholder while the raster logo loads,
-   so first paint never shows a broken/empty box on slow networks. */
-const BrandLogo = React.memo(function BrandLogo({ className = "" }) {
-  const [loaded, setLoaded] = useState(false);
-  return (
-    <a
-      href="#top"
-      aria-label={`${CONFIG.brandName} home`}
-      className={`flex items-center gap-2.5 rounded-lg group ${className}`}
-    >
-      <span className={`ss-logo-frame ${loaded ? "is-loaded" : ""}`}>
-        {!loaded && <span className="ss-shimmer" aria-hidden="true" />}
-        <img
-          src={logoImage}
-          alt={`${CONFIG.brandName} Logo`}
-          onLoad={() => setLoaded(true)}
-          className="h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-9"
-        />
-      </span>
-      <span className="hidden text-[15px] font-extrabold tracking-tight sm:block">
-        {CONFIG.brandName}
-      </span>
-    </a>
-  );
-});
-
-function ThemeToggle({ theme, onToggle }) {
-  const isDark = theme === "dark";
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      role="switch"
-      aria-checked={isDark}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="ss-icon-btn"
-    >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={theme}
-          initial={{ opacity: 0, rotate: -60, scale: 0.7 }}
-          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-          exit={{ opacity: 0, rotate: 60, scale: 0.7 }}
-          transition={{ duration: 0.2 }}
-          className="flex"
-        >
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </motion.span>
-      </AnimatePresence>
-    </button>
-  );
-}
-
-function Counter({ to, decimals = 0, suffix = "" }) {
+/* Animated counter — counts up once when it scrolls into view. */
+function Counter({ value, suffix = "", decimals = 0, className = "" }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const [val, setVal] = useState(0);
   useEffect(() => {
-    if (!inView) return;
-    const controls = animate(0, to, { duration: 1.2, ease: "easeOut", onUpdate: setVal });
-    return () => controls.stop();
-  }, [inView, to]);
+    if (!inView) return undefined;
+    let raf;
+    let start = null;
+    const step = (ts) => {
+      if (start === null) start = ts;
+      const p = Math.min((ts - start) / 1400, 1);
+      setVal(value * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, value]);
   return (
-    <span ref={ref}>
+    <span ref={ref} className={className}>
       {val.toFixed(decimals)}
       {suffix}
     </span>
   );
 }
 
-const Reveal = React.memo(function Reveal({ children, delay = 0, className = "" }) {
+/* Scroll-reveal wrapper (framer-motion, 60fps, respects reduced motion). */
+function Reveal({ children, delay = 0, className = "", y = 26 }) {
+  const reduced = usePrefersReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
       className={className}
+      initial={{ opacity: 0, y: reduced ? 0 : y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
   );
-});
+}
 
-const SectionHead = React.memo(function SectionHead({ eyebrow, title, sub, center = false }) {
+/* Particle feather-wave canvas — a neural-network particle field with
+   three sine "feather" waves that react to the cursor. Theme-aware:
+   colours follow the current theme, and it redraws on theme change.
+   Renders a single static frame when reduced motion is preferred. */
+function ParticleCanvas({ theme }) {
+  const canvasRef = useRef(null);
+  const reduced = usePrefersReducedMotion();
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    const ctx = canvas.getContext("2d");
+    let W = 0;
+    let H = 0;
+    let pts = [];
+    let mx = -999;
+    let my = -999;
+    let t = 0;
+    let raf = 0;
+
+    const seed = () => {
+      const n = Math.min(110, Math.max(36, Math.floor((W * H) / 16000)));
+      pts = Array.from({ length: n }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        r: Math.random() * 1.8 + 0.6,
+        hue: Math.random() > 0.5,
+      }));
+    };
+
+    const resize = () => {
+      const r = canvas.parentElement.getBoundingClientRect();
+      W = canvas.width = r.width;
+      H = canvas.height = r.height;
+      seed();
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      t += 0.008;
+      const dark = themeRef.current === "dark";
+      const waveA = dark ? "rgba(0,240,255,.20)" : "rgba(8,145,165,.28)";
+      const waveB = dark ? "rgba(123,44,191,.16)" : "rgba(123,44,191,.22)";
+      const linkRGB = dark ? "0,240,255" : "8,145,165";
+      const dotA = dark ? "rgba(0,240,255,.85)" : "rgba(8,145,165,.75)";
+      const dotB = dark ? "rgba(157,78,221,.85)" : "rgba(124,58,237,.75)";
+
+      for (let row = 0; row < 3; row += 1) {
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 14) {
+          let y = H * 0.62 + row * 36 + Math.sin(x * 0.008 + t * 2 + row) * 22 + Math.sin(x * 0.02 - t) * 8;
+          const dx = x - mx;
+          const dy = y - my;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 140) y -= (140 - d) * 0.35;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = row === 0 ? waveA : waveB;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < pts.length; i += 1) {
+        const p = pts[i];
+        for (let j = i + 1; j < pts.length; j += 1) {
+          const q = pts[j];
+          const dx = p.x - q.x;
+          const dy = p.y - q.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 11000) {
+            ctx.strokeStyle = `rgba(${linkRGB},${(0.14 * (1 - d2 / 11000)).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.stroke();
+          }
+        }
+        const mdx = p.x - mx;
+        const mdy = p.y - my;
+        const md = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (md < 130 && md > 1) {
+          p.x += (mdx / md) * 0.7;
+          p.y += (mdy / md) * 0.7;
+        }
+        ctx.fillStyle = p.hue ? dotA : dotB;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, 7);
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H;
+        if (p.y > H) p.y = 0;
+      }
+      if (!reduced) raf = requestAnimationFrame(draw);
+    };
+
+    const onMove = (e) => {
+      const r = canvas.getBoundingClientRect();
+      mx = e.clientX - r.left;
+      my = e.clientY - r.top;
+    };
+
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("pointermove", onMove);
+    };
+  }, [reduced]);
+
+  useEffect(() => {
+    // Redraw once on theme change (static frame for reduced motion).
+    if (!reduced) return undefined;
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    const ev = new Event("resize");
+    window.dispatchEvent(ev);
+    return undefined;
+  }, [theme, reduced]);
+
+  return <canvas ref={canvasRef} className="fe-particles" aria-hidden="true" />;
+}
+
+/* Link that uses react-router when inside a router, plain <a> otherwise. */
+const SmartLink = ({ to, children, ...props }) => {
+  const inRouter = useInRouterContext();
+  if (inRouter) {
+    return (
+      <Link to={to} {...props}>
+        {children}
+      </Link>
+    );
+  }
   return (
-    <Reveal className={`mb-8 max-w-2xl sm:mb-12 ${center ? "mx-auto text-center" : ""}`}>
-      <p className="ss-subtle mb-2 text-[11px] font-bold uppercase tracking-[0.14em]">{eyebrow}</p>
-      <h2 className="ss-h2">{title}</h2>
-      {sub && <p className="ss-muted mt-3 text-sm leading-relaxed sm:text-[15px]">{sub}</p>}
-    </Reveal>
+    <a href={to} {...props}>
+      {children}
+    </a>
   );
-});
+};
 
-const Stars = React.memo(function Stars({ rating }) {
+/* The white feather on black — always inside a black rounded tile. */
+const FeatherLogoTile = React.memo(function FeatherLogoTile({ size = "md", className = "" }) {
+  const dims = size === "lg" ? "h-14 w-14" : size === "sm" ? "h-8 w-8" : "h-10 w-10";
   return (
-    <span className="inline-flex items-center gap-1 text-[13px] font-semibold">
-      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-      <span className="sr-only">Rated </span>
-      {rating.toFixed(1)}
+    <span className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-black shadow-lg shadow-cyan-500/20 ring-1 ring-white/10 ${dims} ${className}`}>
+      <img src={featherLogo} alt="Feathered Experts Pro logo" className="h-full w-full object-cover" />
     </span>
   );
 });
 
-/* ════════════════════════════════════════════════════════════
-   PARTICLE FIELD — HD canvas hero background
-   ────────────────────────────────────────────────────────────
-   DevicePixelRatio-aware canvas rendering an animated dot-grid
-   + particle network. Respects prefers-reduced-motion (renders one
-   static frame), pauses when the tab is hidden, and fully cleans
-   up listeners/animation frames on unmount or theme change.
-   Pure vector rendering: razor sharp on Retina / 4K displays.
-   ════════════════════════════════════════════════════════════ */
-const ParticleField = React.memo(function ParticleField({ theme, className = "" }) {
-  const canvasRef = useRef(null);
-  const reduceMotion = usePrefersReducedMotion();
+function SectionHead({ eyebrow, title, sub, align = "center" }) {
+  return (
+    <Reveal className={`mb-10 ${align === "center" ? "text-center" : "text-left"} 3xl:mb-14`}>
+      <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-[var(--cyan-dark)] 3xl:text-sm">
+        {eyebrow}
+      </p>
+      <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-[var(--ink)] sm:text-4xl 3xl:text-5xl">
+        {title}
+      </h2>
+      {sub ? (
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[var(--muted)] 3xl:text-lg">
+          {sub}
+        </p>
+      ) : null}
+    </Reveal>
+  );
+}
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let raf = 0;
-    let w = 0;
-    let h = 0;
-    let parts = [];
-    const DPR = Math.min(window.devicePixelRatio || 1, 2); // cap DPR for perf
-    const isDark = theme !== "light";
-
-    // Theme-aware palette, cached per init (no per-frame style reads)
-    const palette = isDark
-      ? { dot: "rgba(148,163,184,0.55)", link: [148, 163, 184], grid: "rgba(148,163,184,0.07)" }
-      : { dot: "rgba(15,23,42,0.35)", link: [15, 23, 42], grid: "rgba(15,23,42,0.06)" };
-
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      w = Math.max(1, rect.width);
-      h = Math.max(1, rect.height);
-      canvas.width = Math.round(w * DPR);
-      canvas.height = Math.round(h * DPR);
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      seed();
-    };
-
-    const seed = () => {
-      const count = Math.max(24, Math.min(110, Math.floor((w * h) / 20000)));
-      parts = Array.from({ length: count }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r: Math.random() * 1.7 + 0.5,
-      }));
-    };
-
-    const drawGrid = () => {
-      const gap = 54;
-      ctx.strokeStyle = palette.grid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = 0.5; x <= w; x += gap) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-      for (let y = 0.5; y <= h; y += gap) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
-      ctx.stroke();
-    };
-
-    const step = () => {
-      ctx.clearRect(0, 0, w, h);
-      drawGrid();
-      const maxD = 130;
-      const maxD2 = maxD * maxD;
-      ctx.lineWidth = 1;
-      for (let i = 0; i < parts.length; i++) {
-        const a = parts[i];
-        for (let j = i + 1; j < parts.length; j++) {
-          const b = parts[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < maxD2) {
-            const alpha = ((1 - Math.sqrt(d2) / maxD) * 0.20).toFixed(3);
-            ctx.strokeStyle = `rgba(${palette.link[0]},${palette.link[1]},${palette.link[2]},${alpha})`;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
-          }
-        }
-      }
-      ctx.fillStyle = palette.dot;
-      for (const p of parts) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
-        if (!reduceMotion) {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.x < -12) p.x = w + 12; else if (p.x > w + 12) p.x = -12;
-          if (p.y < -12) p.y = h + 12; else if (p.y > h + 12) p.y = -12;
-        }
-      }
-      if (!reduceMotion) raf = requestAnimationFrame(step);
-    };
-
-    resize();
-    step(); // draws at least one frame (static when reduced motion)
-
-    let resizeTimer = 0;
-    const onResize = () => {
-      window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(resize, 150); // debounce: no layout thrash
-    };
-    const onVis = () => {
-      if (document.hidden) {
-        cancelAnimationFrame(raf);
-      } else if (!reduceMotion) {
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(step);
-      }
-    };
-    window.addEventListener("resize", onResize, { passive: true });
-    document.addEventListener("visibilitychange", onVis);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(resizeTimer);
-      window.removeEventListener("resize", onResize);
-      document.removeEventListener("visibilitychange", onVis);
-    };
-  }, [theme, reduceMotion]);
-
-  return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
-});
-
-/* ════════════════════════════════════════════════════════════
-   PRODUCT CARD — now memoized + 3D tilt/glare
-   The outer motion.article keeps layout animations; the inner
-   div owns the pointer-driven tilt so framer's transform never
-   fights the CSS custom-property transform.
-   ════════════════════════════════════════════════════════════ */
-const ProductCard = React.memo(function ProductCard({ tool, idx, onOpen, onAdd, inCart, liked, onLike, tiltEnabled }) {
-  const tiltRef = useRef(null);
-  useTilt(tiltRef, tiltEnabled);
-
+/* One marketplace card — logo tile, badges, features, Price on Request,
+   Live Demo + Negotiate on WhatsApp. 3D tilt on hover (desktop). */
+function ToolCard({ tool, onDemo, onBuy, index }) {
+  const ref = useRef(null);
+  const reduced = usePrefersReducedMotion();
+  useTilt(ref, !reduced);
+  const Logo = tool.logo;
   return (
     <motion.article
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.35, delay: Math.min(idx * 0.05, 0.25), ease: [0.22, 1, 0.36, 1] }}
-      className="ss-card-wrap"
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.55, delay: Math.min(index * 0.04, 0.4), ease: [0.22, 1, 0.36, 1] }}
+      className={`fe-card tilt group relative flex flex-col rounded-3xl p-5 ${
+        tool.featured ? "sm:col-span-2 lg:col-span-2 3xl:col-span-2" : ""
+      }`}
     >
-      <div
-        ref={tiltRef}
-        className="ss-card ss-tilt ss-glare ss-spot group relative flex h-full flex-col overflow-hidden p-5 sm:p-6"
-      >
-        <div className="relative flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={tint(tool.hue)}>
-              <tool.icon className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div className="min-w-0">
-              <p className="ss-subtle text-[10px] font-bold uppercase tracking-[0.14em]">{tool.category}</p>
-              <h3 className="truncate text-base font-bold tracking-tight">{tool.name}</h3>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            {tool.badge && <span className="ss-chip hidden min-[400px]:inline-block">{tool.badge}</span>}
-            <button
-              type="button"
-              onClick={() => onLike(tool.id)}
-              aria-label={liked ? `Remove ${tool.name} from saved` : `Save ${tool.name}`}
-              aria-pressed={liked}
-              className="ss-icon-btn !h-9 !w-9"
-            >
-              <Heart className={`h-4 w-4 transition-colors ${liked ? "fill-red-500 text-red-500" : ""}`} />
-            </button>
-          </div>
-        </div>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-md ring-1 ring-black/5">
+          <Logo
+            className="h-9 w-9 shrink-0"
+            style={tool.logoColor ? { color: tool.logoColor } : undefined}
+          />
+        </span>
+        <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[var(--muted)]">
+          {tool.catLabel}
+        </span>
+      </div>
 
-        <p className="ss-muted relative mt-4 line-clamp-2 text-[13px] leading-relaxed">{tool.desc}</p>
+      <div className="mb-1 flex flex-wrap items-center gap-2">
+        <h3 className="text-lg font-extrabold leading-snug text-[var(--ink)]">{tool.name}</h3>
+        {tool.badge ? (
+          <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">
+            {tool.badge}
+          </span>
+        ) : null}
+      </div>
+      {tool.duration ? (
+        <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--cyan-dark)]">
+          {tool.duration}
+        </p>
+      ) : null}
+      <p className="mb-4 text-sm leading-relaxed text-[var(--muted)]">{tool.tag}</p>
 
-        <ul className="relative mt-4 space-y-2">
-          {tool.features.slice(0, 3).map((feat) => (
-            <li key={feat} className="flex items-center gap-2.5 text-[13px] font-medium">
-              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white text-black">
-                <Check className="h-2.5 w-2.5" aria-hidden="true" />
-              </span>
-              {feat}
-            </li>
-          ))}
-        </ul>
+      <ul className="mb-5 space-y-1.5">
+        {tool.features.map((f) => (
+          <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
 
-        <div className="relative mt-auto pt-5">
-          <div className="ss-divider mb-4" />
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-500">
-                <Tag className="h-3.5 w-3.5" />
-                Price on Request
-              </div>
-              <p className="ss-subtle mt-1 text-[11px]">Negotiate via WhatsApp</p>
-            </div>
-            <div className="text-right">
-              <Stars rating={tool.rating} />
-              <p className="ss-subtle text-[11px]">{tool.reviews.toLocaleString()} reviews</p>
-            </div>
-          </div>
-          <div className="flex gap-2.5">
-            <button type="button" onClick={() => onOpen(tool)} className="ss-btn ss-btn-outline flex-1">
-              Details
-            </button>
-            <button type="button" onClick={() => onAdd(tool)} className="ss-btn ss-btn-primary flex-[1.4]">
-              <AnimatePresence mode="wait" initial={false}>
-                {inCart ? (
-                  <motion.span key="in" initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center gap-2">
-                    <Check className="h-4 w-4" /> Added
-                  </motion.span>
-                ) : (
-                  <motion.span key="add" initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" /> Add
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          </div>
+      <div className="mt-auto">
+        <p className="mb-3 text-base font-extrabold text-[var(--ink)]">
+          Price on Request
+          <span className="ml-2 text-xs font-semibold text-[var(--muted)]">
+            Negotiate on WhatsApp
+          </span>
+        </p>
+        <div className="flex min-w-0 flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onDemo(tool)}
+            className="btn-ghost min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
+          >
+            Live Demo
+          </button>
+          <button
+            type="button"
+            onClick={() => onBuy(tool)}
+            className="btn-primary min-w-0 flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold"
+          >
+            <FaWhatsapp className="mr-1.5 inline h-4 w-4" />
+            {tool.more ? "Ask About Other Tools on WhatsApp" : "Negotiate on WhatsApp"}
+          </button>
         </div>
       </div>
     </motion.article>
   );
-});
-
-function SocialLinks({ className = "" }) {
-  return (
-    <ul className={`flex flex-wrap items-center gap-2 ${className}`} aria-label="Social media">
-      {SOCIALS.map(({ id, label, url, Icon, brand }) => (
-        <li key={id}>
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={label}
-            title={label}
-            className="ss-social"
-            style={{ "--brand": brand }}
-          >
-            <Icon className="h-4 w-4" aria-hidden="true" />
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
 }
 
-/* ════════════════════════════════════════════════════════════
-   FOOTER COMPONENTS
-   ════════════════════════════════════════════════════════════ */
-const BackToTop = React.memo(function BackToTop() {
-  const [visible, setVisible] = useState(false);
+/* ════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ════════════════════════════════════════════════════════════════════ */
+export default function FeatheredExpertsPro() {
+  const { theme, toggle, isDark } = useTheme();
+  const reduced = usePrefersReducedMotion();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [filter, setFilter] = useState("all");
+  const [query, setQuery] = useState("");
+  const [agency, setAgency] = useState(false);
+  const [toast, setToast] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+  const toastTimer = useRef(null);
+  const dashRef = useRef(null);
+  const dashWrapRef = useRef(null);
+
+  const showToast = useCallback((msg) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(""), 3400);
+  }, []);
 
   useEffect(() => {
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(() => {
-        setVisible(window.scrollY > 600);
-        ticking = false;
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  return (
-    <AnimatePresence>
-      {visible && (
-        <motion.button
-          type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          aria-label="Back to top"
-          initial={{ opacity: 0, y: 16, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 16, scale: 0.9 }}
-          transition={{ duration: 0.2 }}
-          className="ss-fab ss-fab-top fixed z-40 inline-flex h-11 w-11 items-center justify-center rounded-full sm:h-12 sm:w-12"
-        >
-          <ArrowUp className="h-5 w-5" strokeWidth={2.25} aria-hidden="true" />
-        </motion.button>
-      )}
-    </AnimatePresence>
-  );
-});
-
-const UpdatesForm = React.memo(function UpdatesForm() {
-  const [email, setEmail] = useState("");
-  const [agree, setAgree] = useState(false);
-  const [status, setStatus] = useState("idle");
-  const [message, setMessage] = useState("");
-  const timerRef = useRef(null);
-
-  useEffect(() => () => clearTimeout(timerRef.current), []);
-
-  const clearError = () => {
-    if (status === "error") {
-      setStatus("idle");
-      setMessage("");
+  /* Favicon — the feather logo, set once. */
+  useLayoutEffect(() => {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (status === "loading") return;
-    const trimmed = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) {
-      setStatus("error");
-      setMessage("Please enter a valid email address.");
-      return;
-    }
-    if (!agree) {
-      setStatus("error");
-      setMessage("Please confirm you agree to receive updates.");
-      return;
-    }
-    setStatus("loading");
-    setMessage("");
-    timerRef.current = setTimeout(() => {
-      openWhatsApp(`Hello SmartStream! Please add ${trimmed} to your offers and updates list.`);
-      setStatus("success");
-      setMessage("Opening WhatsApp — send the message to finish.");
-      setEmail("");
-      setAgree(false);
-      timerRef.current = setTimeout(() => {
-        setStatus("idle");
-        setMessage("");
-      }, 5000);
-    }, 400);
-  };
-
-  const isLoading = status === "loading";
-
-  return (
-    <form onSubmit={handleSubmit} className="w-full space-y-3" noValidate>
-      <div className="relative">
-        <Mail className="ss-subtle pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2" aria-hidden="true" />
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            clearError();
-          }}
-          placeholder="your@email.com"
-          autoComplete="email"
-          inputMode="email"
-          aria-label="Email address"
-          aria-invalid={status === "error"}
-          aria-describedby="updates-msg"
-          disabled={isLoading}
-          className="ss-input !h-12 w-full pl-10 pr-28 disabled:opacity-60 sm:pr-32"
-        />
-        <button type="submit" disabled={isLoading} className="ss-btn ss-btn-primary absolute right-1.5 top-1/2 !min-h-9 -translate-y-1/2 !rounded-full !px-3.5 !text-xs sm:!px-4">
-          {isLoading ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              <span className="hidden sm:inline">Joining…</span>
-            </>
-          ) : (
-            <>
-              Subscribe <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </>
-          )}
-        </button>
-      </div>
-
-      <label className="ss-muted flex cursor-pointer select-none items-start gap-2.5 text-[12px] leading-snug">
-        <input
-          type="checkbox"
-          checked={agree}
-          onChange={(e) => {
-            setAgree(e.target.checked);
-            clearError();
-          }}
-          className="ss-check mt-0.5 h-4 w-4 shrink-0"
-        />
-        <span>
-          I agree to receive offers and updates from SmartStream
-          {CONFIG.privacyUrl && (
-            <>
-              {" "}and accept the{" "}
-              <SmartLink to={CONFIG.privacyUrl} className="underline underline-offset-2">privacy policy</SmartLink>
-            </>
-          )}
-          .
-        </span>
-      </label>
-
-      <div id="updates-msg" aria-live="polite" className="min-h-[1.25rem]">
-        <AnimatePresence mode="wait">
-          {message && (
-            <motion.p
-              key={message}
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.18 }}
-              className={`flex items-center gap-1.5 text-xs font-medium ${status === "success" ? "ss-success" : "text-red-500"}`}
-              role={status === "error" ? "alert" : "status"}
-            >
-              {status === "success" ? <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} /> : <AlertCircle className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />}
-              {message}
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
-    </form>
-  );
-});
-
-const SmartStreamFooter = React.memo(function SmartStreamFooter({ onPickCategory }) {
-  const year = useMemo(() => new Date().getFullYear(), []);
-  const legal = [
-    { label: "Privacy", href: CONFIG.privacyUrl },
-    { label: "Terms", href: CONFIG.termsUrl },
-  ];
-
-  return (
-    <footer className="ss-foot mt-8 w-full sm:mt-12">
-      <div className="ss-divider-b">
-        <div className="ss-wrap py-10 sm:py-14">
-          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
-            <div>
-              <h2 className="ss-h2">Join the SmartStream list.</h2>
-              <p className="ss-muted mt-3 max-w-md text-sm sm:text-base">
-                Get early access to new tools and setup guides. We'll add you to our updates list on WhatsApp.
-              </p>
-            </div>
-            <div className="w-full max-w-md lg:ml-auto">
-              <UpdatesForm />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="ss-wrap py-10 sm:py-14">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
-          <div className="space-y-5 sm:col-span-2 lg:col-span-4">
-            <BrandLogo />
-            <p className="ss-muted max-w-sm text-sm leading-relaxed">
-              Premium access to popular AI tools at clear prices. Delivery via WhatsApp, 24/7 support, and warranty cover for your subscription period.
-            </p>
-            <SocialLinks />
-          </div>
-
-          <div className="grid grid-cols-2 gap-8 sm:col-span-2 lg:col-span-4 lg:gap-6 sm:grid-cols-3">
-            <div>
-              <h3 className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em]">Store</h3>
-              <ul className="space-y-1">
-                {["All", "AI Chat", "Coding", "Image Gen"].map((c) => (
-                  <li key={c}>
-                    <button type="button" onClick={() => onPickCategory(c)} className="ss-foot-link">
-                      {c === "All" ? "All Tools" : c}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em]">Help</h3>
-              <ul className="space-y-1">
-                <li><a href="#how" className="ss-foot-link">How it works</a></li>
-                <li><a href="#faq" className="ss-foot-link">FAQ</a></li>
-                <li><a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-foot-link">Contact Support</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em]">Legal</h3>
-              <ul className="space-y-1">
-                {legal.map((l) => (
-                  <li key={l.label}><SmartLink to={l.href} className="ss-foot-link">{l.label}</SmartLink></li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="space-y-4 sm:col-span-2 lg:col-span-4">
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em]">Get in touch</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <span className="ss-icon-chip"><MessageCircle className="h-3.5 w-3.5" /></span>
-                <div className="min-w-0">
-                  <p className="ss-subtle text-[10px] font-semibold uppercase tracking-wider">WhatsApp</p>
-                  <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-foot-link !px-0 break-words text-sm !text-[var(--fg)]">
-                    {CONFIG.whatsappDisplay}
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="ss-icon-chip"><Mail className="h-3.5 w-3.5" /></span>
-                <div className="min-w-0">
-                  <p className="ss-subtle text-[10px] font-semibold uppercase tracking-wider">Email</p>
-                  <a href={`mailto:${CONFIG.supportEmail}`} className="ss-foot-link !px-0 break-all text-sm !text-[var(--fg)]">
-                    {CONFIG.supportEmail}
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="ss-icon-chip"><Clock className="h-3.5 w-3.5" /></span>
-                <div className="min-w-0">
-                  <p className="ss-subtle text-[10px] font-semibold uppercase tracking-wider">Hours</p>
-                  <p className="text-sm">24/7 Support</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="ss-icon-chip bg-[#25D366]/10 text-[#25D366]"><MessageCircle className="h-3.5 w-3.5" /></span>
-                <div className="min-w-0">
-                  <p className="ss-subtle text-[10px] font-semibold uppercase tracking-wider">Channel</p>
-                  <a href={CONFIG.channelUrl} target="_blank" rel="noopener noreferrer" className="ss-foot-link !px-0 break-words text-sm !text-[#25D366] hover:underline">
-                    Follow our Channel
-                  </a>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="ss-divider-t">
-        <div className="ss-wrap py-6">
-          <ul className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4 sm:gap-6">
-            {[
-              { title: "Instant Delivery", subtitle: "Via WhatsApp" },
-              { title: "Warranty Cover", subtitle: "Replacement if it breaks" },
-              { title: "Local Payments", subtitle: "Bank, Easypaisa, JazzCash, Crypto" },
-              { title: "24/7 Support", subtitle: "We're on WhatsApp" },
-            ].map((b) => (
-              <li key={b.title} className="flex items-start gap-3">
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
-                  <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-white">{b.title}</p>
-                  <p className="ss-subtle text-[11px]">{b.subtitle}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <div className="ss-divider-t ss-foot-bottom">
-        <div className="ss-wrap flex flex-col items-center justify-between gap-4 py-5 lg:flex-row">
-          <p className="ss-subtle text-center text-[11px]">© {year} {CONFIG.brandName}. All rights reserved.</p>
-          <ul className="flex flex-wrap items-center justify-center gap-2" aria-label="Accepted payment methods">
-            {PAYMENTS.map(({ icon: Icon, label }) => (
-              <li key={label} className="ss-pay">
-                <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </footer>
-  );
-});
-
-/* ════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-   ════════════════════════════════════════════════════════════ */
-export default function SmartStreamStore() {
-  const [theme, toggleTheme] = useTheme();
-  const reduceMotion = usePrefersReducedMotion();
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const deferredQuery = useDeferredValue(searchQuery); // keep typing silky while filtering defers
-  const [sortBy, setSortBy] = useState("featured");
-  const [sortOpen, setSortOpen] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
-  const [selectedTool, setSelectedTool] = useState(null);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState(() =>
-    loadJSON(CART_KEY, [])
-      .filter((i) => i && TOOLS.some((t) => t.id === i.id) && Number.isInteger(i.qty) && i.qty > 0)
-      .map((i) => ({ id: i.id, qty: Math.min(i.qty, MAX_QTY) }))
-  );
-  const [wishlist, setWishlist] = useState(() => loadJSON(WISH_KEY, []).filter((id) => TOOLS.some((t) => t.id === id)));
-  const [openFaq, setOpenFaq] = useState(0);
-  const [toast, setToast] = useState(null);
-
-  // State for the Channel Popup
-  const [showChannelPopup, setShowChannelPopup] = useState(false);
-
-  const searchRef = useRef(null);
-  const menuRef = useFocusTrap(menuOpen);
-  const toolRef = useFocusTrap(!!selectedTool);
-  const cartRef = useFocusTrap(cartOpen);
-  const activeSection = useScrollSpy(NAV_LINKS.map((l) => l.id));
+    link.href = featherLogo;
+  }, []);
 
   const { scrollYProgress } = useScroll();
-  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 25, restDelta: 0.001 });
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
 
-  useLockBody(!!selectedTool || cartOpen || menuOpen || showChannelPopup);
-  const closeAll = useCallback(() => {
-    setSelectedTool(null);
-    setCartOpen(false);
-    setMenuOpen(false);
-    setSortOpen(false);
-    setShowChannelPopup(false);
-  }, []);
-  useEscape(closeAll, !!selectedTool || cartOpen || menuOpen || sortOpen || showChannelPopup);
+  const activeSection = useScrollSpy([
+    "tools",
+    "webdev",
+    "software",
+    "ads",
+    "pricing",
+    "cases",
+    "contact",
+  ]);
+  useLockBody(drawerOpen);
+  useEscape(useCallback(() => setDrawerOpen(false), []), drawerOpen);
 
-  // Check if the popup should be shown on mount
+  /* 3D tilt for the hero dashboard (desktop, fine pointer only). */
   useEffect(() => {
-    const dismissed = localStorage.getItem(POPUP_KEY);
-    if (!dismissed) {
-      // Slight delay so it feels natural
-      const timer = setTimeout(() => setShowChannelPopup(true), 1000);
-      return () => clearTimeout(timer);
+    const dash = dashRef.current;
+    const wrap = dashWrapRef.current;
+    if (!dash || !wrap || reduced) return undefined;
+    if (!window.matchMedia("(hover:hover) and (pointer:fine)").matches) {
+      return undefined;
     }
-  }, []);
-
-  const dismissChannelPopup = () => {
-    setShowChannelPopup(false);
-    localStorage.setItem(POPUP_KEY, "true");
-  };
-
-  useEffect(() => {
-    document.title = "SmartStream — Premium AI Tools at Smarter Prices";
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "description";
-      document.head.appendChild(meta);
-    }
-    meta.content = "Gemini Pro, YouTube Premium, Cursor AI, Midjourney, ElevenLabs and Claude Pro subscriptions. Clear pricing, order and get activated on WhatsApp.";
-  }, []);
-
-  useEffect(() => saveJSON(CART_KEY, cart), [cart]);
-  useEffect(() => saveJSON(WISH_KEY, wishlist), [wishlist]);
-
-  useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2200);
-    return () => clearTimeout(t);
-  }, [toast]);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      const tag = (e.target.tagName || "").toLowerCase();
-      if (e.key === "/" && !["input", "textarea", "select"].includes(tag) && !e.metaKey && !e.ctrlKey) {
-        e.preventDefault();
-        searchRef.current?.focus();
-        searchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+    const onMove = (e) => {
+      const r = dash.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      dash.style.transform = `rotateX(${4 - y * 8}deg) rotateY(${-6 + x * 10}deg)`;
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    wrap.addEventListener("pointermove", onMove);
+    return () => wrap.removeEventListener("pointermove", onMove);
+  }, [reduced]);
 
-  const addToCart = useCallback((tool) => {
-    setCart((c) => {
-      const found = c.find((i) => i.id === tool.id);
-      if (found) return c.map((i) => (i.id === tool.id ? { ...i, qty: Math.min(i.qty + 1, MAX_QTY) } : i));
-      return [...c, { id: tool.id, qty: 1 }];
+  const visibleTools = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return TOOLS.filter((t) => {
+      if (t.more) return true;
+      if (filter !== "all" && t.cat !== filter) return false;
+      if (q && !(t.name + " " + t.tag).toLowerCase().includes(q)) return false;
+      return true;
     });
-    setToast(`${tool.name} added to cart`);
+  }, [filter, query]);
+
+  const handleDemo = useCallback(
+    (tool) => {
+      showToast(
+        `Live demo: ${tool.name} — ask for a guided walkthrough in the form below and we'll show it live on a call.`
+      );
+      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+    },
+    [showToast]
+  );
+
+  const handleBuy = useCallback(
+    (tool) => {
+      if (tool.more) {
+        showToast("Opening WhatsApp — just tell us which tool you need.");
+        openWhatsApp(
+          "Hello Feathered Experts Pro! I am looking for a tool that is not listed on your marketplace. Please tell me what other tools you have available so we can negotiate on WhatsApp."
+        );
+        return;
+      }
+      showToast(
+        `Opening WhatsApp — your message for ${tool.name} is pre-filled, just press send to negotiate your price.`
+      );
+      openWhatsApp(buyText(tool.name, tool.duration));
+    },
+    [showToast]
+  );
+
+  const scrollToId = useCallback((id) => {
+    setDrawerOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   }, []);
-  const changeQty = (id, d) =>
-    setCart((c) => c.map((i) => (i.id === id ? { ...i, qty: Math.min(i.qty + d, MAX_QTY) } : i)).filter((i) => i.qty > 0));
-  const removeItem = (id) => setCart((c) => c.filter((i) => i.id !== id));
-  const toggleWish = useCallback((id) => {
-    setWishlist((w) => {
-      const has = w.includes(id);
-      setToast(has ? "Removed from saved" : "Saved for later");
-      return has ? w.filter((x) => x !== id) : [...w, id];
-    });
-  }, []);
-
-  const cartItems = useMemo(() => cart.map((i) => ({ ...TOOLS.find((t) => t.id === i.id), qty: i.qty })), [cart]);
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-
-  const checkout = () => {
-    const lines = cartItems.map((i) => `• ${i.name} (${i.duration}) x${i.qty}`).join("\n");
-    openWhatsApp(`Hello SmartStream! I'd like to request a quote for:\n\n${lines}\n\nPlease share the best price and payment details.`);
-  };
-  const buyNow = (tool) =>
-    openWhatsApp(`Hello SmartStream! I want to purchase *${tool.name}* (${tool.duration}). Please provide the price and payment details.`);
-
-  const goCategory = useCallback((cat) => {
-    setSelectedCategory(cat);
-    setShowSaved(false);
-    setSearchQuery("");
-    document.getElementById("tools")?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
-  const filteredTools = useMemo(() => {
-    const q = deferredQuery.trim().toLowerCase();
-    const list = TOOLS.filter((t) => {
-      const mc = selectedCategory === "All" || t.category === selectedCategory;
-      const ms = !q || t.name.toLowerCase().includes(q) || t.category.toLowerCase().includes(q);
-      const mw = !showSaved || wishlist.includes(t.id);
-      return mc && ms && mw;
-    });
-    switch (sortBy) {
-      case "rating": return [...list].sort((a, b) => b.rating - a.rating);
-      default: return list;
-    }
-  }, [selectedCategory, deferredQuery, sortBy, showSaved, wishlist]);
-
-  const avgRating = useMemo(() => TOOLS.reduce((s, t) => s + t.rating, 0) / TOOLS.length, []);
-
-  const stats = [
-    { n: TOOLS.length, s: "", l: "Premium tools", d: 0 },
-    { n: avgRating, s: "/5", l: "Avg. tool rating", d: 1 },
-    { n: PAYMENTS.length, s: "", l: "Payment methods", d: 0 },
-    { n: 24, s: "/7", l: "WhatsApp support", d: 0 },
-  ];
 
   return (
     <MotionConfig reducedMotion="user">
-      <div id="top" className="ss-root min-h-screen overflow-x-clip">
-        <a href="#tools" className="ss-skip">Skip to store</a>
+      <div data-theme={theme} className="fe-root min-h-screen overflow-x-clip bg-[var(--bg)] font-sans text-[var(--ink)] antialiased">
+        <style>{THEME_CSS}</style>
 
-        <motion.div style={{ scaleX: progress, background: "var(--accent)" }} className="fixed left-0 top-0 z-[60] h-[2px] w-full origin-left" aria-hidden="true" />
+        {/* Scroll progress */}
+        <motion.div
+          className="fixed inset-x-0 top-0 z-[80] h-[3px] origin-left bg-gradient-to-r from-cyan-400 via-sky-400 to-violet-500"
+          style={{ scaleX: progress }}
+        />
 
-        <header className={`ss-header fixed top-0 z-40 w-full transition-colors duration-300 ${isScrolled ? "ss-header-on ss-glass" : ""}`}>
-          <div className="ss-wrap flex h-14 items-center justify-between gap-2 sm:h-16">
-            <BrandLogo />
+        {/* ── STICKY GLASS NAVBAR ─────────────────────────────── */}
+        <header
+          className={`fixed inset-x-0 top-0 z-[70] transition-all duration-300 ${
+            scrolled ? "fe-nav-scrolled" : ""
+          }`}
+        >
+          <div className="mx-auto flex h-[68px] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 3xl:max-w-[1500px]">
+            <a
+              href="#top"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="flex min-w-0 items-center gap-2.5"
+              aria-label="Feathered Experts Pro — home"
+            >
+              <FeatherLogoTile />
+              <span className="truncate text-lg font-extrabold tracking-tight text-[var(--ink)] sm:text-xl 3xl:text-2xl">
+                Feathered Experts <span className="text-[var(--cyan-dark)]">Pro</span>
+              </span>
+            </a>
 
-            <nav aria-label="Primary" className="hidden items-center gap-0.5 md:flex">
+            <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
               {NAV_LINKS.map((l) => (
-                <a key={l.href} href={l.href} aria-current={activeSection === l.id ? "true" : undefined} className={`ss-navlink ${activeSection === l.id ? "ss-navlink-active" : ""}`}>
+                <a
+                  key={l.id}
+                  href={`#${l.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToId(l.id);
+                  }}
+                  className={`rounded-full px-3.5 py-2 text-sm font-semibold transition-colors 3xl:text-base ${
+                    activeSection === l.id
+                      ? "bg-[var(--chip)] text-[var(--cyan-dark)]"
+                      : "text-[var(--muted)] hover:bg-[var(--chip)] hover:text-[var(--ink)]"
+                  }`}
+                >
                   {l.label}
                 </a>
               ))}
             </nav>
 
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-outline !min-h-9 !px-3.5 !text-[13px] hidden sm:inline-flex">
-                <MessageCircle className="h-4 w-4" /> Support
-              </a>
-              <ThemeToggle theme={theme} onToggle={toggleTheme} />
-              <button type="button" onClick={() => setCartOpen(true)} aria-label={`Open cart, ${cartCount} items`} className="ss-icon-btn ss-icon-btn-solid relative">
-                <ShoppingCart className="h-4 w-4" />
-                <AnimatePresence>
-                  {cartCount > 0 && (
-                    <motion.span
-                      key={cartCount}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
-                      style={{ boxShadow: "0 0 0 2px var(--bg)" }}
-                    >
-                      {cartCount}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggle}
+                className="fe-icon-btn"
+                aria-pressed={isDark}
+                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
               </button>
-              <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen} className="ss-icon-btn md:hidden">
-                <Menu className="h-4 w-4" />
+              <a
+                href="#contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToId("contact");
+                }}
+                className="btn-primary hidden items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold sm:inline-flex 3xl:px-6 3xl:py-3 3xl:text-base"
+              >
+                <Rocket className="h-4 w-4" />
+                Get Started
+              </a>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen((o) => !o)}
+                className="fe-icon-btn lg:hidden"
+                aria-expanded={drawerOpen}
+                aria-label={drawerOpen ? "Close menu" : "Open menu"}
+              >
+                {drawerOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </div>
         </header>
 
+        {/* ── MOBILE DRAWER ───────────────────────────────────── */}
         <AnimatePresence>
-          {menuOpen && (
-            <>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMenuOpen(false)} className="ss-scrim fixed inset-0 z-50 md:hidden" />
+          {drawerOpen ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[75] bg-black/50 backdrop-blur-sm lg:hidden"
+              onClick={() => setDrawerOpen(false)}
+            >
               <motion.aside
-                ref={menuRef}
-                tabIndex={-1}
-                role="dialog"
-                aria-modal="true"
-                aria-label="Menu"
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
-                transition={{ type: "spring", stiffness: 320, damping: 34 }}
-                className="ss-panel ss-drawer ss-glass fixed right-0 top-0 z-50 flex h-full w-[86%] max-w-xs flex-col p-5 md:hidden"
+                transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                className="absolute right-0 top-0 flex h-full w-[82%] max-w-sm flex-col bg-[var(--surface)] p-6 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-label="Menu"
               >
                 <div className="mb-6 flex items-center justify-between">
-                  <BrandLogo />
-                  <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu" className="ss-icon-btn">
-                    <X className="h-4 w-4" />
+                  <span className="flex items-center gap-2.5">
+                    <FeatherLogoTile size="sm" />
+                    <span className="text-base font-extrabold text-[var(--ink)]">
+                      Feathered Experts Pro
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerOpen(false)}
+                    className="fe-icon-btn"
+                    aria-label="Close menu"
+                  >
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
-                <nav aria-label="Mobile" className="overflow-y-auto">
-                  {NAV_LINKS.map((l, i) => (
-                    <motion.a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.06 + i * 0.05 }} className="ss-divider-b flex min-h-12 items-center justify-between py-3 text-lg font-bold tracking-tight">
-                      {l.label} <ArrowUpRight className="ss-subtle h-4 w-4" />
-                    </motion.a>
+                <nav className="flex flex-col gap-1" aria-label="Mobile">
+                  {NAV_LINKS.map((l) => (
+                    <a
+                      key={l.id}
+                      href={`#${l.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToId(l.id);
+                      }}
+                      className="rounded-2xl px-4 py-3 text-base font-bold text-[var(--ink)] hover:bg-[var(--chip)]"
+                    >
+                      {l.label}
+                    </a>
                   ))}
                 </nav>
-                <div className="mt-auto space-y-4 pt-6">
-                  <SocialLinks />
-                  <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-primary !min-h-12 w-full">
-                    <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
-                  </a>
-                </div>
+                <a
+                  href={waLink(
+                    "Hello Feathered Experts Pro! I would like to book an agency call. Please share the available times so we can talk on WhatsApp."
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary mt-auto inline-flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-bold"
+                >
+                  <FaWhatsapp className="h-5 w-5" />
+                  Book an Agency Call
+                </a>
               </motion.aside>
-            </>
-          )}
+            </motion.div>
+          ) : null}
         </AnimatePresence>
 
-        <main>
-          <section className="relative isolate overflow-hidden px-4 pb-12 pt-24 sm:px-6 sm:pb-16 sm:pt-32 lg:px-8 2xl:pt-40">
-            {/* HD canvas hero: particle network + dot grid, DPR-aware, theme-aware */}
-            <div className="absolute inset-0 -z-10" aria-hidden="true">
-              <ParticleField theme={theme} className="ss-particles absolute inset-0 h-full w-full" />
-              <div className="ss-noise absolute inset-0" />
-              <div className="ss-hero-fade absolute inset-0" />
+        <main id="top">
+          {/* ── HERO ──────────────────────────────────────────── */}
+          <section className="fe-hero relative overflow-hidden pb-16 pt-[118px] sm:pt-[136px] 3xl:pt-[160px]">
+            <div className="absolute inset-0" aria-hidden="true">
+              <ParticleCanvas theme={theme} />
+              <div className="fe-hero-glow" />
             </div>
-            <div className="ss-blob ss-blob-a -z-10" aria-hidden="true" />
-            <div className="ss-blob ss-blob-b -z-10" aria-hidden="true" />
-            <div className="ss-blob ss-blob-c -z-10" aria-hidden="true" />
 
-            <div className="mx-auto flex max-w-4xl flex-col items-center text-center 3xl:max-w-6xl">
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="ss-pill ss-glass mb-5">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-70" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                </span>
-                Fast delivery via WhatsApp
-              </motion.div>
+            <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] 3xl:max-w-[1500px]">
+              <div>
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="mb-5 flex flex-wrap items-center gap-2"
+                >
+                  <FeatherLogoTile size="sm" />
+                  <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    Feathered Experts Pro
+                  </span>
+                  <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white">
+                    AI Tools • Websites • Meta Ads
+                  </span>
+                </motion.div>
 
-              <h1 className="ss-h1">
-                {["Premium", "AI", "Tools."].map((w, i) => (
-                  <motion.span key={w} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 + i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="mr-[0.25em] inline-block">
-                    {w}
-                  </motion.span>
-                ))}
-                <br />
-                <motion.span initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="ss-gradient-text inline-block">
-                  Best Price Guaranteed.
-                </motion.span>
-              </h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-[var(--cyan-dark)]"
+                >
+                  Marketplace + Agency — One Team
+                </motion.p>
 
-              <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.45 }} className="ss-muted mt-4 max-w-xl text-sm leading-relaxed sm:text-base 3xl:max-w-2xl 3xl:text-lg">
-                Get access to Gemini Pro, YouTube Premium, Cursor AI, and more. Contact us on WhatsApp to negotiate the best price and get activated instantly.
-              </motion.p>
+                <motion.h1
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
+                  className="text-[clamp(2.4rem,6vw,4.2rem)] font-extrabold leading-[1.04] tracking-tight text-[var(--ink)] 3xl:text-[5rem] 3xl:leading-[1.02]"
+                >
+                  Lightweight Execution.
+                  <br />
+                  <span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-violet-500 bg-clip-text text-transparent">
+                    Heavyweight Digital Dominance.
+                  </span>
+                </motion.h1>
 
-              <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.45 }} className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-                <a href="#tools" className="ss-btn ss-btn-primary group !min-h-11 w-full !px-6 sm:w-auto">
-                  Browse Store <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </a>
-                <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-outline ss-glass !min-h-11 w-full !px-6 sm:w-auto">
-                  <MessageCircle className="h-4 w-4" /> Chat with Us
-                </a>
-              </motion.div>
+                <motion.p
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-5 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg 3xl:text-xl"
+                >
+                  Unlock proprietary AI tools to automate your workflow, or partner with
+                  our elite engineers and Meta Ads specialists to scale your brand.
+                </motion.p>
 
-              <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75, duration: 0.5 }} className="mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-2 3xl:max-w-4xl" aria-label="Available tools">
-                {TOOLS.map((t) => (
-                  <li key={t.id} className="ss-pill ss-glass !py-1 !normal-case !tracking-normal">
-                    <span className="flex h-4 w-4 items-center justify-center rounded" style={tint(t.hue)}>
-                      <t.icon className="h-2.5 w-2.5" aria-hidden="true" />
-                    </span>
-                    <span className="text-xs font-semibold">{t.name.split(" ")[0]}</span>
-                  </li>
-                ))}
-              </motion.ul>
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-8 flex flex-wrap items-center gap-3"
+                >
+                  <a
+                    href="#tools"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToId("tools");
+                    }}
+                    className="btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-base font-bold 3xl:px-8 3xl:py-4 3xl:text-lg"
+                  >
+                    Explore AI Tools Marketplace
+                    <ArrowRight className="h-5 w-5" />
+                  </a>
+                  <a
+                    href={waLink(
+                      "Hello Feathered Experts Pro! I would like to book an agency call. Please share the available times so we can talk on WhatsApp."
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-base font-bold 3xl:px-8 3xl:py-4 3xl:text-lg"
+                  >
+                    <FaWhatsapp className="h-5 w-5" />
+                    Book an Agency Call
+                  </a>
+                </motion.div>
 
-              <dl className="ss-divider-y mt-10 grid w-full max-w-2xl grid-cols-2 gap-5 py-6 sm:grid-cols-4 3xl:max-w-4xl">
-                {stats.map((s) => (
-                  <div key={s.l} className="flex flex-col-reverse">
-                    <dt className="ss-subtle mt-0.5 text-[10px] font-bold uppercase tracking-[0.12em] sm:text-[11px]">{s.l}</dt>
-                    <dd className="text-2xl font-extrabold tracking-tight sm:text-3xl 3xl:text-4xl">
-                      <Counter to={s.n} decimals={s.d} suffix={s.s} />
+                <motion.dl
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-10 grid max-w-xl grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4"
+                >
+                  <div>
+                    <dt className="sr-only">AI tools ready</dt>
+                    <dd className="text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                      <Counter value={50} suffix="+" />
                     </dd>
+                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">AI tools ready</dd>
                   </div>
-                ))}
-              </dl>
-            </div>
-          </section>
-
-          <section aria-hidden="true" className="ss-marquee-wrap overflow-hidden py-3.5">
-            <div className="ss-marquee flex w-max whitespace-nowrap">
-              {[...TOOLS, ...TOOLS].map((t, i) => (
-                <span key={i} className="flex items-center gap-8 pr-8 text-xs font-bold uppercase tracking-[0.14em]">
-                  {t.name} <Sparkles className="h-3.5 w-3.5 opacity-50" />
-                </span>
-              ))}
-            </div>
-          </section>
-
-          <section id="tools" className="ss-wrap scroll-mt-16 py-14 sm:py-20">
-            <SectionHead eyebrow="The Store" title="Choose your next superpower." />
-
-            <div className="mb-8 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <LayoutGroup>
-                <div role="group" aria-label="Categories" className="ss-noscroll -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 xl:mx-0 xl:px-0">
-                  {CATEGORIES.map((cat) => {
-                    const active = selectedCategory === cat;
-                    return (
-                      <button key={cat} type="button" aria-pressed={active} onClick={() => setSelectedCategory(cat)} className={`ss-tab relative ${active ? "ss-tab-active" : ""}`}>
-                        {active && <motion.span layoutId="catPill" className="absolute inset-0 rounded-full" style={{ background: "var(--accent)" }} transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
-                        <span className="relative">{cat}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </LayoutGroup>
-
-              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-                <div className="relative w-full sm:w-64">
-                  <Search className="ss-subtle pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" />
-                  <input
-                    ref={searchRef}
-                    type="search"
-                    aria-label="Search tools (press / to focus)"
-                    placeholder="Search tools…  ( / )"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="ss-input w-full pl-10 pr-9"
-                  />
-                  {searchQuery && (
-                    <button type="button" onClick={() => setSearchQuery("")} aria-label="Clear search" className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full hover:bg-[var(--hover)]">
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex gap-2.5">
-                  <button type="button" onClick={() => setShowSaved((s) => !s)} aria-pressed={showSaved} className={`ss-btn ss-btn-outline !h-10 !min-h-10 !px-4 ${showSaved ? "ss-saved-on" : ""}`}>
-                    <Heart className={`h-4 w-4 ${showSaved ? "fill-red-500 text-red-500" : ""}`} /> Saved
-                    {wishlist.length > 0 && <span className="ss-chip !px-1.5 !py-0.5">{wishlist.length}</span>}
-                  </button>
-
-                  <div className="relative min-w-0 flex-1 sm:flex-none">
-                    <button type="button" onClick={() => setSortOpen((o) => !o)} aria-expanded={sortOpen} aria-controls="sort-list" className="ss-btn ss-btn-outline !h-10 !min-h-10 w-full justify-between !px-4 sm:w-auto">
-                      <SlidersHorizontal className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{SORTS.find((s) => s.id === sortBy).label}</span>
-                      <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
-                    </button>
-                    <AnimatePresence>
-                      {sortOpen && (
-                        <>
-                          <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                          <motion.ul id="sort-list" aria-label="Sort by" initial={{ opacity: 0, y: -6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }} transition={{ duration: 0.15 }} className="ss-panel ss-glass absolute right-0 z-30 mt-2 w-full min-w-52 overflow-hidden rounded-xl p-1 sm:w-auto" style={{ boxShadow: "var(--shadow-lg)" }}>
-                            {SORTS.map((s) => (
-                              <li key={s.id}>
-                                <button type="button" aria-current={sortBy === s.id ? "true" : undefined} onClick={() => { setSortBy(s.id); setSortOpen(false); }} className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 text-left text-[13px] font-medium hover:bg-[var(--hover)]">
-                                  {s.label}
-                                  {sortBy === s.id && <Check className="h-4 w-4" />}
-                                </button>
-                              </li>
-                            ))}
-                          </motion.ul>
-                        </>
-                      )}
-                    </AnimatePresence>
+                  <div>
+                    <dt className="sr-only">Projects shipped</dt>
+                    <dd className="text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                      <Counter value={120} suffix="+" />
+                    </dd>
+                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">Projects shipped</dd>
                   </div>
-                </div>
+                  <div>
+                    <dt className="sr-only">Average Meta Ads ROAS</dt>
+                    <dd className="text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                      <Counter value={4.8} suffix="×" decimals={1} />
+                    </dd>
+                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">Avg. Meta Ads ROAS</dd>
+                  </div>
+                  <div>
+                    <dt className="sr-only">Support</dt>
+                    <dd className="flex items-center gap-1.5 text-2xl font-extrabold text-[var(--ink)] 3xl:text-3xl">
+                      24/7
+                      <Headphones className="h-5 w-5 text-[var(--cyan-dark)]" />
+                    </dd>
+                    <dd className="mt-0.5 text-xs font-semibold text-[var(--muted)]">Support on WhatsApp</dd>
+                  </div>
+                </motion.dl>
               </div>
-            </div>
 
-            <p className="sr-only" role="status" aria-live="polite">{filteredTools.length} tools shown</p>
+              {/* Floating 3D dashboard mockup */}
+              <motion.div
+                initial={{ opacity: 0, y: 32, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="relative"
+                ref={dashWrapRef}
+                style={{ perspective: "1100px" }}
+              >
+                <div ref={dashRef} className="fe-dash relative rounded-[28px] p-5 transition-transform duration-200 will-change-transform sm:p-6">
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-2.5">
+                      <FeatherLogoTile size="sm" />
+                      <span className="text-sm font-extrabold text-[var(--ink)]">
+                        Feathered OS — Live Dashboard
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-500">
+                      <span className="fe-live-dot h-2 w-2 rounded-full bg-emerald-500" />
+                      Live
+                    </span>
+                  </div>
 
-            {/* Responsive HD grid: 1 → 2 → 3 → 4 columns at 3xl (1920px+) */}
-            <motion.div layout className="ss-tools-grid">
-              <AnimatePresence mode="popLayout">
-                {filteredTools.map((tool, idx) => (
-                  <ProductCard key={tool.id} tool={tool} idx={idx} onOpen={setSelectedTool} onAdd={addToCart} inCart={cart.some((c) => c.id === tool.id)} liked={wishlist.includes(tool.id)} onLike={toggleWish} tiltEnabled={!reduceMotion} />
-                ))}
-              </AnimatePresence>
-            </motion.div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-[var(--chip)] p-4">
+                      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                        <BarChart3 className="h-3.5 w-3.5" /> Revenue Growth
+                      </p>
+                      <p className="mt-1.5 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">+184%</p>
+                      <div className="mt-3 flex h-12 items-end gap-1.5" aria-hidden="true">
+                        {[38, 55, 44, 66, 58, 82, 74, 100].map((h, i) => (
+                          <span
+                            key={i}
+                            className="flex-1 rounded-t-md bg-gradient-to-t from-cyan-400 to-violet-500"
+                            style={{ height: `${h}%` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-[var(--chip)] p-4">
+                      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                        <TrendingUp className="h-3.5 w-3.5" /> Ad ROAS
+                      </p>
+                      <p className="mt-1.5 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">4.8×</p>
+                      <p className="mt-3 text-xs leading-relaxed text-[var(--muted)]">
+                        Meta Ads average across managed campaigns, updated weekly.
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                          Next.js • React
+                        </span>
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                          AI Integrations
+                        </span>
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                          Meta Ads
+                        </span>
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--ink2)] ring-1 ring-[var(--line)]">
+                          Blogs &amp; Content
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            {filteredTools.length === 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center">
-                {showSaved ? <Heart className="ss-subtle mx-auto mb-3 h-8 w-8" /> : <Search className="ss-subtle mx-auto mb-3 h-8 w-8" />}
-                <p className="text-base font-bold tracking-tight">{showSaved && wishlist.length === 0 ? "Nothing saved yet" : "No tools found"}</p>
-                <p className="ss-muted mt-1 text-sm">
-                  {showSaved && wishlist.length === 0 ? "Tap the heart on a tool to save it here." : "Try a different search or category."}
-                </p>
-                <button type="button" onClick={() => { setSearchQuery(""); setSelectedCategory("All"); setShowSaved(false); }} className="ss-btn ss-btn-primary mt-5">
-                  Reset filters
-                </button>
+                {/* Live metric badges */}
+                <div className="fe-badge absolute -left-2 top-6 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl sm:-left-6">
+                  <Zap className="h-4 w-4 text-amber-400" />
+                  <span>
+                    <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">99.9% Uptime</span>
+                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Always-on delivery</span>
+                  </span>
+                </div>
+                <div className="fe-badge absolute -right-2 top-1/2 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl sm:-right-5" style={{ animationDelay: "1.2s" }}>
+                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                  <span>
+                    <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">4.8× ROAS</span>
+                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Meta Ads average</span>
+                  </span>
+                </div>
+                <div className="fe-badge absolute -bottom-4 left-8 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 shadow-xl" style={{ animationDelay: "2.1s" }}>
+                  <Sparkles className="h-4 w-4 text-violet-500" />
+                  <span>
+                    <span className="block text-sm font-extrabold leading-none text-[var(--ink)]">50+ AI Tools</span>
+                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--muted)]">Instant activation</span>
+                  </span>
+                </div>
               </motion.div>
-            )}
-          </section>
+            </div>
 
-          <section id="how" className="ss-band scroll-mt-16 py-14 sm:py-20">
-            <div className="ss-wrap">
-              <SectionHead center eyebrow="Simple process" title="From cart to activated in 4 steps." />
-              <ol className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 3xl:gap-8">
-                {STEPS.map((s, i) => (
-                  <li key={s.title}>
-                    <Reveal delay={i * 0.08} className="h-full">
-                      <div className="ss-card ss-card-hover h-full p-6 text-center 3xl:p-8">
-                        <div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl 3xl:h-14 3xl:w-14" style={{ background: "var(--accent)", color: "var(--accent-fg)" }}>
-                          <s.icon className="h-5 w-5" aria-hidden="true" />
-                          <span className="ss-step-num absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold">{i + 1}</span>
-                        </div>
-                        <h3 className="mb-1.5 text-base font-bold tracking-tight 3xl:text-lg">{s.title}</h3>
-                        <p className="ss-muted text-[13px] leading-relaxed 3xl:text-sm">{s.desc}</p>
-                      </div>
-                    </Reveal>
-                  </li>
-                ))}
-              </ol>
+            <div className="relative mx-auto mt-14 flex w-full max-w-7xl justify-center px-4">
+              <a
+                href="#tools"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToId("tools");
+                }}
+                className="flex flex-col items-center gap-1 text-xs font-bold uppercase tracking-[0.2em] text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]"
+              >
+                Scroll to explore
+                <ChevronDown className="fe-bounce h-4 w-4" />
+              </a>
             </div>
           </section>
 
-          <section id="features" className="scroll-mt-16 py-14 sm:py-20">
-            <div className="ss-wrap">
-              <SectionHead center eyebrow="Why SmartStream" title="Why buy from us?" sub="A smooth experience for premium software, from order to setup." />
-              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 3xl:gap-8">
-                {FEATURES.map((f, i) => (
-                  <Reveal key={f.title} delay={i * 0.07} className="h-full">
-                    <div className="ss-card ss-card-hover h-full p-6 3xl:p-8">
-                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl 3xl:h-12 3xl:w-12" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-                        <f.icon className="h-5 w-5" aria-hidden="true" />
-                      </div>
-                      <h3 className="mb-1.5 text-base font-bold tracking-tight 3xl:text-lg">{f.title}</h3>
-                      <p className="ss-muted text-[13px] leading-relaxed 3xl:text-sm">{f.desc}</p>
+          {/* ── SECTION 1 — AI TOOLS MARKETPLACE ──────────────── */}
+          <section id="tools" className="scroll-mt-24 py-16 sm:py-20">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
+              <SectionHead
+                eyebrow="AI Tools Marketplace"
+                title="Buy the tools. Negotiate your price on WhatsApp."
+                sub="Instant purchase or subscription for the AI stack modern teams actually use — every tool is Price on Request, negotiated and paid on WhatsApp, activated fast, with setup help and warranty cover for your plan period."
+              />
+
+              {/* Filters + search */}
+              <Reveal className="mb-8">
+                <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter tools by category">
+                  {FILTERS.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setFilter(f.id)}
+                      aria-pressed={filter === f.id}
+                      className={`rounded-full px-4 py-2 text-sm font-bold transition-all ${
+                        filter === f.id
+                          ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg shadow-cyan-500/25"
+                          : "bg-[var(--surface)] text-[var(--muted)] ring-1 ring-[var(--line)] hover:text-[var(--ink)]"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+                <label className="relative mt-4 block max-w-md">
+                  <span className="sr-only">Search tools</span>
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search tools — try Gemini, Netflix, VPN…"
+                    className="fe-input w-full rounded-full py-3 pl-11 pr-4 text-sm"
+                  />
+                </label>
+                <p className="mt-3 text-sm text-[var(--muted)]" aria-live="polite">
+                  Showing {visibleTools.length} of {TOOLS.length} tools
+                  {filter !== "all" ? ` in ${FILTERS.find((f) => f.id === filter)?.label}` : ""}
+                  {query.trim() ? ` matching "${query.trim()}"` : ""}.
+                </p>
+              </Reveal>
+
+              {visibleTools.length === 0 ? (
+                <div className="fe-card rounded-3xl p-10 text-center">
+                  <Bot className="mx-auto mb-3 h-10 w-10 text-[var(--muted)]" />
+                  <p className="text-lg font-bold text-[var(--ink)]">No tools match that search.</p>
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    Try another keyword, or ask us on WhatsApp — we stock 50+ tools.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery("");
+                      setFilter("all");
+                    }}
+                    className="btn-ghost mt-5 rounded-full px-5 py-2.5 text-sm font-bold"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:gap-9">
+                  {visibleTools.map((tool, i) => (
+                    <ToolCard
+                      key={tool.id}
+                      tool={tool}
+                      index={i}
+                      onDemo={handleDemo}
+                      onBuy={handleBuy}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <Reveal className="mt-8">
+                <p className="fe-card rounded-3xl px-6 py-5 text-center text-sm leading-relaxed text-[var(--muted)]">
+                  <FaWhatsapp className="mr-2 inline h-4 w-4 text-emerald-500" />
+                  Negotiate on WhatsApp opens a chat with our team on{" "}
+                  <strong className="text-[var(--ink)]">{CONFIG.whatsappDisplay}</strong> — your
+                  message naming the tool is pre-filled, just press send to negotiate your
+                  price. No prices are listed on this site; all payments are agreed on
+                  WhatsApp. Also available: blog uploads &amp; publishing, content packages
+                  and 50+ more tools on request — ask in the form below. Payments: bank
+                  transfer, Easypaisa, JazzCash &amp; crypto.
+                </p>
+              </Reveal>
+
+              {/* Trust strip */}
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 3xl:gap-6">
+                {TRUST.map((t, i) => (
+                  <Reveal key={t.title} delay={i * 0.06}>
+                    <div className="fe-card flex h-full items-start gap-3.5 rounded-3xl p-5">
+                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 text-white shadow-md">
+                        {t.title.startsWith("24/7") ? (
+                          <span className="text-[13px] font-extrabold leading-none">24</span>
+                        ) : (
+                          <t.icon className="h-5 w-5" strokeWidth={2.5} />
+                        )}
+                      </span>
+                      <span>
+                        <span className="block text-base font-extrabold leading-snug text-[var(--ink)]">
+                          {t.title}
+                        </span>
+                        {t.stars ? (
+                          <span className="mt-1 flex items-center gap-0.5 text-amber-500" aria-label="Rated 5 out of 5 stars">
+                            {[0, 1, 2, 3, 4].map((s) => (
+                              <Star key={s} className="h-4 w-4 fill-current" />
+                            ))}
+                          </span>
+                        ) : null}
+                        <span className="mt-1 block text-sm leading-relaxed text-[var(--muted)]">
+                          {t.desc}
+                        </span>
+                      </span>
                     </div>
                   </Reveal>
                 ))}
@@ -1584,617 +1965,791 @@ export default function SmartStreamStore() {
             </div>
           </section>
 
-          <section id="faq" className="ss-band scroll-mt-16 py-14 sm:py-20">
-            <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 3xl:max-w-5xl">
-              <SectionHead center eyebrow="FAQ" title="Got questions?" />
-              <div className="space-y-2.5">
-                {FAQS.map((f, i) => {
-                  const open = openFaq === i;
-                  return (
-                    <Reveal key={f.q} delay={i * 0.04}>
-                      <div className={`ss-card overflow-hidden !rounded-xl transition-colors ${open ? "!border-[var(--border-strong)]" : ""}`}>
-                        <h3>
-                          <button type="button" onClick={() => setOpenFaq(open ? -1 : i)} id={`faq-btn-${i}`} aria-expanded={open} aria-controls={`faq-panel-${i}`} className="flex min-h-14 w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-semibold sm:px-5 sm:text-[15px]">
-                            {f.q}
-                            <motion.span animate={{ rotate: open ? 45 : 0 }} transition={{ duration: 0.2 }} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full" style={{ background: "var(--accent)", color: "var(--accent-fg)" }}>
-                              <Plus className="h-3.5 w-3.5" />
-                            </motion.span>
-                          </button>
-                        </h3>
-                        <AnimatePresence initial={false}>
-                          {open && (
-                            <motion.div id={`faq-panel-${i}`} role="region" aria-labelledby={`faq-btn-${i}`} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}>
-                              <p className="ss-muted px-4 pb-5 text-[13px] leading-relaxed sm:px-5 sm:text-sm">{f.a}</p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </Reveal>
-                  );
-                })}
+          {/* ── SECTION 2 — CORE AGENCY SERVICES ─────────────── */}
+          <section id="services" className="scroll-mt-24 py-16 sm:py-20">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
+              <SectionHead
+                eyebrow="Core Agency Services"
+                title="Three pillars. One growth engine."
+                sub="Everything a brand needs to launch, automate and scale — built and run by the same senior team."
+              />
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3 3xl:gap-9">
+                {SERVICES.map((s, i) => (
+                  <Reveal key={s.id} delay={i * 0.08} className="h-full">
+                    <article
+                      id={s.id}
+                      className="fe-card tilt flex h-full scroll-mt-28 flex-col rounded-3xl p-6 sm:p-7"
+                    >
+                      <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 p-3.5 text-white shadow-lg">
+                        <s.icon className="h-6 w-6" />
+                      </span>
+                      <h3 className="text-xl font-extrabold leading-snug text-[var(--ink)] 3xl:text-2xl">
+                        {s.title}
+                      </h3>
+                      <p className="mb-5 mt-2 text-sm leading-relaxed text-[var(--muted)]">{s.desc}</p>
+                      <ul className="mb-6 space-y-2">
+                        {s.features.map((f) => (
+                          <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <a
+                        href={waLink(s.wa)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto inline-flex items-center gap-1.5 text-sm font-extrabold text-[var(--cyan-dark)] hover:gap-2.5"
+                      >
+                        {s.cta}
+                        <ArrowRight className="h-4 w-4 transition-all" />
+                      </a>
+                    </article>
+                  </Reveal>
+                ))}
               </div>
             </div>
           </section>
 
-          <section className="px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+          {/* ── SECTION 3 — WHY US BENTO ─────────────────────── */}
+          <section id="cases" className="scroll-mt-24 py-16 sm:py-20">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
+              <SectionHead
+                eyebrow="Why Feathered Experts Pro"
+                title="Feather-light process. Heavyweight numbers."
+              />
+
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 3xl:gap-9">
+                {/* Counters */}
+                <Reveal className="lg:col-span-1">
+                  <div className="fe-card flex h-full flex-col justify-between gap-6 rounded-3xl p-6 sm:p-7">
+                    {COUNTERS.map((c) => (
+                      <div key={c.label} className="border-b border-[var(--line)] pb-5 last:border-0 last:pb-0">
+                        <p className="text-4xl font-extrabold tracking-tight text-[var(--ink)] 3xl:text-6xl">
+                          <Counter value={c.value} suffix={c.suffix} decimals={c.decimals} />
+                        </p>
+                        <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">{c.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Reveal>
+
+                {/* Performance chart */}
+                <Reveal delay={0.08} className="lg:col-span-2">
+                  <div className="fe-card h-full rounded-3xl p-6 sm:p-7">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <h3 className="text-lg font-extrabold text-[var(--ink)]">Performance, visualised</h3>
+                      <span className="rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-bold text-[var(--muted)]">
+                        Last 12 months
+                      </span>
+                    </div>
+                    <p className="mb-5 text-sm text-[var(--muted)]">
+                      Cyan: clients with Feathered Experts Pro. Violet dashed: typical agency trajectory.
+                    </p>
+                    <div className="relative">
+                      <svg viewBox="0 0 560 220" className="h-auto w-full" role="img" aria-label="Performance chart: Feathered Experts Pro clients growing faster than a typical agency">
+                        <defs>
+                          <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stopColor="#00F0FF" stopOpacity="0.25" />
+                            <stop offset="1" stopColor="#00F0FF" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+                        {[40, 90, 140, 190].map((y) => (
+                          <line key={y} x1="0" y1={y} x2="560" y2={y} stroke="var(--line)" strokeWidth="1" />
+                        ))}
+                        <path d="M0 190 L70 176 L140 168 L210 148 L280 132 L350 108 L420 84 L490 52 L560 22 L560 220 L0 220 Z" fill="url(#chartFill)" />
+                        <path d="M0 190 L70 176 L140 168 L210 148 L280 132 L350 108 L420 84 L490 52 L560 22" fill="none" stroke="#00C8DC" strokeWidth="3" strokeLinecap="round" />
+                        <path d="M0 196 L70 190 L140 184 L210 178 L280 170 L350 162 L420 152 L490 142 L560 130" fill="none" stroke="#7B2CBF" strokeWidth="2.5" strokeDasharray="7 6" strokeLinecap="round" />
+                        <circle cx="560" cy="22" r="5" fill="#00C8DC" />
+                        <circle cx="560" cy="130" r="5" fill="#7B2CBF" />
+                      </svg>
+                      <span className="absolute right-1 top-0 rounded-full bg-[var(--surface)] px-2.5 py-1 text-xs font-extrabold text-[var(--cyan-dark)] ring-1 ring-[var(--line)]">
+                        +184% growth
+                      </span>
+                    </div>
+                    <div className="mt-5 grid grid-cols-1 gap-4 border-t border-[var(--line)] pt-5 sm:grid-cols-3">
+                      <p className="text-sm font-bold text-[var(--ink)]">
+                        Us vs. typical freelancers
+                      </p>
+                      {COMPARE_ROWS.map((r) => (
+                        <div key={r.label} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="flex items-center gap-1.5 text-[var(--muted)]">
+                            <Gauge className="h-4 w-4 text-[var(--cyan-dark)]" />
+                            {r.label}
+                          </span>
+                          <strong className="text-[var(--ink)]">{r.us}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Reveal>
+              </div>
+
+              {/* Case studies */}
+              <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3 3xl:gap-9">
+                {CASES.map((c, i) => (
+                  <Reveal key={c.title} delay={i * 0.08}>
+                    <article className="fe-card h-full rounded-3xl p-6">
+                      <p className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-3xl font-extrabold text-transparent 3xl:text-4xl">
+                        {c.stat}
+                      </p>
+                      <h3 className="mt-2 text-lg font-extrabold text-[var(--ink)]">{c.title}</h3>
+                      <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">{c.desc}</p>
+                    </article>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── SECTION 4 — PRICING TOGGLE ───────────────────── */}
+          <section id="pricing" className="scroll-mt-24 py-16 sm:py-20">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
+              <SectionHead
+                eyebrow="Pricing & Engagement"
+                title="Pick how we work together."
+                sub={`Subscribe to tools on your own — or retain the team that builds and grows everything for you. All plans are Price on Request: every payment is negotiated on WhatsApp on ${CONFIG.whatsappDisplay}.`}
+              />
+
+              <Reveal className="mb-8 flex justify-center">
+                <div className="inline-flex rounded-full bg-[var(--surface)] p-1.5 ring-1 ring-[var(--line)]" role="tablist" aria-label="Pricing type">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={!agency}
+                    onClick={() => setAgency(false)}
+                    className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all sm:px-6 ${
+                      !agency
+                        ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg"
+                        : "text-[var(--muted)] hover:text-[var(--ink)]"
+                    }`}
+                  >
+                    AI Tool Subscriptions
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={agency}
+                    onClick={() => setAgency(true)}
+                    className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all sm:px-6 ${
+                      agency
+                        ? "bg-gradient-to-r from-cyan-400 to-violet-500 text-white shadow-lg"
+                        : "text-[var(--muted)] hover:text-[var(--ink)]"
+                    }`}
+                  >
+                    Agency Retainers
+                  </button>
+                </div>
+              </Reveal>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={agency ? "agency" : "subs"}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="grid grid-cols-1 gap-6 md:grid-cols-3 3xl:gap-9"
+                >
+                  {(agency ? AGENCY_PLANS : SUB_PLANS).map((p) => (
+                    <article
+                      key={p.name}
+                      className={`fe-card relative flex h-full flex-col rounded-3xl p-6 sm:p-7 ${
+                        p.badge ? "fe-card-pop ring-2 ring-cyan-400/60" : ""
+                      }`}
+                    >
+                      {p.badge ? (
+                        <span className="absolute -top-3.5 left-6 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-lg">
+                          {p.badge}
+                        </span>
+                      ) : null}
+                      <h3 className="text-xl font-extrabold text-[var(--ink)] 3xl:text-2xl">{p.name}</h3>
+                      <p className="mt-1 text-sm text-[var(--muted)]">{p.desc}</p>
+                      <p className="mt-5 text-3xl font-extrabold tracking-tight text-[var(--ink)] 3xl:text-4xl">
+                        Price on Request
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-[var(--cyan-dark)]">
+                        Negotiate on WhatsApp
+                      </p>
+                      <ul className="mb-6 mt-5 space-y-2">
+                        {p.features.map((f) => (
+                          <li key={f} className="flex items-start gap-2 text-sm text-[var(--ink2)]">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <a
+                        href={waLink(planText(p.name, agency ? "Agency Retainers" : "AI Tool Subscriptions"))}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() =>
+                          showToast(`Opening WhatsApp — your message for the ${p.name} plan is pre-filled, just press send.`)
+                        }
+                        className={`mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-base font-bold ${
+                          p.badge ? "btn-primary" : "btn-ghost"
+                        }`}
+                      >
+                        <FaWhatsapp className="h-5 w-5" />
+                        Negotiate on WhatsApp
+                      </a>
+                    </article>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </section>
+
+          {/* ── SECTION 5 — TESTIMONIALS & LEAD FORM ─────────── */}
+          <section id="reviews" className="scroll-mt-24 overflow-hidden py-16 sm:py-20">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
+              <SectionHead
+                eyebrow="Client Love"
+                title="Brands that fly with us."
+              />
+            </div>
+
+            {/* Auto-scrolling testimonial marquee */}
             <Reveal>
-              <div className="ss-cta ss-noise-wrap relative mx-auto max-w-4xl overflow-hidden rounded-3xl p-7 text-center sm:p-14 3xl:max-w-6xl">
-                <motion.div animate={{ opacity: [0.12, 0.22, 0.12] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="ss-cta-glow absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" aria-hidden="true" />
-                <div className="ss-noise absolute inset-0" aria-hidden="true" />
-                <h2 className="ss-h2 relative">Ready to level up?</h2>
-                <p className="relative mx-auto mt-3 max-w-md text-sm opacity-75 sm:text-base">Message us on WhatsApp to negotiate your price and get set up today.</p>
-                <a href={waLink()} target="_blank" rel="noopener noreferrer" className="ss-btn ss-btn-cta relative mt-7 !min-h-11 !px-6">
-                  <MessageCircle className="h-4 w-4" /> Start on WhatsApp
-                </a>
+              <div className="fe-marquee-wrap relative" aria-label="Client testimonials">
+                <div className="fe-marquee flex w-max gap-5 pr-5">
+                  {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
+                    <figure
+                      key={`${t.name}-${i}`}
+                      aria-hidden={i >= TESTIMONIALS.length ? true : undefined}
+                      className="fe-card w-[320px] shrink-0 rounded-3xl p-6 sm:w-[380px]"
+                    >
+                      <span className="flex items-center gap-0.5 text-amber-500" aria-label="5 out of 5 stars">
+                        {[0, 1, 2, 3, 4].map((s) => (
+                          <Star key={s} className="h-4 w-4 fill-current" />
+                        ))}
+                      </span>
+                      <blockquote className="mt-3 text-[15px] leading-relaxed text-[var(--ink2)]">
+                        &ldquo;{t.text}&rdquo;
+                      </blockquote>
+                      <figcaption className="mt-4">
+                        <p className="text-sm font-extrabold text-[var(--ink)]">{t.name}</p>
+                        <p className="text-xs font-semibold text-[var(--muted)]">— {t.role}</p>
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brand logos */}
+              <div className="mx-auto mt-10 flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-4 sm:px-6">
+                {BRANDS.map((b) => (
+                  <span
+                    key={b}
+                    className="text-lg font-extrabold tracking-wide text-[var(--muted)] opacity-70 transition-opacity hover:opacity-100 3xl:text-xl"
+                  >
+                    {b}
+                  </span>
+                ))}
               </div>
             </Reveal>
+
+            {/* Lead capture */}
+            <div id="contact" className="mx-auto mt-16 w-full max-w-7xl scroll-mt-24 px-4 sm:px-6 3xl:max-w-[1500px]">
+              <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+                <Reveal>
+                  <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-[var(--ink)] sm:text-4xl 3xl:text-5xl">
+                    Start Today
+                  </h2>
+                  <p className="mt-3 text-base font-bold text-[var(--ink2)]">
+                    Tell us what you&apos;re building. We&apos;ll reply with a plan.
+                  </p>
+                  <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                    AI tool, website, software, Meta Ads or a full growth retainer — send the
+                    brief and get a clear quote, timeline and next step. On send, your brief
+                    opens in WhatsApp to our team on {CONFIG.whatsappDisplay}, ready to send.
+                  </p>
+                  <div className="mt-6 space-y-3">
+                    <p className="flex items-start gap-2.5 text-sm text-[var(--ink2)]">
+                      <Zap className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                      <span>
+                        <strong className="text-[var(--ink)]">Fast start</strong> — Most tool
+                        activations and project kickoffs begin within 24–48 hours.
+                      </span>
+                    </p>
+                    <p className="flex items-start gap-2.5 text-sm text-[var(--ink2)]">
+                      <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                      <span>
+                        <strong className="text-[var(--ink)]">Warranty &amp; support</strong> —
+                        Subscriptions covered for the plan period, with real human support.
+                      </span>
+                    </p>
+                    <p className="flex items-start gap-2.5 text-sm text-[var(--ink2)]">
+                      <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cyan-dark)]" />
+                      <span>
+                        <strong className="text-[var(--ink)]">WhatsApp first</strong> — Chat with
+                        us on {CONFIG.whatsappDisplay} any time, day or night.
+                      </span>
+                    </p>
+                  </div>
+                </Reveal>
+
+                <Reveal delay={0.1}>
+                  <LeadForm showToast={showToast} />
+                </Reveal>
+              </div>
+            </div>
           </section>
         </main>
 
-        <SmartStreamFooter onPickCategory={goCategory} />
-        <BackToTop />
-
-        {/* ─── PRODUCT MODAL ─── */}
-        <AnimatePresence>
-          {selectedTool && (
-            <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedTool(null)} className="ss-scrim absolute inset-0" />
-              <motion.div ref={toolRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tool-title" initial={{ opacity: 0, y: 60, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 60, scale: 0.98 }} transition={{ type: "spring", stiffness: 320, damping: 32 }} className="ss-panel ss-modal ss-glass relative w-full max-w-md overflow-y-auto rounded-t-3xl sm:rounded-3xl">
-                <div className="ss-divider-b relative p-6 text-center sm:p-8">
-                  <button type="button" onClick={() => setSelectedTool(null)} aria-label="Close" className="ss-icon-btn absolute right-4 top-4">
-                    <X className="h-4 w-4" />
-                  </button>
-                  <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", delay: 0.05 }} className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={tint(selectedTool.hue)}>
-                    <selectedTool.icon className="h-8 w-8" aria-hidden="true" />
-                  </motion.div>
-                  <h2 id="tool-title" className="text-2xl font-extrabold tracking-tight">{selectedTool.name}</h2>
-                  <p className="ss-subtle mt-1.5 text-[11px] font-bold uppercase tracking-[0.14em]">{selectedTool.category} · {selectedTool.duration}</p>
-
-                  <div className="mt-5 flex flex-col items-center justify-center gap-1">
-                    <div className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest text-amber-500">
-                      <Tag className="h-4 w-4" />
-                      Price on Request
-                    </div>
-                    <p className="ss-subtle text-xs">Contact us for the best rate</p>
-                  </div>
-
-                  <div className="ss-muted mt-3 flex items-center justify-center gap-2 text-[13px]">
-                    <Stars rating={selectedTool.rating} /> · {selectedTool.reviews.toLocaleString()} reviews
-                  </div>
-                </div>
-
-                <div className="p-6 sm:p-8">
-                  <p className="ss-muted mb-6 text-sm leading-relaxed">{selectedTool.desc}</p>
-                  <h3 className="ss-subtle mb-3 text-[11px] font-bold uppercase tracking-[0.14em]">What's included</h3>
-                  <ul className="mb-7 space-y-3">
-                    {selectedTool.features.map((feat, i) => (
-                      <motion.li key={feat} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.05 }} className="flex items-start gap-2.5 text-sm font-medium">
-                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full" style={{ background: "var(--accent)", color: "var(--accent-fg)" }}>
-                          <Check className="h-2.5 w-2.5" aria-hidden="true" />
-                        </span>
-                        {feat}
-                      </motion.li>
-                    ))}
-                  </ul>
-                  <div className="flex flex-col gap-2.5 sm:flex-row">
-                    <button type="button" onClick={() => { addToCart(selectedTool); setSelectedTool(null); setCartOpen(true); }} className="ss-btn ss-btn-outline !min-h-11 flex-1">
-                      <ShoppingCart className="h-4 w-4" /> Add to Cart
-                    </button>
-                    <button type="button" onClick={() => buyNow(selectedTool)} className="ss-btn ss-btn-wa !min-h-11 flex-1">
-                      <MessageCircle className="h-4 w-4" /> Ask on WhatsApp
-                    </button>
-                  </div>
-                  <p className="ss-subtle mt-3 text-center text-xs">You'll be redirected to WhatsApp to negotiate and complete your order.</p>
-                </div>
-              </motion.div>
+        {/* ── FOOTER ──────────────────────────────────────────── */}
+        <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
+          <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 3xl:max-w-[1500px]">
+            <div>
+              <a href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5">
+                <FeatherLogoTile />
+                <span className="text-lg font-extrabold tracking-tight text-[var(--ink)]">
+                  Feathered Experts <span className="text-[var(--cyan-dark)]">Pro</span>
+                </span>
+              </a>
+              <p className="mt-4 max-w-[36ch] text-sm leading-relaxed text-[var(--muted)]">
+                Hybrid AI Tools Marketplace &amp; Digital Engineering &amp; Growth Agency.
+                Selling AI tools, uploading blogs, creating websites, running Meta Ads — and
+                everything digital in between.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {SOCIALS.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    className="fe-icon-btn"
+                  >
+                    <s.Icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
             </div>
-          )}
-        </AnimatePresence>
 
-        {/* ─── CART DRAWER ─── */}
-        <AnimatePresence>
-          {cartOpen && (
-            <>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setCartOpen(false)} className="ss-scrim fixed inset-0 z-50" />
-              <motion.aside ref={cartRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Shopping cart" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 320, damping: 34 }} className="ss-panel ss-drawer ss-glass fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col">
-                <div className="ss-divider-b flex items-center justify-between p-4 sm:p-6">
-                  <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
-                    Your Cart <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-white text-black">{cartCount}</span>
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    {cartItems.length > 0 && (
-                      <button type="button" onClick={() => setCart([])} className="ss-subtle rounded-full px-2.5 py-1.5 text-xs font-semibold hover:text-red-500">
-                        Clear
-                      </button>
-                    )}
-                    <button type="button" onClick={() => setCartOpen(false)} aria-label="Close cart" className="ss-icon-btn">
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
+            <nav aria-label="Marketplace">
+              <h4 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[var(--ink)]">Marketplace</h4>
+              <ul className="space-y-2.5 text-sm">
+                {[
+                  ["AI Chat Tools", "chat"],
+                  ["Coding Tools", "coding"],
+                  ["Creative Tools", "image"],
+                  ["Subscriptions", "pricing"],
+                ].map(([label, id]) => (
+                  <li key={label}>
+                    <a
+                      href={`#${id === "pricing" ? "pricing" : "tools"}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (id === "chat" || id === "coding" || id === "image") {
+                          setFilter(id);
+                        }
+                        scrollToId(id === "pricing" ? "pricing" : "tools");
+                      }}
+                      className="text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]"
+                    >
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-                  {cartItems.length === 0 ? (
-                    <div className="flex h-full flex-col items-center justify-center text-center">
-                      <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--surface-2)]">
-                        <ShoppingCart className="ss-subtle h-8 w-8" />
-                      </div>
-                      <p className="text-lg font-bold tracking-tight">Your cart is empty</p>
-                      <p className="ss-muted mt-1.5 text-sm">Add a tool to get started.</p>
-                      <button type="button" onClick={() => setCartOpen(false)} className="ss-btn ss-btn-primary mt-6">Browse Store</button>
-                    </div>
-                  ) : (
-                    <ul className="space-y-3">
-                      <AnimatePresence initial={false}>
-                        {cartItems.map((item) => (
-                          <motion.li key={item.id} layout initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }} className="ss-card flex gap-3 !rounded-2xl p-3 sm:gap-3.5 sm:p-3.5">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl sm:h-14 sm:w-14" style={tint(item.hue)}>
-                              <item.icon className="h-6 w-6" aria-hidden="true" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm font-bold tracking-tight">{item.name}</p>
-                                  <p className="ss-subtle text-[10px] font-bold uppercase tracking-[0.14em]">{item.duration}</p>
-                                </div>
-                                <button type="button" onClick={() => removeItem(item.id)} aria-label={`Remove ${item.name}`} className="ss-subtle flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[var(--hover)] hover:text-red-500">
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                              <div className="mt-2.5 flex items-center justify-between gap-2">
-                                <div className="ss-border flex items-center rounded-full" role="group" aria-label={`Quantity for ${item.name}`}>
-                                  <button type="button" onClick={() => changeQty(item.id, -1)} aria-label="Decrease quantity" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--hover)]"><Minus className="h-3.5 w-3.5" /></button>
-                                  <span className="w-6 text-center text-[13px] font-bold" aria-live="polite">{item.qty}</span>
-                                  <button type="button" onClick={() => changeQty(item.id, 1)} disabled={item.qty >= MAX_QTY} aria-label="Increase quantity" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--hover)] disabled:opacity-40"><Plus className="h-3.5 w-3.5" /></button>
-                                </div>
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-500">Price on Request</span>
-                              </div>
-                            </div>
-                          </motion.li>
-                        ))}
-                      </AnimatePresence>
-                    </ul>
-                  )}
-                </div>
+            <nav aria-label="Agency">
+              <h4 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[var(--ink)]">Agency</h4>
+              <ul className="space-y-2.5 text-sm">
+                {[
+                  ["Web Development", "webdev"],
+                  ["Software Development", "software"],
+                  ["Meta Ads", "ads"],
+                  ["Case Studies", "cases"],
+                ].map(([label, id]) => (
+                  <li key={label}>
+                    <a
+                      href={`#${id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToId(id);
+                      }}
+                      className="text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]"
+                    >
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-                {cartItems.length > 0 && (
-                  <div className="ss-divider-t ss-safe-bottom p-4 sm:p-6">
-                    <div className="mb-4 rounded-xl bg-[var(--surface-2)] p-3 text-center">
-                      <p className="text-sm font-bold text-white">Total: Negotiable</p>
-                      <p className="ss-subtle mt-1 text-xs">Our team will offer the best price in chat.</p>
-                    </div>
-                    <button type="button" onClick={checkout} className="ss-btn ss-btn-wa !min-h-12 w-full">
-                      <MessageCircle className="h-4 w-4" /> Request Quote on WhatsApp
-                    </button>
-                    <p className="ss-subtle mt-3 text-center text-xs">Your order list is sent as a pre-filled WhatsApp message.</p>
-                  </div>
-                )}
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* ─── TOAST ─── */}
-        <div aria-live="polite" role="status">
-          <AnimatePresence>
-            {toast && (
-              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ duration: 0.2 }} className="ss-toast ss-toast-pos fixed left-1/2 z-[70] flex max-w-[90vw] -translate-x-1/2 items-center gap-2 rounded-full px-5 py-3 text-[13px] font-semibold">
-                <Check className="h-4 w-4 shrink-0 text-emerald-500" /> <span className="truncate">{toast}</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* ─── FLOATING WHATSAPP ─── */}
-        <motion.a href={waLink()} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }} whileTap={{ scale: 0.92 }} className="ss-fab ss-fab-wa fixed z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_rgba(37,211,102,0.4)] transition-transform hover:scale-105 sm:h-14 sm:w-14">
-          <FaWhatsapp className="h-6 w-6" aria-hidden="true" />
-        </motion.a>
-
-        {/* ─── WHATSAPP CHANNEL POPUP ─── */}
-        <AnimatePresence>
-          {showChannelPopup && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={dismissChannelPopup}
-                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-                aria-hidden="true"
-              />
-
-              {/* Modal Box */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className="ss-glass relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 text-center shadow-2xl sm:max-w-md sm:p-8"
-              >
-                {/* Decorative Background Glow */}
-                <div className="absolute left-1/2 top-0 h-32 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#25D366]/20 blur-3xl pointer-events-none" />
-
-                {/* Close Button */}
-                <button
-                  onClick={dismissChannelPopup}
-                  aria-label="Close"
-                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-
-                {/* Channel Icon */}
-                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366]/10 text-[#25D366] shadow-[0_0_30px_rgba(37,211,102,0.15)]">
-                  <FaWhatsapp className="h-8 w-8" />
-                </div>
-
-                {/* Text Content */}
-                <h3 className="mb-2 text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-                  Join Our Channel
-                </h3>
-                <p className="mb-6 text-sm leading-relaxed text-neutral-400 sm:text-base">
-                  Follow the <strong className="text-white">SmartStream</strong> WhatsApp channel for exclusive drops, private discounts, and AI setup guides.
-                </p>
-
-                {/* CTA Button */}
+            <div>
+              <h4 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[var(--ink)]">Get Started</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <a
+                    href={waLink("Hello Feathered Experts Pro! I would like to book an agency call. Please share the available times so we can talk on WhatsApp.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]"
+                  >
+                    Book an Agency Call
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollToId("pricing"); }} className="text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#tools" onClick={(e) => { e.preventDefault(); scrollToId("tools"); }} className="text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]">
+                    Explore Tools
+                  </a>
+                </li>
+              </ul>
+              <p className="mt-5 flex items-start gap-2 text-sm leading-relaxed text-[var(--muted)]">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0" />
+                <a href={`mailto:${CONFIG.supportEmail}`} className="transition-colors hover:text-[var(--cyan-dark)]">
+                  {CONFIG.supportEmail}
+                </a>
+              </p>
+              <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-[var(--muted)]">
+                <FaWhatsapp className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                 <a
-                  href={CONFIG.channelUrl}
+                  href={`https://wa.me/${CONFIG.supportNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={dismissChannelPopup}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3.5 text-sm font-bold text-black shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-transform hover:scale-[1.02] active:scale-95"
+                  className="transition-colors hover:text-[var(--cyan-dark)]"
                 >
-                  <MessageCircle className="h-5 w-5" /> Follow Channel
+                  WhatsApp support: {CONFIG.supportDisplay}
                 </a>
-
-                {/* Skip Button */}
-                <button
-                  onClick={dismissChannelPopup}
-                  className="mt-4 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-300"
-                >
-                  No thanks, continue browsing
-                </button>
-              </motion.div>
+              </p>
+              <p className="mt-4 flex items-start gap-2 text-sm text-[var(--muted)]">
+                <Landmark className="mt-0.5 h-4 w-4 shrink-0" />
+                Payments: Bank Transfer • Easypaisa • JazzCash • Crypto
+              </p>
+              <p className="mt-3 flex items-start gap-2 text-sm">
+                <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                <a href={CONFIG.channelUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--cyan-dark)] hover:underline">
+                  Join our WhatsApp channel
+                </a>
+              </p>
             </div>
-          )}
-        </AnimatePresence>
+          </div>
 
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+          <div className="border-t border-[var(--line)]">
+            <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-[13px] text-[var(--muted)] sm:px-6 3xl:max-w-[1500px]">
+              <span>© 2026 Feathered Experts Pro. All rights reserved.</span>
+              <span className="flex items-center gap-4">
+                <SmartLink to={CONFIG.privacyUrl} className="transition-colors hover:text-[var(--cyan-dark)]">Privacy</SmartLink>
+                <SmartLink to={CONFIG.termsUrl} className="transition-colors hover:text-[var(--cyan-dark)]">Terms</SmartLink>
+                <span className="font-mono text-xs font-bold tracking-widest">
+                  LIGHTWEIGHT EXECUTION — HEAVYWEIGHT RESULTS
+                </span>
+              </span>
+            </div>
+          </div>
+        </footer>
 
-          :root, :root[data-theme="light"] {
-            --bg: #ffffff;
-            --surface: #ffffff;
-            --surface-2: #f5f5f6;
-            --fg: #0a0a0b;
-            --muted: #55555e;
-            --subtle: #6b6b75;
-            --border: rgba(10,10,11,0.09);
-            --border-strong: rgba(10,10,11,0.28);
-            --hover: rgba(10,10,11,0.05);
-            --accent: #0a0a0b;
-            --accent-fg: #ffffff;
-            --ring: #2563eb;
-            --success: #047857;
-            --shadow: 0 1px 2px rgba(10,10,11,0.04), 0 8px 24px rgba(10,10,11,0.04);
-            --shadow-hover: 0 2px 4px rgba(10,10,11,0.04), 0 16px 40px rgba(10,10,11,0.09);
-            --shadow-lg: 0 16px 48px rgba(10,10,11,0.14);
-            --shadow-tilt: 0 24px 60px -12px rgba(10,10,11,0.22), 0 8px 24px rgba(10,10,11,0.08);
-            --scrim: rgba(10,10,11,0.45);
-            --grid-line: rgba(10,10,11,0.06);
-            --blob-a: rgba(167,139,250,0.30);
-            --blob-b: rgba(251,146,60,0.26);
-            --blob-c: rgba(56,189,248,0.22);
-            --glass-bg: color-mix(in srgb, var(--surface) 74%, transparent);
-          }
-          :root[data-theme="dark"] {
-            --bg: #000000;
-            --surface: #0a0a0a;
-            --surface-2: #141414;
-            --fg: #ffffff;
-            --muted: #a1a1aa;
-            --subtle: #8a8a94;
-            --border: rgba(255,255,255,0.08);
-            --border-strong: rgba(255,255,255,0.2);
-            --hover: rgba(255,255,255,0.06);
-            --accent: #ffffff;
-            --accent-fg: #000000;
-            --ring: #60a5fa;
-            --success: #34d399;
-            --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 24px -4px rgba(0,0,0,0.3);
-            --shadow-hover: 0 4px 12px rgba(0,0,0,0.3), 0 24px 48px -8px rgba(0,0,0,0.5);
-            --shadow-lg: 0 24px 64px rgba(0,0,0,0.6);
-            --shadow-tilt: 0 32px 80px -12px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06), 0 0 44px -8px rgba(139,92,246,0.25);
-            --scrim: rgba(0,0,0,0.7);
-            --grid-line: rgba(255,255,255,0.04);
-            --blob-a: rgba(139,92,246,0.12);
-            --blob-b: rgba(249,115,22,0.09);
-            --blob-c: rgba(56,189,248,0.10);
-            --glass-bg: color-mix(in srgb, var(--surface) 68%, transparent);
-          }
+        {/* Back to top */}
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="Back to top"
+          className={`btn-primary fixed bottom-5 right-5 z-[60] flex h-11 w-11 items-center justify-center rounded-full shadow-xl transition-all ${
+            scrolled ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
+          }`}
+        >
+          <ArrowUp className="h-5 w-5" />
+        </button>
 
-          html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-          html, body { overflow-x: clip; }
-          .ss-theme-transition, .ss-theme-transition *, .ss-theme-transition *::before, .ss-theme-transition *::after {
-            transition: background-color .25s ease, color .25s ease, border-color .25s ease, fill .25s ease !important;
-          }
+        {/* Toast */}
+        <div
+          className={`toast ${toast ? "show" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
+          {toast}
+        </div>
 
-          .ss-root {
-            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            font-size: 15px;
-            line-height: 1.55;
-            letter-spacing: -0.01em;
-            background: var(--bg);
-            color: var(--fg);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-            overflow-x: clip;
-          }
-          .ss-root ::selection { background: var(--accent); color: var(--accent-fg); }
-          .ss-root :focus-visible {
-            outline: 3px solid var(--ring);
-            outline-offset: 3px;
-            border-radius: 10px;
-          }
-          .ss-root img, .ss-root svg { max-width: 100%; }
-
-          /* Refined scrollbar */
-          .ss-root ::-webkit-scrollbar { width: 10px; height: 10px; }
-          .ss-root ::-webkit-scrollbar-track { background: transparent; }
-          .ss-root ::-webkit-scrollbar-thumb {
-            background: color-mix(in srgb, var(--fg) 22%, transparent);
-            border-radius: 8px;
-            border: 2px solid var(--bg);
-          }
-          .ss-root ::-webkit-scrollbar-thumb:hover {
-            background: color-mix(in srgb, var(--fg) 38%, transparent);
-          }
-
-          /* ── Fluid container: scales to 4K ── */
-          .ss-wrap { width: 100%; max-width: 80rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2rem); }
-          @media (min-width: 1536px) { .ss-wrap { max-width: 88rem; } }
-          @media (min-width: 1920px) {
-            .ss-root { font-size: 16.5px; }
-            .ss-wrap { max-width: 112rem; padding-inline: clamp(2rem, 4vw, 4rem); }
-          }
-          @media (min-width: 2560px) {
-            .ss-root { font-size: 18px; }
-            .ss-wrap { max-width: 140rem; padding-inline: clamp(3rem, 5vw, 6rem); }
-          }
-
-          /* ── Fluid type ── */
-          .ss-h1 {
-            font-size: clamp(2.25rem, 1.15rem + 5.2vw, 4.75rem);
-            line-height: 1.04;
-            font-weight: 900;
-            letter-spacing: -0.04em;
-            text-wrap: balance;
-          }
-          @media (min-width: 2560px) {
-            .ss-h1 { font-size: clamp(3.5rem, 2rem + 4vw, 6.5rem); }
-          }
-          .ss-h2 {
-            font-size: clamp(1.625rem, 1.05rem + 2.4vw, 2.75rem);
-            line-height: 1.08;
-            font-weight: 900;
-            letter-spacing: -0.03em;
-            text-wrap: balance;
-          }
-
-          .ss-muted { color: var(--muted); }
-          .ss-subtle { color: var(--subtle); }
-          .ss-success { color: var(--success); }
-          .ss-border { border: 1px solid var(--border-strong); }
-          .ss-divider { height: 1px; background: var(--border); }
-          .ss-divider-b { border-bottom: 1px solid var(--border); }
-          .ss-divider-t { border-top: 1px solid var(--border); }
-          .ss-divider-y { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-          .ss-band { background: var(--surface-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-          .ss-noscroll { scrollbar-width: none; }
-          .ss-noscroll::-webkit-scrollbar { display: none; }
-          .ss-check { accent-color: var(--accent); }
-
-          /* ── Glassmorphism utility ── */
-          .ss-glass {
-            background: var(--glass-bg);
-            -webkit-backdrop-filter: blur(18px) saturate(160%);
-            backdrop-filter: blur(18px) saturate(160%);
-          }
-
-          /* ── SVG film-grain noise (vector, resolution independent) ── */
-          .ss-noise {
-            pointer-events: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
-            background-size: 180px 180px;
-            opacity: 0.05;
-            mix-blend-mode: overlay;
-          }
-          .ss-noise-wrap { isolation: isolate; }
-
-          /* ── Hero canvas + fade ── */
-          .ss-particles { display: block; }
-          .ss-hero-fade {
-            background:
-              radial-gradient(ellipse 75% 65% at 50% 38%, transparent 35%, var(--bg) 100%),
-              linear-gradient(to bottom, transparent 55%, var(--bg) 100%);
-          }
-
-          .ss-skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 10px 16px; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: 14px; transition: top .15s; }
-          .ss-skip:focus { top: 10px; }
-
-          .ss-header { border-bottom: 1px solid transparent; padding-top: env(safe-area-inset-top); }
-          .ss-header-on { border-bottom-color: var(--border); box-shadow: var(--shadow); }
-          .ss-navlink { position: relative; padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted); transition: color .2s, background-color .2s; }
-          .ss-navlink:hover { color: var(--fg); background: var(--hover); }
-          .ss-navlink-active { color: var(--fg); background: var(--hover); }
-
-          .ss-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 1.5rem;
-            box-shadow: var(--shadow);
-          }
-          .ss-card-hover { transition: transform .3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color .3s; }
-          .ss-card-wrap { height: 100%; min-width: 0; }
-          .ss-panel { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg); color: var(--fg); }
-          .ss-scrim { background: var(--scrim); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-          .ss-toast { background: var(--accent); color: var(--accent-fg); box-shadow: var(--shadow-lg); }
-          .ss-toast-pos { bottom: calc(6rem + env(safe-area-inset-bottom)); }
-          .ss-step-num { background: var(--surface); color: var(--fg); border: 1px solid var(--border-strong); }
-          .ss-modal { max-height: 92vh; max-height: 92dvh; }
-          .ss-drawer { height: 100vh; height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
-          .ss-safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-
-          /* ── 3D tilt + cursor glare (driven by --rx/--ry/--mx/--my) ── */
-          .ss-tilt {
-            transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-            transition: transform .55s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .35s ease;
-            transform-style: preserve-3d;
-            will-change: transform;
-          }
-          .ss-tilt.is-tilting {
-            transition: transform .08s linear, box-shadow .35s ease, border-color .35s ease;
-            box-shadow: var(--shadow-tilt);
-            border-color: var(--border-strong);
-          }
-          .ss-glare { position: relative; }
-          .ss-glare::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity .35s ease;
-            background: radial-gradient(560px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.13), transparent 62%);
-          }
-          .ss-tilt.is-tilting.ss-glare::after { opacity: 1; }
-
-          @media (hover: hover) and (pointer: fine) {
-            .ss-card-hover:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--border-strong); }
-            .ss-spot::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s; background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), var(--hover), transparent 70%); }
-            .ss-spot:hover::before { opacity: 1; }
-          }
-
-          /* ── HD product grid: 1 → 2 → 3 → 4 columns, CSS containment ── */
-          .ss-tools-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
-            gap: clamp(1rem, 2vw, 1.5rem);
-            contain: layout style;
-          }
-          @media (min-width: 640px) {
-            .ss-tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          }
-          @media (min-width: 1024px) {
-            .ss-tools-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-          }
-          @media (min-width: 1920px) {
-            .ss-tools-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(1.5rem, 1.6vw, 2.25rem); }
-          }
-
-          /* ── Logo shimmer placeholder ── */
-          .ss-logo-frame { position: relative; display: inline-flex; align-items: center; min-width: 2.25rem; min-height: 2rem; }
-          .ss-logo-frame img { position: relative; z-index: 1; }
-          .ss-logo-frame:not(.is-loaded) img { opacity: 0; }
-          .ss-shimmer {
-            position: absolute; inset: 0; border-radius: 0.5rem; overflow: hidden;
-            background: color-mix(in srgb, var(--fg) 8%, transparent);
-          }
-          .ss-shimmer::after {
-            content: ""; position: absolute; inset: 0;
-            background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--fg) 14%, transparent) 50%, transparent 80%);
-            animation: ssShimmerSweep 1.4s ease-in-out infinite;
-          }
-
-          .ss-fab { right: max(1.25rem, env(safe-area-inset-right)); }
-          .ss-fab-wa { bottom: max(1.25rem, env(safe-area-inset-bottom)); }
-          .ss-fab-top { bottom: calc(5.25rem + env(safe-area-inset-bottom)); background: var(--accent); color: var(--accent-fg); border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); transition: transform .2s; }
-          .ss-fab-top:hover { transform: scale(1.05); }
-          .ss-fab-top:active { transform: scale(.95); }
-          @media (min-width: 640px) { .ss-fab-top { bottom: calc(5.75rem + env(safe-area-inset-bottom)); } }
-
-          .ss-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: 0 1.25rem; border-radius: .75rem; font-size: .875rem; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; transition: transform .15s ease, background-color .2s, color .2s, border-color .2s, box-shadow .2s, opacity .2s, filter .2s; }
-          .ss-btn:active { transform: scale(.97); }
-          .ss-btn:disabled { opacity: .55; cursor: not-allowed; }
-          .ss-btn-primary { background: var(--accent); color: var(--accent-fg); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
-          .ss-btn-primary:hover { opacity: .9; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
-          .ss-btn-outline { background: transparent; color: var(--fg); border: 1px solid var(--border-strong); }
-          .ss-btn-outline:hover { background: var(--hover); }
-          .ss-saved-on { background: var(--hover); border-color: var(--fg); }
-          .ss-btn-wa { background: #25D366; color: #052e14; box-shadow: 0 6px 20px rgba(37,211,102,.3); }
-          .ss-btn-wa:hover { filter: brightness(1.05); box-shadow: 0 8px 28px rgba(37,211,102,.42); }
-          .ss-btn-cta { background: var(--bg); color: var(--fg); }
-          .ss-btn-cta:hover { opacity: .9; }
-
-          .ss-icon-btn { display: inline-flex; align-items: center; justify-content: center; height: 2.5rem; width: 2.5rem; flex-shrink: 0; border-radius: 999px; border: 1px solid var(--border-strong); background: transparent; color: var(--fg); cursor: pointer; transition: background-color .2s, color .2s, transform .15s; }
-          @media (max-width: 359px) { .ss-icon-btn { height: 2.25rem; width: 2.25rem; } }
-          .ss-icon-btn:hover { background: var(--hover); }
-          .ss-icon-btn:active { transform: scale(.94); }
-          .ss-icon-btn-solid { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
-          .ss-icon-btn-solid:hover { background: var(--accent); opacity: .9; }
-
-          .ss-chip { padding: 4px 10px; border-radius: 999px; background: var(--hover); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-          .ss-pill { display: inline-flex; align-items: center; gap: .5rem; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-
-          .ss-tab { white-space: nowrap; min-height: 2.5rem; padding: 0 1.25rem; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--border); cursor: pointer; transition: color .2s, border-color .2s, background-color .2s; box-shadow: var(--shadow); }
-          .ss-tab:hover { color: var(--fg); border-color: var(--border-strong); }
-          .ss-tab-active { color: var(--accent-fg); border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
-          .ss-tab-active:hover { color: var(--accent-fg); }
-
-          .ss-input { height: 2.5rem; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--fg); font-size: 16px; font-weight: 500; transition: border-color .2s, box-shadow .2s; box-shadow: var(--shadow); }
-          @media (min-width: 768px) { .ss-input { font-size: 14px; } }
-          .ss-input::placeholder { color: var(--subtle); }
-          .ss-input:focus { outline: none; border-color: var(--fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 15%, transparent); }
-          .ss-input::-webkit-search-cancel-button { display: none; }
-
-          .ss-link { transition: color .2s; }
-          .ss-link:hover { color: var(--fg); }
-
-          .ss-social { display: inline-flex; align-items: center; justify-content: center; height: 2.5rem; width: 2.5rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); transition: color .2s, border-color .2s, transform .2s, background-color .2s; box-shadow: var(--shadow); }
-          .ss-social:hover, .ss-social:focus-visible { color: var(--brand); border-color: var(--brand); transform: translateY(-2px); }
-
-          .ss-foot { background: var(--surface); border-top: 1px solid var(--border); }
-          .ss-foot-bottom { background: var(--surface-2); }
-          .ss-foot-link { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0 0; font-size: 14px; color: var(--muted); text-align: left; transition: color .2s; cursor: pointer; }
-          .ss-foot-link:hover { color: var(--fg); }
-          .ss-icon-chip { display: inline-flex; align-items: center; justify-content: center; height: 2rem; width: 2rem; flex-shrink: 0; margin-top: 2px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
-          .ss-pay { display: inline-flex; align-items: center; gap: .4rem; height: 1.75rem; padding: 0 .75rem; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 11px; font-weight: 600; }
-
-          /* ── Ambient blobs (now three, theme-tinted) ── */
-          .ss-blob { position: absolute; border-radius: 999px; filter: blur(100px); pointer-events: none; }
-          .ss-blob-a { left: -100px; top: 80px; width: 300px; height: 300px; background: var(--blob-a); animation: ssFloatA 20s ease-in-out infinite; }
-          .ss-blob-b { right: -100px; top: 160px; width: 350px; height: 350px; background: var(--blob-b); animation: ssFloatB 24s ease-in-out infinite; }
-          .ss-blob-c { left: 38%; bottom: -140px; width: 420px; height: 420px; background: var(--blob-c); animation: ssFloatA 28s ease-in-out infinite reverse; }
-          @media (min-width: 1920px) {
-            .ss-blob-a { width: 480px; height: 480px; }
-            .ss-blob-b { width: 560px; height: 560px; }
-            .ss-blob-c { width: 640px; height: 640px; }
-          }
-          .ss-gradient-text { background: linear-gradient(90deg, var(--fg), color-mix(in srgb, var(--fg) 40%, transparent), var(--fg)); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: ssShimmer 6s linear infinite; }
-
-          .ss-marquee-wrap { background: var(--accent); color: var(--accent-fg); }
-          .ss-marquee { animation: ssMarquee 40s linear infinite; }
-
-          .ss-cta { background: var(--accent); color: var(--accent-fg); box-shadow: var(--shadow-lg); }
-          .ss-cta-glow { background: var(--accent-fg); }
-
-          @keyframes ssMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-          @keyframes ssShimmer { to { background-position: 200% center; } }
-          @keyframes ssShimmerSweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-          @keyframes ssFloatA { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px,30px); } }
-          @keyframes ssFloatB { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px,36px); } }
-
-          @media (prefers-reduced-motion: reduce) {
-            html { scroll-behavior: auto; }
-            .ss-marquee, .ss-blob, .ss-gradient-text, .ss-shimmer::after { animation: none !important; }
-            .ss-tilt { transform: none !important; }
-            .ss-root *, .ss-root *::before, .ss-root *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
-          }
-        `}</style>
+        <style>{THEME_CSS}</style>
       </div>
     </MotionConfig>
   );
 }
+
+/* ── LEAD CAPTURE FORM ────────────────────────────────────────────
+   Validates name + email, then opens WhatsApp to 03716804766 with the
+   brief pre-filled. Nothing is stored on the page. */
+function LeadForm({ showToast }) {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    service: "AI Tools Subscription",
+    budget: "To negotiate on WhatsApp",
+    details: "",
+  });
+  const [sent, setSent] = useState(false);
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const submit = (e) => {
+    e.preventDefault();
+    const name = form.name.trim();
+    const email = form.email.trim();
+    if (!name || !email || email.indexOf("@") < 1) {
+      showToast("Please add your name and a valid email so we can reply.");
+      return;
+    }
+    const text =
+      "Hello Feathered Experts Pro! I would like to send my project brief.\n\n" +
+      `Name: ${name}\n` +
+      `Email: ${email}\n` +
+      `Service Needed: ${form.service}\n` +
+      `Project Budget: ${form.budget}` +
+      (form.details.trim() ? `\n\nProject Details:\n${form.details.trim()}` : "");
+    setSent(true);
+    openWhatsApp(text);
+    showToast("Opening WhatsApp — your brief is pre-filled, just press send.");
+  };
+
+  return (
+    <form onSubmit={submit} className="fe-card rounded-3xl p-6 sm:p-8" noValidate>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label className="fe-label">
+          Your Name *
+          <input
+            type="text"
+            value={form.name}
+            onChange={set("name")}
+            placeholder="Your full name"
+            autoComplete="name"
+            className="fe-input mt-1.5 w-full rounded-2xl px-4 py-3 text-sm"
+          />
+        </label>
+        <label className="fe-label">
+          Email *
+          <input
+            type="email"
+            value={form.email}
+            onChange={set("email")}
+            placeholder="you@example.com"
+            autoComplete="email"
+            className="fe-input mt-1.5 w-full rounded-2xl px-4 py-3 text-sm"
+          />
+        </label>
+        <label className="fe-label">
+          Service Needed
+          <select value={form.service} onChange={set("service")} className="fe-input mt-1.5 w-full rounded-2xl px-4 py-3 text-sm">
+            <option>AI Tools Subscription</option>
+            <option>Custom Website</option>
+            <option>Custom Software / SaaS</option>
+            <option>Meta Ads &amp; Marketing</option>
+            <option>Blog Uploads &amp; Content</option>
+            <option>Full Growth Retainer</option>
+            <option>Something Else</option>
+          </select>
+        </label>
+        <label className="fe-label">
+          Project Budget / Scale
+          <select value={form.budget} onChange={set("budget")} className="fe-input mt-1.5 w-full rounded-2xl px-4 py-3 text-sm">
+            <option>To negotiate on WhatsApp</option>
+            <option>Small project</option>
+            <option>Medium project</option>
+            <option>Large project</option>
+            <option>Enterprise scale</option>
+            <option>Not sure yet</option>
+          </select>
+        </label>
+      </div>
+      <label className="fe-label mt-4 block">
+        Project Details
+        <textarea
+          value={form.details}
+          onChange={set("details")}
+          rows={4}
+          placeholder="What do you want to build, automate or scale?"
+          className="fe-input mt-1.5 w-full resize-y rounded-2xl px-4 py-3 text-sm"
+        />
+      </label>
+
+      {sent ? (
+        <p className="success show mt-5" role="status">
+          ✓ Thanks — WhatsApp is opening with your brief pre-filled. Just press send in
+          WhatsApp and we&apos;ll reply with your plan.
+        </p>
+      ) : null}
+
+      <button type="submit" className="btn-primary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 text-base font-bold">
+        Send My Brief on WhatsApp
+        <ArrowRight className="h-5 w-5" />
+      </button>
+      <p className="mt-3 text-center text-xs leading-relaxed text-[var(--muted)]">
+        Submitting opens WhatsApp to {CONFIG.whatsappDisplay} with the brief pre-filled —
+        nothing is stored on this page.
+      </p>
+    </form>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   THEME CSS — light palette in :root, obsidian dark palette under
+   [data-theme="dark"]. Light is the default: the page opens with
+   data-theme="light" and nothing ever reads a saved or system theme.
+   Glassmorphism cards, glowing gradient borders, marquee/float
+   keyframes, and the 1920px / 2560px fluid scaling live here.
+   ════════════════════════════════════════════════════════════════════ */
+const THEME_CSS = `
+:root, [data-theme="light"] {
+  --bg: #F4F7FB;
+  --surface: #FFFFFF;
+  --ink: #0B1220;
+  --ink2: #1E293B;
+  --muted: #5B6B82;
+  --muted2: #7A8AA0;
+  --line: #E2E8F0;
+  --chip: #EDF2F7;
+  --cyan: #00F0FF;
+  --cyan-dark: #0891A5;
+  --violet: #7B2CBF;
+  --shadow: 0 18px 45px rgba(11, 18, 32, 0.08);
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  --bg: #07090E;
+  --surface: #0D1117;
+  --ink: #F8FAFC;
+  --ink2: #CBD5E1;
+  --muted: #94A3B8;
+  --muted2: #64748B;
+  --line: #1E293B;
+  --chip: #141B26;
+  --cyan: #00F0FF;
+  --cyan-dark: #22D3EE;
+  --violet: #9D4EDD;
+  --shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+.fe-root { background: var(--bg); color: var(--ink); }
+.fe-root ::selection { background: rgba(0, 240, 255, 0.35); }
+.fe-root { scrollbar-color: var(--muted2) transparent; }
+
+/* Glass cards with glowing gradient borders */
+.fe-card {
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, rgba(0, 240, 255, 0.55), rgba(123, 44, 191, 0.55)) border-box;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.fe-card.tilt:hover { box-shadow: 0 24px 55px rgba(0, 180, 210, 0.22); }
+.fe-card-pop {
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, #00F0FF, #7B2CBF) border-box;
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(90deg, #0891B2, #2563EB 55%, #7B2CBF);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.35), 0 0 0 1px rgba(255,255,255,0.12) inset;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: 0 16px 36px rgba(37, 99, 235, 0.45); }
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.btn-ghost:hover { transform: translateY(-1px); border-color: var(--cyan); }
+.fe-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 40px; width: 40px; border-radius: 9999px;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.fe-icon-btn:hover { border-color: var(--cyan); transform: translateY(-1px); }
+
+/* Sticky glass navbar */
+.fe-root header { background: transparent; }
+.fe-nav-scrolled { background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+
+/* Hero */
+.fe-hero { background: radial-gradient(900px 480px at 85% -10%, rgba(0, 240, 255, 0.14), transparent 60%), radial-gradient(700px 420px at 0% 10%, rgba(123, 44, 191, 0.14), transparent 60%); }
+[data-theme="dark"] .fe-hero { background: radial-gradient(900px 480px at 85% -10%, rgba(0, 240, 255, 0.12), transparent 60%), radial-gradient(700px 420px at 0% 10%, rgba(123, 44, 191, 0.16), transparent 60%); }
+.fe-particles { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fe-hero-glow { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(600px 300px at 50% 110%, rgba(0, 240, 255, 0.10), transparent 70%); }
+.fe-dash {
+  background: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(135deg, rgba(0,240,255,0.6), rgba(123,44,191,0.6)) border-box;
+  border: 1px solid transparent;
+  box-shadow: 0 30px 70px rgba(11, 18, 32, 0.16);
+}
+.fe-badge {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  animation: fe-float 5s ease-in-out infinite;
+}
+@keyframes fe-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.fe-live-dot { animation: fe-pulse 1.6s ease-in-out infinite; }
+@keyframes fe-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.8); } }
+.fe-bounce { animation: fe-bounce 1.8s ease-in-out infinite; }
+@keyframes fe-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+/* Forms */
+.fe-label { display: block; font-size: 13px; font-weight: 700; color: var(--ink2); }
+.fe-input {
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.fe-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.25); }
+.fe-input::placeholder { color: var(--muted2); }
+.success {
+  display: none;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-size: 14px; font-weight: 600;
+  color: #065F46; background: #D1FAE5; border: 1px solid #6EE7B7;
+}
+.success.show { display: block; }
+[data-theme="dark"] .success { color: #A7F3D0; background: rgba(16, 185, 129, 0.14); border-color: rgba(16, 185, 129, 0.4); }
+
+/* Marquee */
+.fe-marquee-wrap { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.fe-marquee { animation: fe-marquee 46s linear infinite; }
+.fe-marquee-wrap:hover .fe-marquee { animation-play-state: paused; }
+@keyframes fe-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; z-index: 90;
+  transform: translate(-50%, 16px);
+  max-width: min(92vw, 560px);
+  padding: 13px 18px; border-radius: 9999px;
+  background: #0B1220; color: #F8FAFC;
+  font-size: 14px; font-weight: 600; text-align: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Fluid 4K scaling — 1920px and 2560px */
+@media (min-width: 1920px) {
+  .fe-root { font-size: 17px; }
+  .fe-hero { padding-top: 150px; }
+}
+@media (min-width: 2560px) {
+  .fe-root { font-size: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fe-marquee, .fe-badge, .fe-bounce, .fe-live-dot { animation: none !important; }
+  .fe-card, .btn-primary, .btn-ghost { transition: none !important; }
+}
+`;
