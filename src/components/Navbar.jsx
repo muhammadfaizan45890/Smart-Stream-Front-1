@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════════
-   FEATHERED EXPERTS PRO — ADVANCED / HD
+   FEATHERED EXPERTS AI — ADVANCED / HD
    AI Tools Marketplace & Digital Agency — fully advanced, HD,
    ultra-responsive rework of FeatheredExpertsPro.jsx.
    Same default export `FeatheredExpertsPro`, same imports, no new
@@ -31,9 +31,10 @@
      Price on Request, Buy Now); closes via X, backdrop or Escape.
    • WhatsApp channel popup — shows ~900ms after EVERY fresh page load
      (no "don't show again"), inviting visitors to join the Feathered
-     Experts Pro WhatsApp channel; closable via X, backdrop or Escape.
+     Experts AI WhatsApp channel; closable via X, backdrop or Escape.
    • Premium cards — tools badged "Premium" / "Featured Premium" get a
-     dark gradient premium card with a slow sheen; all text stays light.
+     golden premium card (champagne → amber → deep gold) with a slow
+     warm sheen; all text stays dark on gold.
    • Real Claude logo — official coral starburst from Simple Icons
      (`claude`, #D97757); search bar rebuilt with one icon + clear
      button and no native browser search decorations.
@@ -172,7 +173,7 @@ const FEATHER_FAVICON =
    CONFIGURATION & CONSTANTS
    ════════════════════════════════════════════════════════════════════ */
 const CONFIG = {
-  brandName: "Feathered Experts Pro",
+  brandName: "Feathered Experts AI",
   tagline: "AI Tools • Websites • Meta Ads",
   whatsappNumber: "923716804766", // display: 03716804766
   whatsappDisplay: "0371 6804766",
@@ -190,9 +191,9 @@ const waLink = (text) =>
 const openWhatsApp = (text) =>
   window.open(waLink(text), "_blank", "noopener,noreferrer");
 const buyText = (name, duration) =>
-  `Hello Feathered Experts Pro! I want to buy: ${name}${duration ? ` (${duration})` : ""}. Please share the activation details so we can negotiate on WhatsApp.`;
+  `Hello Feathered Experts AI! I want to buy: ${name}${duration ? ` (${duration})` : ""}. Please share the activation details so we can negotiate on WhatsApp.`;
 const planText = (plan, group) =>
-  `Hello Feathered Experts Pro! I am interested in the ${plan} plan (${group}). Please share the details so we can negotiate on WhatsApp.`;
+  `Hello Feathered Experts AI! I am interested in the ${plan} plan (${group}). Please share the details so we can negotiate on WhatsApp.`;
 
 /* ── Official brand marks (inline SVG, same official artwork as the live site) ── */
 
@@ -796,7 +797,7 @@ const SERVICES = [
       "Blog setup & uploads",
     ],
     cta: "Start a Website",
-    wa: "Hello Feathered Experts Pro! I want a custom website built. Please share the details so we can negotiate on WhatsApp.",
+    wa: "Hello Feathered Experts AI! I want a custom website built. Please share the details so we can negotiate on WhatsApp.",
   },
   {
     id: "software",
@@ -810,7 +811,7 @@ const SERVICES = [
       "APIs & dashboards",
     ],
     cta: "Build Software",
-    wa: "Hello Feathered Experts Pro! I want custom software / a SaaS MVP built. Please share the details so we can negotiate on WhatsApp.",
+    wa: "Hello Feathered Experts AI! I want custom software / a SaaS MVP built. Please share the details so we can negotiate on WhatsApp.",
   },
   {
     id: "ads",
@@ -824,7 +825,7 @@ const SERVICES = [
       "Retargeting funnels",
     ],
     cta: "Scale With Ads",
-    wa: "Hello Feathered Experts Pro! I want Meta Ads & performance marketing for my brand. Please share the details so we can negotiate on WhatsApp.",
+    wa: "Hello Feathered Experts AI! I want Meta Ads & performance marketing for my brand. Please share the details so we can negotiate on WhatsApp.",
   },
 ];
 
@@ -1390,39 +1391,39 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
               style={tool.logoColor ? { color: tool.logoColor } : undefined}
             />
           </span>
-          <span className={isPremium ? "rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-white/70 ring-1 ring-white/15" : "rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]"}>
+          <span className={isPremium ? "rounded-full bg-black/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[#6B3F00] ring-1 ring-black/15" : "rounded-full bg-[var(--chip)] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]"}>
             {tool.catLabel}
           </span>
         </div>
 
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <h3 className={isPremium ? "text-lg font-light leading-snug text-white" : "text-lg font-light leading-snug text-[var(--ink)]"}>{tool.name}</h3>
+          <h3 className={isPremium ? "text-lg font-light leading-snug text-[#231A06]" : "text-lg font-light leading-snug text-[var(--ink)]"}>{tool.name}</h3>
           {tool.badge ? (
-            <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
+            <span className={isPremium ? "rounded-full bg-[#201500] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#FFD97A]" : "rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white"}>
               {tool.badge}
             </span>
           ) : null}
         </div>
         {tool.duration ? (
-          <p className={isPremium ? "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-cyan-300" : "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]"}>
+          <p className={isPremium ? "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[#92400E]" : "mb-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--cyan-dark)]"}>
             {tool.duration}
           </p>
         ) : null}
-        <p className={isPremium ? "mb-4 text-sm leading-relaxed text-white/75" : "mb-4 text-sm leading-relaxed text-[var(--muted)]"}>{tool.tag}</p>
+        <p className={isPremium ? "mb-4 text-sm leading-relaxed text-[#5B3A00]" : "mb-4 text-sm leading-relaxed text-[var(--muted)]"}>{tool.tag}</p>
 
         <ul className="mb-5 space-y-1.5">
           {tool.features.map((f) => (
-            <li key={f} className={isPremium ? "flex items-start gap-2 text-sm text-white/90" : "flex items-start gap-2 text-sm text-[var(--ink2)]"}>
-              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" strokeWidth={3} />
+            <li key={f} className={isPremium ? "flex items-start gap-2 text-sm text-[#3D2A00]" : "flex items-start gap-2 text-sm text-[var(--ink2)]"}>
+              <Check className={isPremium ? "mt-0.5 h-4 w-4 shrink-0 text-emerald-700" : "mt-0.5 h-4 w-4 shrink-0 text-emerald-500"} strokeWidth={3} />
               <span>{f}</span>
             </li>
           ))}
         </ul>
 
         <div className="mt-auto">
-          <p className={isPremium ? "mb-3 text-base font-light text-white" : "mb-3 text-base font-light text-[var(--ink)]"}>
+          <p className={isPremium ? "mb-3 text-base font-light text-[#1F1400]" : "mb-3 text-base font-light text-[var(--ink)]"}>
             Price on Request
-            <span className={isPremium ? "ml-2 text-xs font-medium text-white/60" : "ml-2 text-xs font-medium text-[var(--muted)]"}>
+            <span className={isPremium ? "ml-2 text-xs font-medium text-[#4A2E00]" : "ml-2 text-xs font-medium text-[var(--muted)]"}>
               Negotiate on WhatsApp
             </span>
           </p>
@@ -1461,6 +1462,7 @@ const ToolCard = React.memo(function ToolCard({ tool, onDetails, onBuy, index })
 const ToolDetailsModal = React.memo(function ToolDetailsModal({ tool, onClose, onBuy }) {
   useEscape(onClose, tool !== null);
   const Logo = tool ? tool.logo : null;
+  const modalIsPremium = tool ? (tool.badge === "Premium" || tool.badge === "Featured Premium") : false;
   return (
     <AnimatePresence>
       {tool ? (
@@ -1503,7 +1505,7 @@ const ToolDetailsModal = React.memo(function ToolDetailsModal({ tool, onClose, o
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <h2 className="text-2xl font-light leading-snug text-[var(--ink)]">{tool.name}</h2>
               {tool.badge ? (
-                <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
+                <span className={modalIsPremium ? "rounded-full bg-[#201500] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#FFD97A]" : "rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white"}>
                   {tool.badge}
                 </span>
               ) : null}
@@ -1549,7 +1551,7 @@ const ToolDetailsModal = React.memo(function ToolDetailsModal({ tool, onClose, o
 /* ── WHATSAPP CHANNEL POPUP ───────────────────────────────────────────
    Shows on EVERY fresh page load (~900ms after mount) — no localStorage,
    no "don't show again": it appears on every visit. Promotes the
-   Feathered Experts Pro WhatsApp channel (CONFIG.channelUrl).
+   Feathered Experts AI WhatsApp channel (CONFIG.channelUrl).
    Closable via X, backdrop click, "Maybe later" or Escape. */
 function ChannelPopup({ open, onClose }) {
   useEscape(onClose, open);
@@ -1590,7 +1592,7 @@ function ChannelPopup({ open, onClose }) {
               Join our WhatsApp Channel
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--muted)]">
-              Get instant updates, new AI tools and exclusive deals from Feathered Experts Pro — straight to your WhatsApp.
+              Get instant updates, new AI tools and exclusive deals from Feathered Experts AI — straight to your WhatsApp.
             </p>
             <a
               href={CONFIG.channelUrl}
@@ -1721,7 +1723,7 @@ export default function FeatheredExpertsPro() {
       if (tool.more) {
         showToast("Opening WhatsApp — just tell us which tool you need.");
         openWhatsApp(
-          "Hello Feathered Experts Pro! I am looking for a tool that is not listed on your marketplace. Please tell me what other tools you have available so we can negotiate on WhatsApp."
+          "Hello Feathered Experts AI! I am looking for a tool that is not listed on your marketplace. Please tell me what other tools you have available so we can negotiate on WhatsApp."
         );
         return;
       }
@@ -1765,11 +1767,11 @@ export default function FeatheredExpertsPro() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               className="flex min-w-0 items-center gap-2.5"
-              aria-label="Feathered Experts Pro — home"
+              aria-label="Feathered Experts AI — home"
             >
               <FeatherLogoTile />
               <span className="truncate text-base font-light tracking-tight text-[var(--ink)] sm:text-xl 3xl:text-2xl">
-                Feathered Experts <span className="text-[var(--cyan-dark)]">Pro</span>
+                Feathered Experts <span className="text-[var(--cyan-dark)]">AI</span>
               </span>
             </a>
 
@@ -1853,7 +1855,7 @@ export default function FeatheredExpertsPro() {
                   <span className="flex items-center gap-2.5">
                     <FeatherLogoTile size="sm" />
                     <span className="text-base font-light text-[var(--ink)]">
-                      Feathered Experts Pro
+                      Feathered Experts AI
                     </span>
                   </span>
                   <button
@@ -1882,7 +1884,7 @@ export default function FeatheredExpertsPro() {
                 </nav>
                 <a
                   href={waLink(
-                    "Hello Feathered Experts Pro! I would like to book an agency call. Please share the available times so we can talk on WhatsApp."
+                    "Hello Feathered Experts AI! I would like to book an agency call. Please share the available times so we can talk on WhatsApp."
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1914,7 +1916,7 @@ export default function FeatheredExpertsPro() {
                 >
                   <FeatherLogoTile size="sm" />
                   <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Feathered Experts Pro
+                    Feathered Experts AI
                   </span>
                   <span className="rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-white">
                     AI Tools • Websites • Meta Ads
@@ -1972,7 +1974,7 @@ export default function FeatheredExpertsPro() {
                   </a>
                   <a
                     href={waLink(
-                      "Hello Feathered Experts Pro! I would like to book an agency call. Please share the available times so we can talk on WhatsApp."
+                      "Hello Feathered Experts AI! I would like to book an agency call. Please share the available times so we can talk on WhatsApp."
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -2158,9 +2160,9 @@ export default function FeatheredExpertsPro() {
                     </button>
                   ))}
                 </div>
-                <label className="relative mt-4 block max-w-md">
+                <label className="fe-search-wrap relative mt-4 block max-w-md">
                   <span className="sr-only">Search tools</span>
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+                  <Search className="fe-search-icon pointer-events-none absolute h-4 w-4 text-[var(--muted)]" />
                   <input
                     ref={searchRef}
                     type="text"
@@ -2169,7 +2171,7 @@ export default function FeatheredExpertsPro() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search tools — try Gemini, Netflix, VPN…"
-                    className="fe-input w-full rounded-full py-3 pl-11 pr-10 text-sm"
+                    className="fe-input fe-search-input w-full rounded-full py-3 text-sm"
                   />
                   {query ? (
                     <button
@@ -2178,7 +2180,7 @@ export default function FeatheredExpertsPro() {
                         setQuery("");
                         searchRef.current?.focus();
                       }}
-                      className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:bg-[var(--chip)] hover:text-[var(--ink)]"
+                      className="fe-search-clear absolute flex h-7 w-7 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:bg-[var(--chip)] hover:text-[var(--ink)]"
                       aria-label="Clear search"
                     >
                       <X className="h-4 w-4" />
@@ -2321,7 +2323,7 @@ export default function FeatheredExpertsPro() {
           <section id="cases" className="fe-cv scroll-mt-24 py-16 sm:py-20">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 3xl:max-w-[1500px]">
               <SectionHead
-                eyebrow="Why Feathered Experts Pro"
+                eyebrow="Why Feathered Experts AI"
                 title="Feather-light process. Heavyweight numbers."
               />
 
@@ -2350,10 +2352,10 @@ export default function FeatheredExpertsPro() {
                       </span>
                     </div>
                     <p className="mb-5 text-sm text-[var(--muted)]">
-                      Cyan: clients with Feathered Experts Pro. Violet dashed: typical agency trajectory.
+                      Cyan: clients with Feathered Experts AI. Violet dashed: typical agency trajectory.
                     </p>
                     <div className="relative">
-                      <svg viewBox="0 0 560 220" className="h-auto w-full" role="img" aria-label="Performance chart: Feathered Experts Pro clients growing faster than a typical agency">
+                      <svg viewBox="0 0 560 220" className="h-auto w-full" role="img" aria-label="Performance chart: Feathered Experts AI clients growing faster than a typical agency">
                         <defs>
                           <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0" stopColor="#00F0FF" stopOpacity="0.25" />
@@ -2610,7 +2612,7 @@ export default function FeatheredExpertsPro() {
               <a href="#main-content" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5">
                 <FeatherLogoTile />
                 <span className="text-lg font-light tracking-tight text-[var(--ink)]">
-                  Feathered Experts <span className="text-[var(--cyan-dark)]">Pro</span>
+                  Feathered Experts <span className="text-[var(--cyan-dark)]">AI</span>
                 </span>
               </a>
               <p className="mt-4 max-w-[36ch] text-sm leading-relaxed text-[var(--muted)]">
@@ -2692,7 +2694,7 @@ export default function FeatheredExpertsPro() {
               <ul className="space-y-2.5 text-sm">
                 <li>
                   <a
-                    href={waLink("Hello Feathered Experts Pro! I would like to book an agency call. Please share the available times so we can talk on WhatsApp.")}
+                    href={waLink("Hello Feathered Experts AI! I would like to book an agency call. Please share the available times so we can talk on WhatsApp.")}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[var(--muted)] transition-colors hover:text-[var(--cyan-dark)]"
@@ -2743,7 +2745,7 @@ export default function FeatheredExpertsPro() {
 
           <div className="border-t border-[var(--line)]">
             <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-[13px] text-[var(--muted)] sm:px-6 3xl:max-w-[1500px]">
-              <span>© 2026 Feathered Experts Pro. All rights reserved.</span>
+              <span>© 2026 Feathered Experts AI. All rights reserved.</span>
               <span className="flex items-center gap-4">
                 <SmartLink to={CONFIG.privacyUrl} className="transition-colors hover:text-[var(--cyan-dark)]">Privacy</SmartLink>
                 <SmartLink to={CONFIG.termsUrl} className="transition-colors hover:text-[var(--cyan-dark)]">Terms</SmartLink>
@@ -2811,7 +2813,7 @@ const LeadForm = React.memo(function LeadForm({ showToast }) {
       return;
     }
     const text =
-      "Hello Feathered Experts Pro! I would like to send my project brief.\n\n" +
+      "Hello Feathered Experts AI! I would like to send my project brief.\n\n" +
       `Name: ${name}\n` +
       `Email: ${email}\n` +
       `Service Needed: ${form.service}\n` +
@@ -3047,25 +3049,27 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
 [data-theme="dark"] .fe-card-pop {
   background: linear-gradient(135deg, #0E1626 0%, #123049 55%, #2B1B4B 100%);
 }
-/* ── PREMIUM TOOL CARDS ─────────────────────────────────────────────
-   Tools with badge "Premium" / "Featured Premium" get a dark premium
-   card in BOTH themes: deep obsidian → navy → violet gradient,
-   gradient border, and a slow diagonal sheen. All text on premium
-   cards uses unconditional light colours in the JSX (white / white-75 /
-   white-90 / cyan-300), so contrast is safe in light and dark theme. */
+/* ── PREMIUM TOOL CARDS — GOLDEN ────────────────────────────────────
+   Tools with badge "Premium" / "Featured Premium" get a golden
+   premium card in BOTH themes: champagne → amber → deep gold
+   gradient, gold border, and a slow warm diagonal sheen. All text on
+   premium cards uses unconditional DARK colours in the JSX (near-black
+   / dark brown / deep amber), so contrast is safe in light and dark
+   theme. The base text colour below is dark too, so the card stays
+   readable even if a Tailwind utility is lost in the user's build. */
 .fe-card.fe-card-premium {
   background:
-    linear-gradient(135deg, #0B1220 0%, #123049 45%, #1E1B4B 100%) padding-box,
-    linear-gradient(135deg, #00F0FF, #7B2CBF) border-box;
+    linear-gradient(135deg, #FFF7D6 0%, #FFE9A8 25%, #FFD97A 50%, #F5B83D 78%, #E9A23B 100%) padding-box,
+    linear-gradient(135deg, #B45309, #F59E0B 45%, #FDE68A 80%, #B45309) border-box;
   border: 1px solid transparent;
-  color: #fff;
+  color: #2A1E00;
   overflow: hidden;
   position: relative;
 }
 .fe-card.fe-card-premium:hover { border-color: transparent; }
 .fe-card-premium::after {
   content: ""; position: absolute; inset: -20% -60%; pointer-events: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.12) 50%, transparent 58%);
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.35) 50%, transparent 58%);
   transform: translateX(-45%);
   animation: fe-premium-sheen 7s ease-in-out infinite;
 }
@@ -3073,15 +3077,15 @@ html { scrollbar-width: thin; scrollbar-color: var(--muted2) transparent; }
   0%, 55% { transform: translateX(-45%); }
   95%, 100% { transform: translateX(45%); }
 }
-/* Dark ghost button for the Details action on premium (dark) cards. */
+/* Dark button for the Details action on premium (gold) cards. */
 .btn-ghost-dark {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(24, 16, 0, 0.88);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.20);
+  border: 1px solid rgba(24, 16, 0, 0.35);
   box-shadow: none;
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
-.btn-ghost-dark:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.35); transform: translateY(-1px); }
+.btn-ghost-dark:hover { background: #181000; border-color: #181000; transform: translateY(-1px); }
 
 .btn-primary {
   position: relative; overflow: hidden;
@@ -3218,6 +3222,17 @@ input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration { -webkit-appearance: none; appearance: none; display: none; }
 input[type="search"]::-ms-clear, input[type="search"]::-ms-reveal { display: none; width: 0; height: 0; }
 input[type="search"] { -webkit-appearance: none; appearance: none; }
+/* ── SEARCH BAR — explicit geometry, no Tailwind dependency ────────
+   ROOT CAUSE of the clipped placeholder: ".fe-input" sets
+   "padding: 12px 14px", and that shorthand beat the "pl-11"/"pr-10"
+   utilities in the cascade, so the text started at 14px — under the
+   icon at 16px. These rules carry the geometry with !important, and
+   the JSX no longer relies on pl-11 / pr-10 / left-4 / right-3 /
+   top-1/2 / -translate-y-1/2 utilities for the search bar. */
+.fe-search-wrap { position: relative !important; display: block !important; max-width: 28rem !important; margin-top: 16px !important; }
+.fe-search-input { padding: 12px 40px 12px 44px !important; border-radius: 9999px !important; }
+.fe-search-icon { position: absolute !important; left: 16px !important; top: 0 !important; bottom: 0 !important; margin-top: auto !important; margin-bottom: auto !important; height: 16px !important; width: 16px !important; }
+.fe-search-clear { position: absolute !important; right: 12px !important; top: 0 !important; bottom: 0 !important; margin-top: auto !important; margin-bottom: auto !important; }
 .success {
   max-height: 0; overflow: hidden; opacity: 0;
   transition: max-height 0.5s ease, opacity 0.4s ease;
